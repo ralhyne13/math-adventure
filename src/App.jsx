@@ -29,7 +29,7 @@ function usePWAInstall() {
 }
 
 /* =======================
-   🔊 Simple sounds
+   🔊 Simple sounds (optional)
    Put files in /public:
    - /sfx-correct.mp3
    - /sfx-wrong.mp3
@@ -165,39 +165,45 @@ const GEN_MAP = {
   problem: wordProblem,
 };
 
+const TYPE_LABEL = {
+  addition: "Addition",
+  subtraction: "Soustraction",
+  multiplication: "Multiplication",
+  division: "Division",
+  fraction: "Fractions",
+  problem: "Problèmes",
+};
+
 /* =======================
-   🎨 Themes
+   🎨 Pro themes (pro UI)
 ======================= */
 const THEMES = [
   {
     id: "space",
-    name: "Espace 🚀",
-    bg: "linear-gradient(135deg,#0b1020,#1d2b64,#6a11cb)",
-    card: "rgba(255,255,255,0.95)",
-    accent: "#7c3aed",
+    name: "Espace",
+    accent: "#8b5cf6",
+    accent2: "#22d3ee",
+    bg: "radial-gradient(1200px 600px at 10% 10%, rgba(139,92,246,0.35), transparent 50%), radial-gradient(900px 500px at 90% 30%, rgba(34,211,238,0.22), transparent 55%), radial-gradient(900px 600px at 40% 90%, rgba(59,130,246,0.18), transparent 55%), linear-gradient(135deg, #050816 0%, #0b1024 45%, #0b0f1a 100%)",
     sparkle: "✨",
   },
   {
     id: "jungle",
-    name: "Jungle 🐒",
-    bg: "linear-gradient(135deg,#064e3b,#10b981,#a7f3d0)",
-    card: "rgba(255,255,255,0.95)",
-    accent: "#059669",
+    name: "Jungle",
+    accent: "#10b981",
+    accent2: "#a3e635",
+    bg: "radial-gradient(1200px 700px at 10% 10%, rgba(16,185,129,0.30), transparent 55%), radial-gradient(900px 500px at 85% 20%, rgba(163,230,53,0.22), transparent 55%), radial-gradient(900px 600px at 30% 95%, rgba(34,197,94,0.14), transparent 60%), linear-gradient(135deg, #051b12 0%, #06261a 45%, #04130e 100%)",
     sparkle: "🌿",
   },
   {
     id: "magic",
-    name: "Magie 🪄",
-    bg: "linear-gradient(135deg,#111827,#7c3aed,#f472b6)",
-    card: "rgba(255,255,255,0.95)",
+    name: "Magie",
     accent: "#ec4899",
+    accent2: "#a78bfa",
+    bg: "radial-gradient(1200px 700px at 10% 20%, rgba(236,72,153,0.26), transparent 55%), radial-gradient(900px 500px at 90% 25%, rgba(167,139,250,0.22), transparent 55%), radial-gradient(900px 600px at 35% 95%, rgba(59,130,246,0.14), transparent 60%), linear-gradient(135deg, #120412 0%, #1a0930 50%, #0b0b1b 100%)",
     sparkle: "🪄",
   },
 ];
 
-/* =======================
-   🧍 Avatars & Shop
-======================= */
 const AVATARS = [
   { id: "cat", emoji: "🐱", price: 0 },
   { id: "robot", emoji: "🤖", price: 40 },
@@ -210,74 +216,36 @@ function uid() {
 }
 
 /* =======================
-   📊 Pedagogical stats helpers
+   Small UI helpers
 ======================= */
-const TYPE_LABEL = {
-  addition: "Addition",
-  subtraction: "Soustraction",
-  multiplication: "Multiplication",
-  division: "Division",
-  fraction: "Fractions",
-  problem: "Problèmes",
-};
-
-function emptyStats() {
-  const base = {};
-  Object.keys(TYPE_LABEL).forEach((k) => {
-    base[k] = { attempts: 0, correct: 0, wrong: 0 };
-  });
-  return {
-    byType: base,
-    totalAttempts: 0,
-    totalCorrect: 0,
-    streak: 0,
-    bestStreak: 0,
-    starsTotal: 0,
-    starsMax: 0,
-    badges: [],
-  };
+function clamp(n, a, b) {
+  return Math.max(a, Math.min(b, n));
 }
 
-function pct(n, d) {
-  if (!d) return 0;
-  return Math.round((n / d) * 100);
+function formatPct(n) {
+  const x = Math.round(n);
+  return `${clamp(x, 0, 100)}%`;
+}
+
+function countEnabled(obj) {
+  return Object.values(obj).filter(Boolean).length;
 }
 
 /* =======================
-   🏅 Badges
+   App
 ======================= */
-const BADGES = [
-  { id: "first_win", name: "Premier succès 🥉", desc: "Réussir 1 question." },
-  { id: "streak_5", name: "Combo x5 🔥", desc: "Faire 5 bonnes réponses d’affilée." },
-  { id: "streak_10", name: "Combo x10 🔥🔥", desc: "Faire 10 bonnes réponses d’affilée." },
-  { id: "total_50", name: "50 réussites 🎯", desc: "Réussir 50 questions." },
-  { id: "master_add", name: "Roi des additions 👑", desc: "20 additions réussies." },
-  { id: "master_mul", name: "Maître des multiplications 🏆", desc: "20 multiplications réussies." },
-  { id: "master_frac", name: "Champion des fractions 🧩", desc: "20 fractions réussies." },
-];
-
-function hasBadge(badges, id) {
-  return badges.includes(id);
-}
-
 export default function App() {
   const { installable, install } = usePWAInstall();
 
-  /* =======================
-     👧 Multi-profils
-  ====================== */
+  /* Multi profiles */
   const [profiles, setProfiles] = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
 
-  /* =======================
-     ⚙️ Global settings
-  ====================== */
+  /* Global settings */
   const [themeId, setThemeId] = useState("space");
   const [soundOn, setSoundOn] = useState(true);
 
-  /* =======================
-     🎮 Game state (per profile)
-  ====================== */
+  /* Game state */
   const [level, setLevel] = useState(1);
   const [xp, setXp] = useState(0);
   const [coins, setCoins] = useState(0);
@@ -287,9 +255,7 @@ export default function App() {
   const [currentAvatar, setCurrentAvatar] = useState("cat");
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
 
-  /* =======================
-     🧠 Pedagogy settings
-  ====================== */
+  /* Pedagogy options */
   const [exerciseTypes, setExerciseTypes] = useState({
     addition: true,
     subtraction: true,
@@ -299,53 +265,37 @@ export default function App() {
     problem: true,
   });
 
-  // Mode adaptatif : le jeu propose + souvent les catégories où l’enfant se trompe.
-  const [adaptiveMode, setAdaptiveMode] = useState(true);
-
-  /* =======================
-     📊 Stats / fun (per profile)
-  ====================== */
-  const [stats, setStats] = useState(emptyStats());
-
-  /* =======================
-     UI
-  ====================== */
+  /* UI */
+  const [screen, setScreen] = useState("game"); // game | shop | settings
   const [question, setQuestion] = useState(() => addition(1));
   const [input, setInput] = useState("");
   const [message, setMessage] = useState("");
   const [showSteps, setShowSteps] = useState(false);
 
-  const [showShop, setShowShop] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showParents, setShowParents] = useState(false);
-
   const [shake, setShake] = useState(false);
-  const [burst, setBurst] = useState(false);
-
-  // Pour les étoiles
-  const [hintUsed, setHintUsed] = useState(false);
-  const [answerRevealed, setAnswerRevealed] = useState(false);
+  const [pop, setPop] = useState(false);
 
   const theme = useMemo(() => THEMES.find((t) => t.id === themeId) ?? THEMES[0], [themeId]);
-  const avatarEmoji = useMemo(() => AVATARS.find((a) => a.id === currentAvatar)?.emoji ?? "🐱", [currentAvatar]);
+  const avatarEmoji = useMemo(
+    () => AVATARS.find((a) => a.id === currentAvatar)?.emoji ?? "🐱",
+    [currentAvatar]
+  );
   const progress = (xp % (level * 50)) / (level * 50) * 100;
 
   const { playOk, playBad } = useSfx(soundOn);
 
-  /* =======================
-     Load global + profiles
-  ====================== */
+  /* LOAD */
   useEffect(() => {
-    const saved = localStorage.getItem("mathAdventureGlobal");
-    if (saved) {
-      const d = JSON.parse(saved);
+    const savedG = localStorage.getItem("mathAdventureGlobal");
+    if (savedG) {
+      const d = JSON.parse(savedG);
       setThemeId(d.themeId ?? "space");
       setSoundOn(d.soundOn ?? true);
     }
 
-    const p = localStorage.getItem("mathAdventureProfiles");
-    if (p) {
-      const d = JSON.parse(p);
+    const savedP = localStorage.getItem("mathAdventureProfiles");
+    if (savedP) {
+      const d = JSON.parse(savedP);
       setProfiles(d.profiles ?? []);
       setActiveProfileId(d.activeProfileId ?? null);
     } else {
@@ -356,9 +306,7 @@ export default function App() {
     }
   }, []);
 
-  /* =======================
-     Save global + profiles
-  ====================== */
+  /* SAVE */
   useEffect(() => {
     localStorage.setItem("mathAdventureGlobal", JSON.stringify({ themeId, soundOn }));
   }, [themeId, soundOn]);
@@ -367,9 +315,7 @@ export default function App() {
     localStorage.setItem("mathAdventureProfiles", JSON.stringify({ profiles, activeProfileId }));
   }, [profiles, activeProfileId]);
 
-  /* =======================
-     Apply active profile data
-  ====================== */
+  /* Apply active profile */
   useEffect(() => {
     if (!activeProfileId) return;
     const p = profiles.find((x) => x.id === activeProfileId);
@@ -377,7 +323,6 @@ export default function App() {
 
     const data = p.data;
     if (!data) {
-      // Defaults
       setLevel(1);
       setXp(0);
       setCoins(0);
@@ -385,7 +330,6 @@ export default function App() {
       setOwnedAvatars(["cat"]);
       setCurrentAvatar("cat");
       setDailyRewardClaimed(false);
-
       setExerciseTypes({
         addition: true,
         subtraction: true,
@@ -394,16 +338,10 @@ export default function App() {
         fraction: true,
         problem: true,
       });
-      setAdaptiveMode(true);
-
-      setStats(emptyStats());
-
       setQuestion(addition(1));
       setInput("");
       setMessage("");
       setShowSteps(false);
-      setHintUsed(false);
-      setAnswerRevealed(false);
       return;
     }
 
@@ -411,31 +349,20 @@ export default function App() {
     setXp(data.xp ?? 0);
     setCoins(data.coins ?? 0);
     setLives(data.lives ?? 3);
-
     setOwnedAvatars(data.ownedAvatars ?? ["cat"]);
     setCurrentAvatar(data.currentAvatar ?? "cat");
-
     setDailyRewardClaimed(data.dailyRewardClaimed ?? false);
     setExerciseTypes(data.exerciseTypes ?? exerciseTypes);
-    setAdaptiveMode(data.adaptiveMode ?? true);
-
-    setStats(data.stats ?? emptyStats());
-
     setQuestion(data.question ?? addition(data.level ?? 1));
     setInput("");
     setMessage("");
     setShowSteps(false);
-    setHintUsed(false);
-    setAnswerRevealed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProfileId]);
 
-  /* =======================
-     Persist current profile state
-  ====================== */
+  /* Persist active profile state */
   useEffect(() => {
     if (!activeProfileId) return;
-
     setProfiles((prev) =>
       prev.map((p) => {
         if (p.id !== activeProfileId) return p;
@@ -450,8 +377,6 @@ export default function App() {
             currentAvatar,
             dailyRewardClaimed,
             exerciseTypes,
-            adaptiveMode,
-            stats,
             question,
           },
         };
@@ -467,58 +392,26 @@ export default function App() {
     currentAvatar,
     dailyRewardClaimed,
     exerciseTypes,
-    adaptiveMode,
-    stats,
     question,
     activeProfileId,
   ]);
 
-  function getEnabledTypes() {
-    const enabled = Object.entries(exerciseTypes)
+  function enabledTypes() {
+    const e = Object.entries(exerciseTypes)
       .filter(([, v]) => v)
       .map(([k]) => k);
-    if (enabled.length === 0) return ["addition"];
-    return enabled;
-  }
-
-  // Tirage adaptatif : plus de poids aux catégories avec plus d'erreurs
-  function weightedPick(enabledTypes) {
-    if (!adaptiveMode) {
-      return enabledTypes[rand(0, enabledTypes.length - 1)];
-    }
-
-    // Poids = 1 + taux d'erreur * 4 + petit bonus si peu tenté
-    // (pour rééquilibrer doucement)
-    const weights = enabledTypes.map((t) => {
-      const s = stats.byType?.[t] ?? { attempts: 0, wrong: 0 };
-      const attempts = s.attempts || 0;
-      const wrong = s.wrong || 0;
-      const errRate = attempts ? wrong / attempts : 0.25; // défaut = 25%
-      const lowDataBoost = attempts < 5 ? 0.5 : 0;
-      return 1 + errRate * 4 + lowDataBoost;
-    });
-
-    const total = weights.reduce((a, b) => a + b, 0);
-    let r = Math.random() * total;
-    for (let i = 0; i < enabledTypes.length; i++) {
-      r -= weights[i];
-      if (r <= 0) return enabledTypes[i];
-    }
-    return enabledTypes[enabledTypes.length - 1];
+    return e.length ? e : ["addition"];
   }
 
   function newQuestion(nextLevel = level) {
-    const enabled = getEnabledTypes();
-    const pick = weightedPick(enabled);
+    const e = enabledTypes();
+    const pick = e[rand(0, e.length - 1)];
     const gen = GEN_MAP[pick] || addition;
-
     const q = gen(nextLevel);
     setQuestion(q);
-
     setInput("");
     setShowSteps(false);
-    setHintUsed(false);
-    setAnswerRevealed(false);
+    setMessage("");
   }
 
   function resetGame() {
@@ -527,114 +420,34 @@ export default function App() {
     setCoins(0);
     setLives(3);
     setDailyRewardClaimed(false);
-
-    setStats(emptyStats());
     newQuestion(1);
-  }
-
-  function calcStars({ correct, hintUsedLocal, revealedLocal }) {
-    if (!correct) return 0;
-    if (revealedLocal) return 1;
-    if (hintUsedLocal) return 2;
-    return 3;
-  }
-
-  function maybeUnlockBadges(nextStats) {
-    const b = nextStats.badges ?? [];
-
-    // 1ère réussite
-    if (nextStats.totalCorrect >= 1 && !hasBadge(b, "first_win")) b.push("first_win");
-
-    // streaks
-    if (nextStats.bestStreak >= 5 && !hasBadge(b, "streak_5")) b.push("streak_5");
-    if (nextStats.bestStreak >= 10 && !hasBadge(b, "streak_10")) b.push("streak_10");
-
-    // totals
-    if (nextStats.totalCorrect >= 50 && !hasBadge(b, "total_50")) b.push("total_50");
-
-    // masteries
-    const addC = nextStats.byType.addition?.correct ?? 0;
-    const mulC = nextStats.byType.multiplication?.correct ?? 0;
-    const fracC = nextStats.byType.fraction?.correct ?? 0;
-
-    if (addC >= 20 && !hasBadge(b, "master_add")) b.push("master_add");
-    if (mulC >= 20 && !hasBadge(b, "master_mul")) b.push("master_mul");
-    if (fracC >= 20 && !hasBadge(b, "master_frac")) b.push("master_frac");
-
-    return nextStats;
-  }
-
-  function updateStatsOnAnswer({ qType, correct, starsEarned }) {
-    setStats((prev) => {
-      const next = structuredClone(prev);
-
-      // totals
-      next.totalAttempts += 1;
-      if (correct) next.totalCorrect += 1;
-
-      // by type
-      if (!next.byType[qType]) next.byType[qType] = { attempts: 0, correct: 0, wrong: 0 };
-      next.byType[qType].attempts += 1;
-
-      if (correct) next.byType[qType].correct += 1;
-      else next.byType[qType].wrong += 1;
-
-      // streak
-      if (correct) {
-        next.streak += 1;
-        next.bestStreak = Math.max(next.bestStreak, next.streak);
-      } else {
-        next.streak = 0;
-      }
-
-      // stars
-      next.starsTotal += starsEarned;
-      next.starsMax += 3;
-
-      // badges
-      next.badges = Array.isArray(next.badges) ? next.badges : [];
-      return maybeUnlockBadges(next);
-    });
   }
 
   function onCorrect() {
     playOk();
-    setBurst(true);
-    setTimeout(() => setBurst(false), 450);
+    setPop(true);
+    setTimeout(() => setPop(false), 220);
 
     const gainedXp = 10;
-    const starsEarned = calcStars({ correct: true, hintUsedLocal: hintUsed, revealedLocal: answerRevealed });
-
     setXp((x) => x + gainedXp);
     setCoins((c) => c + (question.reward ?? 5));
-
-    // Bonus fun: streak => bonus XP
-    const streakBonus = Math.min(10, stats.streak >= 2 ? 2 : 0) + (stats.streak >= 4 ? 2 : 0);
-
-    if (streakBonus) setXp((x) => x + streakBonus);
-
-    setMessage(`Bravo ! +${starsEarned}⭐ ${theme.sparkle}`);
-
-    updateStatsOnAnswer({ qType: question.type, correct: true, starsEarned });
+    setMessage(`Bravo ${theme.sparkle}`);
 
     setLevel((lvl) => {
       const next = xp + gainedXp >= lvl * 50 ? lvl + 1 : lvl;
-      if (next !== lvl) setMessage(`Niveau supérieur ! 🚀`);
       return next;
     });
 
-    setTimeout(() => newQuestion(), 700);
+    setTimeout(() => newQuestion(), 650);
   }
 
   function onWrong() {
     playBad();
     setShake(true);
-    setTimeout(() => setShake(false), 350);
+    setTimeout(() => setShake(false), 320);
 
-    setMessage("Oups… 😅");
+    setMessage("Oups… essaie encore 🙂");
     setShowSteps(true);
-
-    updateStatsOnAnswer({ qType: question.type, correct: false, starsEarned: 0 });
 
     setLives((l) => {
       const next = l - 1;
@@ -646,7 +459,7 @@ export default function App() {
       return next;
     });
 
-    setTimeout(() => newQuestion(), 1100);
+    setTimeout(() => newQuestion(), 1050);
   }
 
   function checkAnswer() {
@@ -666,18 +479,17 @@ export default function App() {
     if (dailyRewardClaimed) return;
     setCoins((c) => c + 30);
     setDailyRewardClaimed(true);
-    setMessage("Cadeau reçu : +30 pièces 🎁");
+    setMessage("Cadeau reçu : +30 💰");
   }
 
-  /* =======================
-     Profiles actions
-  ====================== */
+  /* Profiles */
+  const activeProfile = profiles.find((p) => p.id === activeProfileId);
+
   function addProfile() {
     const name = prompt("Nom du profil ?");
     if (!name) return;
     const id = uid();
-    const p = { id, name, data: null };
-    setProfiles((prev) => [...prev, p]);
+    setProfiles((prev) => [...prev, { id, name, data: null }]);
     setActiveProfileId(id);
   }
 
@@ -690,470 +502,636 @@ export default function App() {
   }
 
   function deleteProfile(id) {
-    if (profiles.length <= 1) {
-      alert("Il faut au moins 1 profil.");
-      return;
-    }
+    if (profiles.length <= 1) return alert("Il faut au moins 1 profil.");
     // eslint-disable-next-line no-restricted-globals
-    const ok = confirm("Supprimer ce profil ? (progression perdue)");
-    if (!ok) return;
+    if (!confirm("Supprimer ce profil ? (progression perdue)")) return;
     const next = profiles.filter((p) => p.id !== id);
     setProfiles(next);
     if (activeProfileId === id) setActiveProfileId(next[0]?.id ?? null);
   }
 
   /* =======================
-     UI styles
-  ====================== */
-  const styles = {
-    page: {
-      minHeight: "100vh",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 16,
-      background: theme.bg,
-      backgroundSize: "cover",
-      backgroundRepeat: "no-repeat",
-      fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
-    },
-    card: {
-      width: "100%",
-      maxWidth: 520,
-      margin: "0 auto",
-      background: theme.card,
-      borderRadius: 22,
-      padding: 16,
-      boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
-      textAlign: "center",
-      transform: shake ? "translateX(-6px)" : "translateX(0px)",
-      transition: "transform 120ms ease",
-      border: `1px solid rgba(0,0,0,0.08)`,
-    },
-    pillRow: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" },
-    pill: {
-      padding: "8px 10px",
-      borderRadius: 999,
-      border: "1px solid rgba(0,0,0,0.12)",
-      background: "white",
-      fontWeight: 800,
-      fontSize: 12,
-    },
-    topRow: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 10,
-      marginBottom: 10,
-      flexWrap: "wrap",
-    },
-    select: {
-      padding: "8px 10px",
-      borderRadius: 12,
-      border: "1px solid rgba(0,0,0,0.15)",
-      background: "white",
-      fontWeight: 700,
-      maxWidth: 220,
-    },
-    iconBtn: {
-      padding: "8px 10px",
-      borderRadius: 12,
-      border: "1px solid rgba(0,0,0,0.12)",
-      background: "white",
-      cursor: "pointer",
-      fontWeight: 800,
-    },
-    installBtn: {
-      width: "100%",
-      padding: "10px 12px",
-      borderRadius: 14,
-      border: "1px solid rgba(0,0,0,0.12)",
-      background: "white",
-      cursor: "pointer",
-      marginBottom: 10,
-      fontWeight: 900,
-    },
-    mascot: {
-      fontSize: 56,
-      transform: burst ? "scale(1.08)" : "scale(1)",
-      transition: "transform 140ms ease",
-      filter: "drop-shadow(0 10px 18px rgba(0,0,0,0.2))",
-    },
-    title: { margin: 0, fontSize: 26, letterSpacing: 0.2 },
-    subtitle: { marginTop: 6, marginBottom: 12, opacity: 0.85 },
-    statsGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)",
-      gap: 8,
-      fontSize: 13,
-      marginBottom: 10,
-      opacity: 0.95,
-    },
-    progressWrap: {
-      height: 10,
-      width: "100%",
-      background: "rgba(0,0,0,0.10)",
-      borderRadius: 999,
-      overflow: "hidden",
-      marginBottom: 10,
-    },
-    progressBar: { height: "100%", background: theme.accent },
-    question: { fontSize: 20, fontWeight: 900, marginTop: 10, marginBottom: 10 },
-    input: {
-      width: "100%",
-      padding: 12,
-      borderRadius: 14,
-      border: "1px solid rgba(0,0,0,0.18)",
-      fontSize: 18,
-      textAlign: "center",
-      outline: "none",
-    },
-    primaryBtn: {
-      width: "100%",
-      marginTop: 10,
-      padding: 12,
-      borderRadius: 14,
-      border: "none",
-      background: theme.accent,
-      color: "white",
-      fontWeight: 900,
-      cursor: "pointer",
-      fontSize: 16,
-    },
-    secondaryBtn: {
-      padding: "10px 12px",
-      borderRadius: 12,
-      border: "1px solid rgba(0,0,0,0.12)",
-      background: "white",
-      cursor: "pointer",
-      fontWeight: 800,
-    },
-    row: { display: "flex", gap: 10, justifyContent: "center", marginTop: 12, flexWrap: "wrap" },
-    steps: {
-      marginTop: 10,
-      background: "rgba(255,255,255,0.85)",
-      padding: 12,
-      borderRadius: 16,
-      textAlign: "left",
-      fontSize: 13,
-      border: "1px solid rgba(0,0,0,0.08)",
-    },
-    shop: {
-      marginTop: 12,
-      textAlign: "left",
-      background: "rgba(255,255,255,0.70)",
-      padding: 12,
-      borderRadius: 16,
-      border: "1px solid rgba(0,0,0,0.08)",
-    },
-    shopRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 0" },
-    modal: {
-      marginTop: 12,
-      textAlign: "left",
-      background: "rgba(255,255,255,0.70)",
-      padding: 12,
-      borderRadius: 16,
-      border: "1px solid rgba(0,0,0,0.08)",
-    },
-    checkboxRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0" },
-    small: { fontSize: 12, opacity: 0.85 },
-    badge: {
-      padding: "8px 10px",
-      borderRadius: 14,
-      border: "1px solid rgba(0,0,0,0.10)",
-      background: "white",
-      marginBottom: 8,
-    },
-    table: {
-      width: "100%",
-      borderCollapse: "collapse",
-      fontSize: 13,
-      overflow: "hidden",
-      borderRadius: 12,
-    },
-    th: { textAlign: "left", padding: 8, borderBottom: "1px solid rgba(0,0,0,0.08)" },
-    td: { padding: 8, borderBottom: "1px solid rgba(0,0,0,0.06)" },
-  };
+     Pro UI components (inline)
+======================= */
+  const styles = useMemo(() => {
+    const accent = theme.accent;
+    const accent2 = theme.accent2;
 
-  const activeProfile = profiles.find((p) => p.id === activeProfileId);
+    return {
+      app: {
+        minHeight: "100vh",
+        width: "100%",
+        background: theme.bg,
+        color: "rgba(255,255,255,0.92)",
+        position: "relative",
+        overflow: "hidden",
+        fontFamily:
+          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      },
 
-  const starsPct = pct(stats.starsTotal, stats.starsMax);
-  const totalRate = pct(stats.totalCorrect, stats.totalAttempts);
+      // subtle animated noise overlay
+      noise: {
+        pointerEvents: "none",
+        position: "absolute",
+        inset: 0,
+        opacity: 0.08,
+        backgroundImage:
+          "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22><filter id=%22n%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/></filter><rect width=%22400%22 height=%22400%22 filter=%22url(%23n)%22 opacity=%220.35%22/></svg>')",
+      },
 
-  function revealAnswer() {
-    setAnswerRevealed(true);
-    setShowSteps(true);
-    setMessage(`Réponse : ${question.type === "fraction" ? "regarde l’explication" : question.answer} 👀`);
-  }
+      container: {
+        maxWidth: 1100,
+        margin: "0 auto",
+        padding: "18px 16px 90px",
+      },
 
-  function toggleHint() {
-    setHintUsed(true);
-    setShowSteps(true);
-  }
+      topbar: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 12,
+        marginBottom: 14,
+      },
+
+      brand: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        fontWeight: 900,
+        letterSpacing: 0.3,
+      },
+
+      badge: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 10px",
+        borderRadius: 999,
+        background: "rgba(255,255,255,0.10)",
+        border: "1px solid rgba(255,255,255,0.14)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        fontSize: 12,
+        fontWeight: 800,
+      },
+
+      grid: {
+        display: "grid",
+        gridTemplateColumns: "1fr",
+        gap: 14,
+      },
+
+      // desktop two columns
+      gridDesktop: {
+        gridTemplateColumns: "380px 1fr",
+        alignItems: "start",
+      },
+
+      glass: {
+        background: "rgba(255,255,255,0.10)",
+        border: "1px solid rgba(255,255,255,0.16)",
+        borderRadius: 18,
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
+      },
+
+      panel: {
+        padding: 14,
+      },
+
+      h2: {
+        margin: 0,
+        fontSize: 14,
+        opacity: 0.9,
+        fontWeight: 900,
+        letterSpacing: 0.25,
+      },
+
+      big: {
+        fontSize: 30,
+        fontWeight: 950,
+        margin: 0,
+      },
+
+      sub: {
+        margin: "6px 0 0",
+        opacity: 0.86,
+        fontWeight: 650,
+        fontSize: 13,
+      },
+
+      progressWrap: {
+        height: 10,
+        width: "100%",
+        background: "rgba(255,255,255,0.12)",
+        borderRadius: 999,
+        overflow: "hidden",
+        border: "1px solid rgba(255,255,255,0.10)",
+        marginTop: 10,
+      },
+
+      progressBar: (pct) => ({
+        height: "100%",
+        width: `${clamp(pct, 0, 100)}%`,
+        background: `linear-gradient(90deg, ${accent}, ${accent2})`,
+        borderRadius: 999,
+      }),
+
+      statGrid: {
+        display: "grid",
+        gridTemplateColumns: "repeat(2, 1fr)",
+        gap: 10,
+        marginTop: 12,
+      },
+
+      statCard: {
+        padding: 12,
+        borderRadius: 16,
+        background: "rgba(0,0,0,0.16)",
+        border: "1px solid rgba(255,255,255,0.10)",
+      },
+
+      statLabel: { fontSize: 12, opacity: 0.8, fontWeight: 800 },
+      statValue: { fontSize: 18, fontWeight: 950, marginTop: 6 },
+
+      row: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" },
+
+      select: {
+        width: "100%",
+        padding: "10px 12px",
+        borderRadius: 14,
+        border: "1px solid rgba(255,255,255,0.18)",
+        background: "rgba(0,0,0,0.20)",
+        color: "rgba(255,255,255,0.92)",
+        outline: "none",
+        fontWeight: 800,
+      },
+
+      iconBtn: {
+        padding: "10px 12px",
+        borderRadius: 14,
+        border: "1px solid rgba(255,255,255,0.18)",
+        background: "rgba(0,0,0,0.20)",
+        color: "rgba(255,255,255,0.92)",
+        cursor: "pointer",
+        fontWeight: 900,
+        transition: "transform 120ms ease, background 120ms ease",
+      },
+
+      primaryBtn: {
+        width: "100%",
+        padding: "12px 14px",
+        borderRadius: 16,
+        border: "0",
+        cursor: "pointer",
+        fontWeight: 950,
+        color: "white",
+        background: `linear-gradient(90deg, ${accent}, ${accent2})`,
+        boxShadow: "0 14px 35px rgba(0,0,0,0.35)",
+        transform: pop ? "scale(1.02)" : "scale(1)",
+        transition: "transform 120ms ease",
+      },
+
+      secondaryBtn: {
+        padding: "10px 12px",
+        borderRadius: 14,
+        border: "1px solid rgba(255,255,255,0.18)",
+        background: "rgba(0,0,0,0.20)",
+        color: "rgba(255,255,255,0.92)",
+        cursor: "pointer",
+        fontWeight: 900,
+      },
+
+      input: {
+        width: "100%",
+        padding: "12px 14px",
+        borderRadius: 16,
+        border: "1px solid rgba(255,255,255,0.18)",
+        background: "rgba(0,0,0,0.22)",
+        color: "rgba(255,255,255,0.92)",
+        outline: "none",
+        fontSize: 18,
+        fontWeight: 900,
+        textAlign: "center",
+      },
+
+      questionCard: {
+        padding: 16,
+        borderRadius: 18,
+        background: "rgba(0,0,0,0.18)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+        transform: shake ? "translateX(-6px)" : "translateX(0)",
+        transition: "transform 120ms ease",
+      },
+
+      questionText: {
+        fontSize: 24,
+        fontWeight: 980,
+        letterSpacing: 0.3,
+        margin: 0,
+      },
+
+      steps: {
+        marginTop: 10,
+        padding: 12,
+        borderRadius: 16,
+        background: "rgba(255,255,255,0.10)",
+        border: "1px solid rgba(255,255,255,0.14)",
+        fontSize: 13,
+        lineHeight: 1.4,
+      },
+
+      nav: {
+        position: "fixed",
+        left: 12,
+        right: 12,
+        bottom: 12,
+        maxWidth: 720,
+        margin: "0 auto",
+        padding: 10,
+        borderRadius: 18,
+        background: "rgba(10,10,14,0.55)",
+        border: "1px solid rgba(255,255,255,0.14)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        gap: 10,
+      },
+
+      navBtn: (active) => ({
+        padding: "10px 10px",
+        borderRadius: 14,
+        border: "1px solid rgba(255,255,255,0.14)",
+        background: active
+          ? `linear-gradient(90deg, ${accent}, ${accent2})`
+          : "rgba(0,0,0,0.20)",
+        color: "white",
+        fontWeight: 950,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+      }),
+
+      tiny: { fontSize: 12, opacity: 0.8, fontWeight: 800 },
+    };
+  }, [theme, progress, shake, pop]);
+
+  /* inline keyframes once */
+  const Keyframes = () => (
+    <style>{`
+      @media (min-width: 980px){
+        .gridDesktop { grid-template-columns: 380px 1fr !important; }
+      }
+      .hoverLift:hover { transform: translateY(-2px); background: rgba(0,0,0,0.26); }
+      .tap:active { transform: scale(0.98); }
+    `}</style>
+  );
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        {installable && (
-          <button onClick={install} style={styles.installBtn}>
-            📲 Installer l’application
-          </button>
-        )}
+    <div style={styles.app}>
+      <Keyframes />
+      <div style={styles.noise} />
 
-        {/* Top controls */}
-        <div style={styles.topRow}>
-          <select
-            value={activeProfileId ?? ""}
-            onChange={(e) => setActiveProfileId(e.target.value)}
-            style={styles.select}
-            title="Choisir un profil"
-          >
-            {profiles.map((p) => (
-              <option key={p.id} value={p.id}>
-                👤 {p.name}
-              </option>
-            ))}
-          </select>
-
-          <div style={{ display: "flex", gap: 8 }}>
-            <button style={styles.iconBtn} onClick={addProfile} title="Ajouter profil">
-              ➕ Profil
-            </button>
-            <button style={styles.iconBtn} onClick={() => activeProfile && renameProfile(activeProfile.id)} title="Renommer">
-              ✏️
-            </button>
-            <button style={styles.iconBtn} onClick={() => activeProfile && deleteProfile(activeProfile.id)} title="Supprimer">
-              🗑️
-            </button>
-          </div>
-        </div>
-
-        <div style={styles.pillRow}>
-          <span style={styles.pill}>Thème : {theme.name}</span>
-          <span style={styles.pill}>Combo : x{stats.streak} 🔥</span>
-          <span style={styles.pill}>Étoiles : {starsPct}% ⭐</span>
-          <span style={styles.pill}>Adaptatif : {adaptiveMode ? "ON" : "OFF"}</span>
-        </div>
-
-        <div style={styles.mascot}>{avatarEmoji}</div>
-        <h1 style={styles.title}>Aventure Math</h1>
-        <p style={styles.subtitle}>
-          {activeProfile ? `Profil : ${activeProfile.name}` : "Choisis un profil"} • {theme.sparkle}
-        </p>
-
-        <div style={styles.statsGrid}>
-          <div>Niv {level}</div>
-          <div>XP {xp}</div>
-          <div>💰 {coins}</div>
-          <div>❤️ {lives}</div>
-        </div>
-
-        <div style={styles.progressWrap}>
-          <div style={{ ...styles.progressBar, width: `${Math.max(0, Math.min(100, progress))}%` }} />
-        </div>
-
-        <div style={styles.question}>{question.text}</div>
-
-        <input
-          type="number"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ta réponse"
-          style={styles.input}
-        />
-
-        <button onClick={checkAnswer} style={styles.primaryBtn}>
-          Valider
-        </button>
-
-        {/* HELPERS (fun + pedagogy) */}
-        <div style={styles.row}>
-          <button style={styles.secondaryBtn} onClick={toggleHint}>
-            💡 Indice
-          </button>
-          <button style={styles.secondaryBtn} onClick={revealAnswer}>
-            👀 Voir la réponse
-          </button>
-          <button style={styles.secondaryBtn} onClick={() => setShowSteps((s) => !s)}>
-            📘 Explication
-          </button>
-        </div>
-
-        {message && <div style={{ marginTop: 10, fontWeight: 900 }}>{message}</div>}
-
-        {showSteps && (
-          <div style={styles.steps}>
-            <div style={{ fontWeight: 900, marginBottom: 6 }}>💡 Explication :</div>
-            <ol style={{ margin: 0, paddingLeft: 18 }}>
-              {(question.steps ?? []).filter(Boolean).map((s, idx) => (
-                <li key={idx} style={{ marginBottom: 4 }}>
-                  {s}
-                </li>
-              ))}
-            </ol>
-            <div style={{ marginTop: 8, ...styles.small }}>
-              ⭐ Étoiles : 3⭐ si tu réussis sans aide • 2⭐ avec indice • 1⭐ si tu vois la réponse
+      <div style={styles.container}>
+        {/* TOP BAR */}
+        <div style={styles.topbar}>
+          <div style={styles.brand}>
+            <div style={{ fontSize: 22 }}>{avatarEmoji}</div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 950, lineHeight: 1 }}>
+                Aventure Math
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.8, fontWeight: 800 }}>
+                App éducative • design pro
+              </div>
             </div>
           </div>
-        )}
 
-        {/* MAIN ACTIONS */}
-        <div style={styles.row}>
-          <button style={styles.secondaryBtn} onClick={() => setShowShop((s) => !s)}>
-            🛒 Boutique
-          </button>
-          <button style={styles.secondaryBtn} onClick={claimDailyReward} disabled={dailyRewardClaimed}>
-            🎁 Cadeau du jour
-          </button>
-          <button style={styles.secondaryBtn} onClick={() => setShowSettings((s) => !s)}>
-            ⚙️ Réglages
-          </button>
-          <button style={styles.secondaryBtn} onClick={() => setShowParents((s) => !s)}>
-            👨‍👩‍👧 Parents
-          </button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <span style={styles.badge}>Niv {level}</span>
+            <span style={styles.badge}>💰 {coins}</span>
+            <span style={styles.badge}>❤️ {lives}</span>
+          </div>
         </div>
 
-        {/* SHOP */}
-        {showShop && (
-          <div style={styles.shop}>
-            <h3 style={{ marginTop: 0 }}>Boutique d’avatars</h3>
-            {AVATARS.map((a) => (
-              <div key={a.id} style={styles.shopRow}>
-                <div style={{ fontSize: 26 }}>
-                  {a.emoji} <span style={{ fontSize: 14, opacity: 0.8 }}>{a.price} pièces</span>
+        {/* GRID */}
+        <div
+          className="gridDesktop"
+          style={{
+            ...styles.grid,
+            ...(window.innerWidth >= 980 ? styles.gridDesktop : {}),
+          }}
+        >
+          {/* LEFT PANEL */}
+          <div style={{ ...styles.glass, ...styles.panel }}>
+            {installable && (
+              <button
+                className="tap hoverLift"
+                onClick={install}
+                style={{ ...styles.secondaryBtn, width: "100%" }}
+              >
+                📲 Installer l’application
+              </button>
+            )}
+
+            <div style={{ marginTop: 12 }}>
+              <div style={styles.h2}>Profil</div>
+              <div style={{ marginTop: 8 }}>
+                <select
+                  value={activeProfileId ?? ""}
+                  onChange={(e) => setActiveProfileId(e.target.value)}
+                  style={styles.select}
+                >
+                  {profiles.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      👤 {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ ...styles.row, marginTop: 10 }}>
+                <button className="tap hoverLift" style={styles.iconBtn} onClick={addProfile}>
+                  ➕ Profil
+                </button>
+                <button
+                  className="tap hoverLift"
+                  style={styles.iconBtn}
+                  onClick={() => activeProfile && renameProfile(activeProfile.id)}
+                >
+                  ✏️
+                </button>
+                <button
+                  className="tap hoverLift"
+                  style={styles.iconBtn}
+                  onClick={() => activeProfile && deleteProfile(activeProfile.id)}
+                >
+                  🗑️
+                </button>
+              </div>
+
+              <div style={{ marginTop: 14 }}>
+                <div style={styles.h2}>Progression</div>
+                <div style={{ marginTop: 8, fontWeight: 950 }}>
+                  XP {xp} • Objectif niv : {level * 50}
                 </div>
-                {ownedAvatars.includes(a.id) ? (
-                  <button onClick={() => setCurrentAvatar(a.id)} style={styles.secondaryBtn}>
-                    Équiper
+                <div style={styles.progressWrap}>
+                  <div style={styles.progressBar(progress)} />
+                </div>
+                <div style={styles.tiny}>{formatPct(progress)} vers le prochain niveau</div>
+
+                <div style={styles.statGrid}>
+                  <div style={styles.statCard}>
+                    <div style={styles.statLabel}>Thème</div>
+                    <div style={styles.statValue}>{theme.name}</div>
+                  </div>
+                  <div style={styles.statCard}>
+                    <div style={styles.statLabel}>Exercices</div>
+                    <div style={styles.statValue}>{countEnabled(exerciseTypes)}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14 }}>
+                <div style={styles.h2}>Raccourcis</div>
+                <div style={{ ...styles.row, marginTop: 10 }}>
+                  <button
+                    className="tap hoverLift"
+                    style={styles.secondaryBtn}
+                    onClick={claimDailyReward}
+                    disabled={dailyRewardClaimed}
+                    title="Cadeau du jour"
+                  >
+                    🎁 Cadeau
                   </button>
-                ) : (
-                  <button onClick={() => buyAvatar(a)} style={styles.secondaryBtn} disabled={coins < a.price}>
-                    Acheter
+                  <button
+                    className="tap hoverLift"
+                    style={styles.secondaryBtn}
+                    onClick={() => setShowSteps((s) => !s)}
+                    title="Voir/cacher explication"
+                  >
+                    💡 Explication
                   </button>
+                </div>
+                {message && (
+                  <div style={{ marginTop: 10, fontWeight: 950, opacity: 0.95 }}>
+                    {message}
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* SETTINGS */}
-        {showSettings && (
-          <div style={styles.modal}>
-            <h3 style={{ marginTop: 0 }}>Réglages</h3>
-
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ fontWeight: 900, marginBottom: 6 }}>🎨 Thème</div>
-              <select value={themeId} onChange={(e) => setThemeId(e.target.value)} style={styles.select}>
-                {THEMES.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ fontWeight: 900, marginBottom: 6 }}>🔊 Sons</div>
-              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} />
-                Activer les sons (bonne réponse / erreur)
-              </label>
-              <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
-                Astuce : ajoute <code>/public/sfx-correct.mp3</code> et <code>/public/sfx-wrong.mp3</code>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ fontWeight: 900, marginBottom: 6 }}>🧠 Mode adaptatif</div>
-              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <input type="checkbox" checked={adaptiveMode} onChange={(e) => setAdaptiveMode(e.target.checked)} />
-                Proposer plus d’exercices là où l’enfant se trompe
-              </label>
-            </div>
-
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontWeight: 900, marginBottom: 6 }}>🧠 Types d’exercices</div>
-              {Object.keys(exerciseTypes).map((k) => (
-                <div key={k} style={styles.checkboxRow}>
-                  <span style={{ fontWeight: 800 }}>{TYPE_LABEL[k]}</span>
-                  <input
-                    type="checkbox"
-                    checked={exerciseTypes[k]}
-                    onChange={(e) => setExerciseTypes((p) => ({ ...p, [k]: e.target.checked }))}
-                  />
-                </div>
-              ))}
-              <div style={{ fontSize: 12, opacity: 0.8, marginTop: 6 }}>
-                Tu peux choisir ce que l’enfant pratique.
-              </div>
-            </div>
-
-            <div style={styles.row}>
-              <button style={styles.secondaryBtn} onClick={() => setShowSettings(false)}>
-                Fermer
-              </button>
             </div>
           </div>
-        )}
 
-        {/* PARENTS DASHBOARD */}
-        {showParents && (
-          <div style={styles.modal}>
-            <h3 style={{ marginTop: 0 }}>Tableau Parents</h3>
-
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <span style={styles.pill}>Réussite : {totalRate}%</span>
-              <span style={styles.pill}>Meilleur combo : x{stats.bestStreak}</span>
-              <span style={styles.pill}>Étoiles : {starsPct}%</span>
-              <span style={styles.pill}>Réussites : {stats.totalCorrect}</span>
-            </div>
-
-            <h4 style={{ marginBottom: 6 }}>Résultats par type</h4>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Type</th>
-                  <th style={styles.th}>Tentatives</th>
-                  <th style={styles.th}>Réussites</th>
-                  <th style={styles.th}>%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.keys(TYPE_LABEL).map((t) => {
-                  const s = stats.byType[t] ?? { attempts: 0, correct: 0 };
-                  return (
-                    <tr key={t}>
-                      <td style={styles.td}>{TYPE_LABEL[t]}</td>
-                      <td style={styles.td}>{s.attempts}</td>
-                      <td style={styles.td}>{s.correct}</td>
-                      <td style={styles.td}>{pct(s.correct, s.attempts)}%</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            <h4 style={{ marginBottom: 6, marginTop: 12 }}>Badges débloqués</h4>
-            {stats.badges.length === 0 && <div style={styles.small}>Aucun badge pour le moment.</div>}
-            {stats.badges.length > 0 && (
+          {/* RIGHT PANEL */}
+          <div style={{ ...styles.glass, ...styles.panel }}>
+            {/* Screen header */}
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
               <div>
-                {BADGES.filter((b) => stats.badges.includes(b.id)).map((b) => (
-                  <div key={b.id} style={styles.badge}>
-                    <div style={{ fontWeight: 900 }}>{b.name}</div>
-                    <div style={styles.small}>{b.desc}</div>
+                <p style={styles.big}>Mode {screen === "game" ? "Jeu" : screen === "shop" ? "Boutique" : "Réglages"}</p>
+                <p style={styles.sub}>
+                  {screen === "game"
+                    ? "Réponds, progresse, gagne des récompenses."
+                    : screen === "shop"
+                    ? "Débloque des avatars avec tes pièces."
+                    : "Personnalise le thème, les exercices et les sons."}
+                </p>
+              </div>
+              <div style={{ ...styles.badge, alignSelf: "start" }}>
+                {TYPE_LABEL[question.type] ?? "Math"}
+              </div>
+            </div>
+
+            {screen === "game" && (
+              <>
+                <div style={{ marginTop: 14, ...styles.questionCard }}>
+                  <p style={styles.questionText}>{question.text}</p>
+
+                  <div style={{ marginTop: 12 }}>
+                    <input
+                      type="number"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      style={styles.input}
+                      placeholder="Ta réponse"
+                    />
                   </div>
-                ))}
+
+                  <div style={{ marginTop: 12 }}>
+                    <button className="tap" onClick={checkAnswer} style={styles.primaryBtn}>
+                      Valider ✅
+                    </button>
+                  </div>
+
+                  <div style={{ ...styles.row, marginTop: 12, justifyContent: "center" }}>
+                    <button className="tap hoverLift" style={styles.secondaryBtn} onClick={() => newQuestion()}>
+                      🔄 Nouvelle question
+                    </button>
+                    <button className="tap hoverLift" style={styles.secondaryBtn} onClick={() => setInput("")}>
+                      ⌫ Effacer
+                    </button>
+                  </div>
+                </div>
+
+                {showSteps && (
+                  <div style={styles.steps}>
+                    <div style={{ fontWeight: 950, marginBottom: 8 }}>💡 Explication</div>
+                    <ol style={{ margin: 0, paddingLeft: 18 }}>
+                      {(question.steps ?? []).map((s, idx) => (
+                        <li key={idx} style={{ marginBottom: 6 }}>
+                          {s}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+              </>
+            )}
+
+            {screen === "shop" && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ ...styles.questionCard }}>
+                  <div style={{ fontWeight: 950, marginBottom: 10 }}>
+                    Ton avatar : <span style={{ fontSize: 22 }}>{avatarEmoji}</span>
+                  </div>
+
+                  {AVATARS.map((a) => (
+                    <div
+                      key={a.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        padding: "10px 0",
+                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ fontSize: 26 }}>{a.emoji}</div>
+                        <div>
+                          <div style={{ fontWeight: 950 }}>{a.id.toUpperCase()}</div>
+                          <div style={styles.tiny}>
+                            Prix : {a.price} pièces
+                          </div>
+                        </div>
+                      </div>
+
+                      {ownedAvatars.includes(a.id) ? (
+                        <button
+                          className="tap hoverLift"
+                          style={styles.secondaryBtn}
+                          onClick={() => setCurrentAvatar(a.id)}
+                        >
+                          {currentAvatar === a.id ? "✅ Équipé" : "Équiper"}
+                        </button>
+                      ) : (
+                        <button
+                          className="tap hoverLift"
+                          style={styles.secondaryBtn}
+                          onClick={() => buyAvatar(a)}
+                          disabled={coins < a.price}
+                          title={coins < a.price ? "Pas assez de pièces" : "Acheter"}
+                        >
+                          Acheter
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            <div style={styles.row}>
-              <button style={styles.secondaryBtn} onClick={() => setShowParents(false)}>
-                Fermer
-              </button>
-            </div>
+            {screen === "settings" && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ ...styles.questionCard }}>
+                  <div style={{ fontWeight: 980, marginBottom: 10 }}>🎨 Thème</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                    {THEMES.map((t) => (
+                      <button
+                        key={t.id}
+                        className="tap hoverLift"
+                        onClick={() => setThemeId(t.id)}
+                        style={{
+                          ...styles.secondaryBtn,
+                          borderRadius: 16,
+                          background:
+                            themeId === t.id
+                              ? `linear-gradient(90deg, ${t.accent}, ${t.accent2})`
+                              : "rgba(0,0,0,0.20)",
+                        }}
+                      >
+                        {t.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ marginTop: 14, fontWeight: 980 }}>🔊 Sons</div>
+                  <label style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8, fontWeight: 850 }}>
+                    <input
+                      type="checkbox"
+                      checked={soundOn}
+                      onChange={(e) => setSoundOn(e.target.checked)}
+                    />
+                    Activer les sons (bonne réponse / erreur)
+                  </label>
+                  <div style={{ ...styles.tiny, marginTop: 6 }}>
+                    (Optionnel) Ajoute <code>/public/sfx-correct.mp3</code> et <code>/public/sfx-wrong.mp3</code>
+                  </div>
+
+                  <div style={{ marginTop: 14, fontWeight: 980 }}>🧠 Types d’exercices</div>
+                  <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
+                    {Object.keys(exerciseTypes).map((k) => (
+                      <label
+                        key={k}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: "10px 12px",
+                          borderRadius: 14,
+                          background: "rgba(0,0,0,0.20)",
+                          border: "1px solid rgba(255,255,255,0.12)",
+                          fontWeight: 900,
+                        }}
+                      >
+                        <span>{TYPE_LABEL[k]}</span>
+                        <input
+                          type="checkbox"
+                          checked={exerciseTypes[k]}
+                          onChange={(e) => setExerciseTypes((p) => ({ ...p, [k]: e.target.checked }))}
+                        />
+                      </label>
+                    ))}
+                  </div>
+
+                  <div style={{ ...styles.row, marginTop: 14, justifyContent: "center" }}>
+                    <button className="tap hoverLift" style={styles.secondaryBtn} onClick={resetGame}>
+                      ♻️ Réinitialiser la partie
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* Bottom NAV */}
+      <div style={styles.nav}>
+        <button style={styles.navBtn(screen === "game")} onClick={() => setScreen("game")}>
+          🎮 <span>Jeu</span>
+        </button>
+        <button style={styles.navBtn(screen === "shop")} onClick={() => setScreen("shop")}>
+          🛒 <span>Boutique</span>
+        </button>
+        <button style={styles.navBtn(screen === "settings")} onClick={() => setScreen("settings")}>
+          ⚙️ <span>Réglages</span>
+        </button>
       </div>
     </div>
   );
