@@ -41,10 +41,7 @@ function addition(level) {
     type: "addition",
     text: `${a} + ${b}`,
     answer: a + b,
-    steps: [
-      `On additionne les deux nombres.`,
-      `${a} + ${b} = ${a + b}`,
-    ],
+    steps: [`On additionne les deux nombres.`, `${a} + ${b} = ${a + b}`],
     reward: 5,
   };
 }
@@ -57,10 +54,7 @@ function subtraction(level) {
     type: "subtraction",
     text: `${a} - ${b}`,
     answer: a - b,
-    steps: [
-      `On retire ${b} à ${a}.`,
-      `${a} - ${b} = ${a - b}`,
-    ],
+    steps: [`On retire ${b} à ${a}.`, `${a} - ${b} = ${a - b}`],
     reward: 6,
   };
 }
@@ -124,11 +118,7 @@ function wordProblem(level) {
     type: "problem",
     text: `Tu as ${apples} pommes. Tu en manges ${eaten}. Combien reste-t-il ?`,
     answer: apples - eaten,
-    steps: [
-      `On part de ${apples}.`,
-      `On enlève ${eaten}.`,
-      `${apples} - ${eaten} = ${apples - eaten}`,
-    ],
+    steps: [`On part de ${apples}.`, `On enlève ${eaten}.`, `${apples} - ${eaten} = ${apples - eaten}`],
     reward: 15,
   };
 }
@@ -234,7 +224,6 @@ export default function App() {
   const [xp, setXp] = useState(0);
   const [coins, setCoins] = useState(0);
   const [lives, setLives] = useState(3);
-  
 
   const [ownedAvatars, setOwnedAvatars] = useState(["cat"]);
   const [currentAvatar, setCurrentAvatar] = useState("cat");
@@ -289,7 +278,6 @@ export default function App() {
       setProfiles(d.profiles ?? []);
       setActiveProfileId(d.activeProfileId ?? null);
     } else {
-      // create default profile
       const defaultId = uid();
       const defaultProfile = { id: defaultId, name: "Joueur 1", data: null };
       setProfiles([defaultProfile]);
@@ -318,12 +306,10 @@ export default function App() {
 
     const data = p.data;
     if (!data) {
-      // default fresh state
       setLevel(1);
       setXp(0);
       setCoins(0);
       setLives(3);
-      setTimer(20);
       setOwnedAvatars(["cat"]);
       setCurrentAvatar("cat");
       setDailyRewardClaimed(false);
@@ -346,7 +332,6 @@ export default function App() {
     setXp(data.xp ?? 0);
     setCoins(data.coins ?? 0);
     setLives(data.lives ?? 3);
-    
 
     setOwnedAvatars(data.ownedAvatars ?? ["cat"]);
     setCurrentAvatar(data.currentAvatar ?? "cat");
@@ -377,7 +362,6 @@ export default function App() {
             xp,
             coins,
             lives,
-            timer,
             ownedAvatars,
             currentAvatar,
             dailyRewardClaimed,
@@ -393,7 +377,6 @@ export default function App() {
     xp,
     coins,
     lives,
-    timer,
     ownedAvatars,
     currentAvatar,
     dailyRewardClaimed,
@@ -402,17 +385,11 @@ export default function App() {
     activeProfileId,
   ]);
 
-  /* =======================
-     Timer
-  ====================== */
-
-
   function getEnabledGenerators() {
     const enabled = Object.entries(exerciseTypes)
       .filter(([, v]) => v)
       .map(([k]) => k);
 
-    // sécurité : si tout décoché → on remet addition
     if (enabled.length === 0) return ["addition"];
     return enabled;
   }
@@ -423,7 +400,6 @@ export default function App() {
     const gen = GEN_MAP[pick] || addition;
     const q = gen(nextLevel);
     setQuestion(q);
-
     setInput("");
     setShowSteps(false);
   }
@@ -447,22 +423,21 @@ export default function App() {
     setCoins((c) => c + (question.reward ?? 5));
     setMessage(`Bravo ! ${theme.sparkle}`);
 
-    // level up
     setLevel((lvl) => {
       const next = xp + gainedXp >= lvl * 50 ? lvl + 1 : lvl;
       if (next !== lvl) setMessage(`Niveau supérieur ! 🚀`);
       return next;
     });
 
-
+    setTimeout(() => newQuestion(), 700);
   }
 
-  function onWrong(fromTimeout = false) {
+  function onWrong() {
     playBad();
     setShake(true);
     setTimeout(() => setShake(false), 350);
 
-    setMessage(fromTimeout ? "Temps écoulé ⏱️" : "Oups…");
+    setMessage("Oups…");
     setShowSteps(true);
 
     setLives((l) => {
@@ -475,14 +450,13 @@ export default function App() {
       return next;
     });
 
-    // on pose une nouvelle question après un court délai
-    setTimeout(() => newQuestion(), 1200);
+    setTimeout(() => newQuestion(), 1100);
   }
 
   function checkAnswer() {
     const correct = Number(input) === question.answer;
     if (correct) onCorrect();
-    else onWrong(false);
+    else onWrong();
   }
 
   function buyAvatar(avatar) {
@@ -524,6 +498,7 @@ export default function App() {
       alert("Il faut au moins 1 profil.");
       return;
     }
+    // eslint-disable-next-line no-restricted-globals
     const ok = confirm("Supprimer ce profil ? (progression perdue)");
     if (!ok) return;
     const next = profiles.filter((p) => p.id !== id);
@@ -534,141 +509,139 @@ export default function App() {
   /* =======================
      UI styles
   ====================== */
-    const styles = {
-  page: {
-    minHeight: "100vh",
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    background: theme.bg,
-    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
-    backgroundSize: "cover",
-    backgroundRepeat: "no-repeat",
-  },
-
-  card: {
-    width: "100%",
-    maxWidth: 480,
-    margin: "0 auto",
-    background: theme.card,
-    borderRadius: 22,
-    padding: 16,
-    boxShadow: "0 20px 50px rgba(0,0,0,0.35)",
-    textAlign: "center",
-    border: "1px solid rgba(0,0,0,0.08)",
-  },
-
-  topRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 12,
-    flexWrap: "wrap",
-  },
-
-  select: {
-    padding: "8px 10px",
-    borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.15)",
-    background: "white",
-    fontWeight: 700,
-  },
-
-  iconBtn: {
-    padding: "8px 10px",
-    borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.12)",
-    background: "white",
-    cursor: "pointer",
-    fontWeight: 800,
-  },
-
-  mascot: {
-    fontSize: 56,
-    marginBottom: 10,
-  },
-
-  title: {
-    margin: 0,
-    fontSize: 26,
-  },
-
-  subtitle: {
-    marginTop: 6,
-    marginBottom: 12,
-    opacity: 0.85,
-  },
-
-  stats: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 8,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-
-  progressWrap: {
-    height: 10,
-    width: "100%",
-    background: "rgba(0,0,0,0.10)",
-    borderRadius: 999,
-    overflow: "hidden",
-    marginBottom: 10,
-  },
-
-  progressBar: {
-    height: "100%",
-    background: theme.accent,
-  },
-
-  question: {
-    fontSize: 20,
-    fontWeight: 900,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-
-  input: {
-    width: "100%",
-    padding: 12,
-    borderRadius: 14,
-    border: "1px solid rgba(0,0,0,0.18)",
-    fontSize: 18,
-    textAlign: "center",
-  },
-
-  primaryBtn: {
-    width: "100%",
-    marginTop: 10,
-    padding: 12,
-    borderRadius: 14,
-    border: "none",
-    background: theme.accent,
-    color: "white",
-    fontWeight: 900,
-    cursor: "pointer",
-    fontSize: 16,
-  },
-
-  secondaryBtn: {
-    padding: "10px 12px",
-    borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.12)",
-    background: "white",
-    cursor: "pointer",
-    fontWeight: 800,
-  },
-
-  row: {
-    display: "flex",
-    gap: 10,
-    justifyContent: "center",
-    marginTop: 12,
-    flexWrap: "wrap",
-  
+  const styles = {
+    page: {
+      minHeight: "100vh",
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16,
+      background: theme.bg,
+      backgroundSize: "cover",
+      backgroundRepeat: "no-repeat",
+      fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+    },
+    card: {
+      width: "100%",
+      maxWidth: 460,
+      margin: "0 auto",
+      background: theme.card,
+      borderRadius: 22,
+      padding: 16,
+      boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
+      textAlign: "center",
+      transform: shake ? "translateX(-6px)" : "translateX(0px)",
+      transition: "transform 120ms ease",
+      border: `1px solid rgba(0,0,0,0.08)`,
+    },
+    pillRow: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" },
+    pill: {
+      padding: "8px 10px",
+      borderRadius: 999,
+      border: "1px solid rgba(0,0,0,0.12)",
+      background: "white",
+      fontWeight: 800,
+      fontSize: 12,
+    },
+    topRow: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 10,
+      flexWrap: "wrap",
+    },
+    select: {
+      padding: "8px 10px",
+      borderRadius: 12,
+      border: "1px solid rgba(0,0,0,0.15)",
+      background: "white",
+      fontWeight: 700,
+      maxWidth: 210,
+    },
+    iconBtn: {
+      padding: "8px 10px",
+      borderRadius: 12,
+      border: "1px solid rgba(0,0,0,0.12)",
+      background: "white",
+      cursor: "pointer",
+      fontWeight: 800,
+    },
+    installBtn: {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 14,
+      border: "1px solid rgba(0,0,0,0.12)",
+      background: "white",
+      cursor: "pointer",
+      marginBottom: 10,
+      fontWeight: 900,
+    },
+    mascot: {
+      fontSize: 56,
+      transform: burst ? "scale(1.08)" : "scale(1)",
+      transition: "transform 140ms ease",
+      filter: "drop-shadow(0 10px 18px rgba(0,0,0,0.2))",
+    },
+    title: { margin: 0, fontSize: 26, letterSpacing: 0.2 },
+    subtitle: { marginTop: 6, marginBottom: 12, opacity: 0.85 },
+    stats: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: 8,
+      fontSize: 13,
+      marginBottom: 10,
+      opacity: 0.95,
+    },
+    progressWrap: {
+      height: 10,
+      width: "100%",
+      background: "rgba(0,0,0,0.10)",
+      borderRadius: 999,
+      overflow: "hidden",
+      marginBottom: 10,
+    },
+    progressBar: { height: "100%", background: theme.accent },
+    question: { fontSize: 20, fontWeight: 900, marginTop: 10, marginBottom: 10 },
+    input: {
+      width: "100%",
+      padding: 12,
+      borderRadius: 14,
+      border: "1px solid rgba(0,0,0,0.18)",
+      fontSize: 18,
+      textAlign: "center",
+      outline: "none",
+    },
+    primaryBtn: {
+      width: "100%",
+      marginTop: 10,
+      padding: 12,
+      borderRadius: 14,
+      border: "none",
+      background: theme.accent,
+      color: "white",
+      fontWeight: 900,
+      cursor: "pointer",
+      fontSize: 16,
+    },
+    secondaryBtn: {
+      padding: "10px 12px",
+      borderRadius: 12,
+      border: "1px solid rgba(0,0,0,0.12)",
+      background: "white",
+      cursor: "pointer",
+      fontWeight: 800,
+    },
+    row: { display: "flex", gap: 10, justifyContent: "center", marginTop: 12, flexWrap: "wrap" },
+    steps: {
+      marginTop: 10,
+      background: "rgba(255,255,255,0.85)",
+      padding: 12,
+      borderRadius: 16,
+      textAlign: "left",
+      fontSize: 13,
+      border: "1px solid rgba(0,0,0,0.08)",
     },
     shop: {
       marginTop: 12,
@@ -760,8 +733,6 @@ export default function App() {
           <div style={{ ...styles.progressBar, width: `${Math.max(0, Math.min(100, progress))}%` }} />
         </div>
 
-        
-
         <div style={styles.question}>{question.text}</div>
 
         <input
@@ -782,7 +753,7 @@ export default function App() {
           <div style={styles.steps}>
             <div style={{ fontWeight: 900, marginBottom: 6 }}>💡 Explication :</div>
             <ol style={{ margin: 0, paddingLeft: 18 }}>
-              {(question.steps ?? [question.explanation ?? ""]).filter(Boolean).map((s, idx) => (
+              {(question.steps ?? []).filter(Boolean).map((s, idx) => (
                 <li key={idx} style={{ marginBottom: 4 }}>
                   {s}
                 </li>
