@@ -29,6 +29,35 @@ function usePWAInstall() {
 }
 
 /* =======================
+   🔊 Simple sounds
+   Put files in /public:
+   - /sfx-correct.mp3
+   - /sfx-wrong.mp3
+======================= */
+function useSfx(enabled) {
+  const okRef = useRef(null);
+  const badRef = useRef(null);
+
+  useEffect(() => {
+    okRef.current = new Audio("/sfx-correct.mp3");
+    badRef.current = new Audio("/sfx-wrong.mp3");
+  }, []);
+
+  const playOk = () => {
+    if (!enabled || !okRef.current) return;
+    okRef.current.currentTime = 0;
+    okRef.current.play().catch(() => {});
+  };
+  const playBad = () => {
+    if (!enabled || !badRef.current) return;
+    badRef.current.currentTime = 0;
+    badRef.current.play().catch(() => {});
+  };
+
+  return { playOk, playBad };
+}
+
+/* =======================
    🧠 Question generators
 ======================= */
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -118,7 +147,11 @@ function wordProblem(level) {
     type: "problem",
     text: `Tu as ${apples} pommes. Tu en manges ${eaten}. Combien reste-t-il ?`,
     answer: apples - eaten,
-    steps: [`On part de ${apples}.`, `On enlève ${eaten}.`, `${apples} - ${eaten} = ${apples - eaten}`],
+    steps: [
+      `On part de ${apples}.`,
+      `On enlève ${eaten}.`,
+      `${apples} - ${eaten} = ${apples - eaten}`,
+    ],
     reward: 15,
   };
 }
@@ -133,7 +166,7 @@ const GEN_MAP = {
 };
 
 /* =======================
-   🎨 Themes (Design)
+   🎨 Themes
 ======================= */
 const THEMES = [
   {
@@ -162,6 +195,9 @@ const THEMES = [
   },
 ];
 
+/* =======================
+   🧍 Avatars & Shop
+======================= */
 const AVATARS = [
   { id: "cat", emoji: "🐱", price: 0 },
   { id: "robot", emoji: "🤖", price: 40 },
@@ -174,32 +210,54 @@ function uid() {
 }
 
 /* =======================
-   🔊 Simple sounds
-   Put files in /public:
-   - /sfx-correct.mp3
-   - /sfx-wrong.mp3
+   📊 Pedagogical stats helpers
 ======================= */
-function useSfx(enabled) {
-  const okRef = useRef(null);
-  const badRef = useRef(null);
+const TYPE_LABEL = {
+  addition: "Addition",
+  subtraction: "Soustraction",
+  multiplication: "Multiplication",
+  division: "Division",
+  fraction: "Fractions",
+  problem: "Problèmes",
+};
 
-  useEffect(() => {
-    okRef.current = new Audio("/sfx-correct.mp3");
-    badRef.current = new Audio("/sfx-wrong.mp3");
-  }, []);
-
-  const playOk = () => {
-    if (!enabled || !okRef.current) return;
-    okRef.current.currentTime = 0;
-    okRef.current.play().catch(() => {});
+function emptyStats() {
+  const base = {};
+  Object.keys(TYPE_LABEL).forEach((k) => {
+    base[k] = { attempts: 0, correct: 0, wrong: 0 };
+  });
+  return {
+    byType: base,
+    totalAttempts: 0,
+    totalCorrect: 0,
+    streak: 0,
+    bestStreak: 0,
+    starsTotal: 0,
+    starsMax: 0,
+    badges: [],
   };
-  const playBad = () => {
-    if (!enabled || !badRef.current) return;
-    badRef.current.currentTime = 0;
-    badRef.current.play().catch(() => {});
-  };
+}
 
-  return { playOk, playBad };
+function pct(n, d) {
+  if (!d) return 0;
+  return Math.round((n / d) * 100);
+}
+
+/* =======================
+   🏅 Badges
+======================= */
+const BADGES = [
+  { id: "first_win", name: "Premier succès 🥉", desc: "Réussir 1 question." },
+  { id: "streak_5", name: "Combo x5 🔥", desc: "Faire 5 bonnes réponses d’affilée." },
+  { id: "streak_10", name: "Combo x10 🔥🔥", desc: "Faire 10 bonnes réponses d’affilée." },
+  { id: "total_50", name: "50 réussites 🎯", desc: "Réussir 50 questions." },
+  { id: "master_add", name: "Roi des additions 👑", desc: "20 additions réussies." },
+  { id: "master_mul", name: "Maître des multiplications 🏆", desc: "20 multiplications réussies." },
+  { id: "master_frac", name: "Champion des fractions 🧩", desc: "20 fractions réussies." },
+];
+
+function hasBadge(badges, id) {
+  return badges.includes(id);
 }
 
 export default function App() {
@@ -227,7 +285,6 @@ export default function App() {
 
   const [ownedAvatars, setOwnedAvatars] = useState(["cat"]);
   const [currentAvatar, setCurrentAvatar] = useState("cat");
-
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
 
   /* =======================
@@ -242,6 +299,14 @@ export default function App() {
     problem: true,
   });
 
+  // Mode adaptatif : le jeu propose + souvent les catégories où l’enfant se trompe.
+  const [adaptiveMode, setAdaptiveMode] = useState(true);
+
+  /* =======================
+     📊 Stats / fun (per profile)
+  ====================== */
+  const [stats, setStats] = useState(emptyStats());
+
   /* =======================
      UI
   ====================== */
@@ -252,8 +317,14 @@ export default function App() {
 
   const [showShop, setShowShop] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showParents, setShowParents] = useState(false);
+
   const [shake, setShake] = useState(false);
   const [burst, setBurst] = useState(false);
+
+  // Pour les étoiles
+  const [hintUsed, setHintUsed] = useState(false);
+  const [answerRevealed, setAnswerRevealed] = useState(false);
 
   const theme = useMemo(() => THEMES.find((t) => t.id === themeId) ?? THEMES[0], [themeId]);
   const avatarEmoji = useMemo(() => AVATARS.find((a) => a.id === currentAvatar)?.emoji ?? "🐱", [currentAvatar]);
@@ -306,6 +377,7 @@ export default function App() {
 
     const data = p.data;
     if (!data) {
+      // Defaults
       setLevel(1);
       setXp(0);
       setCoins(0);
@@ -313,6 +385,7 @@ export default function App() {
       setOwnedAvatars(["cat"]);
       setCurrentAvatar("cat");
       setDailyRewardClaimed(false);
+
       setExerciseTypes({
         addition: true,
         subtraction: true,
@@ -321,10 +394,16 @@ export default function App() {
         fraction: true,
         problem: true,
       });
+      setAdaptiveMode(true);
+
+      setStats(emptyStats());
+
       setQuestion(addition(1));
       setInput("");
       setMessage("");
       setShowSteps(false);
+      setHintUsed(false);
+      setAnswerRevealed(false);
       return;
     }
 
@@ -338,11 +417,16 @@ export default function App() {
 
     setDailyRewardClaimed(data.dailyRewardClaimed ?? false);
     setExerciseTypes(data.exerciseTypes ?? exerciseTypes);
+    setAdaptiveMode(data.adaptiveMode ?? true);
+
+    setStats(data.stats ?? emptyStats());
 
     setQuestion(data.question ?? addition(data.level ?? 1));
     setInput("");
     setMessage("");
     setShowSteps(false);
+    setHintUsed(false);
+    setAnswerRevealed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProfileId]);
 
@@ -366,6 +450,8 @@ export default function App() {
             currentAvatar,
             dailyRewardClaimed,
             exerciseTypes,
+            adaptiveMode,
+            stats,
             question,
           },
         };
@@ -381,27 +467,58 @@ export default function App() {
     currentAvatar,
     dailyRewardClaimed,
     exerciseTypes,
+    adaptiveMode,
+    stats,
     question,
     activeProfileId,
   ]);
 
-  function getEnabledGenerators() {
+  function getEnabledTypes() {
     const enabled = Object.entries(exerciseTypes)
       .filter(([, v]) => v)
       .map(([k]) => k);
-
     if (enabled.length === 0) return ["addition"];
     return enabled;
   }
 
+  // Tirage adaptatif : plus de poids aux catégories avec plus d'erreurs
+  function weightedPick(enabledTypes) {
+    if (!adaptiveMode) {
+      return enabledTypes[rand(0, enabledTypes.length - 1)];
+    }
+
+    // Poids = 1 + taux d'erreur * 4 + petit bonus si peu tenté
+    // (pour rééquilibrer doucement)
+    const weights = enabledTypes.map((t) => {
+      const s = stats.byType?.[t] ?? { attempts: 0, wrong: 0 };
+      const attempts = s.attempts || 0;
+      const wrong = s.wrong || 0;
+      const errRate = attempts ? wrong / attempts : 0.25; // défaut = 25%
+      const lowDataBoost = attempts < 5 ? 0.5 : 0;
+      return 1 + errRate * 4 + lowDataBoost;
+    });
+
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < enabledTypes.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return enabledTypes[i];
+    }
+    return enabledTypes[enabledTypes.length - 1];
+  }
+
   function newQuestion(nextLevel = level) {
-    const enabled = getEnabledGenerators();
-    const pick = enabled[rand(0, enabled.length - 1)];
+    const enabled = getEnabledTypes();
+    const pick = weightedPick(enabled);
     const gen = GEN_MAP[pick] || addition;
+
     const q = gen(nextLevel);
     setQuestion(q);
+
     setInput("");
     setShowSteps(false);
+    setHintUsed(false);
+    setAnswerRevealed(false);
   }
 
   function resetGame() {
@@ -410,7 +527,74 @@ export default function App() {
     setCoins(0);
     setLives(3);
     setDailyRewardClaimed(false);
+
+    setStats(emptyStats());
     newQuestion(1);
+  }
+
+  function calcStars({ correct, hintUsedLocal, revealedLocal }) {
+    if (!correct) return 0;
+    if (revealedLocal) return 1;
+    if (hintUsedLocal) return 2;
+    return 3;
+  }
+
+  function maybeUnlockBadges(nextStats) {
+    const b = nextStats.badges ?? [];
+
+    // 1ère réussite
+    if (nextStats.totalCorrect >= 1 && !hasBadge(b, "first_win")) b.push("first_win");
+
+    // streaks
+    if (nextStats.bestStreak >= 5 && !hasBadge(b, "streak_5")) b.push("streak_5");
+    if (nextStats.bestStreak >= 10 && !hasBadge(b, "streak_10")) b.push("streak_10");
+
+    // totals
+    if (nextStats.totalCorrect >= 50 && !hasBadge(b, "total_50")) b.push("total_50");
+
+    // masteries
+    const addC = nextStats.byType.addition?.correct ?? 0;
+    const mulC = nextStats.byType.multiplication?.correct ?? 0;
+    const fracC = nextStats.byType.fraction?.correct ?? 0;
+
+    if (addC >= 20 && !hasBadge(b, "master_add")) b.push("master_add");
+    if (mulC >= 20 && !hasBadge(b, "master_mul")) b.push("master_mul");
+    if (fracC >= 20 && !hasBadge(b, "master_frac")) b.push("master_frac");
+
+    return nextStats;
+  }
+
+  function updateStatsOnAnswer({ qType, correct, starsEarned }) {
+    setStats((prev) => {
+      const next = structuredClone(prev);
+
+      // totals
+      next.totalAttempts += 1;
+      if (correct) next.totalCorrect += 1;
+
+      // by type
+      if (!next.byType[qType]) next.byType[qType] = { attempts: 0, correct: 0, wrong: 0 };
+      next.byType[qType].attempts += 1;
+
+      if (correct) next.byType[qType].correct += 1;
+      else next.byType[qType].wrong += 1;
+
+      // streak
+      if (correct) {
+        next.streak += 1;
+        next.bestStreak = Math.max(next.bestStreak, next.streak);
+      } else {
+        next.streak = 0;
+      }
+
+      // stars
+      next.starsTotal += starsEarned;
+      next.starsMax += 3;
+
+      // badges
+      next.badges = Array.isArray(next.badges) ? next.badges : [];
+      return maybeUnlockBadges(next);
+    });
   }
 
   function onCorrect() {
@@ -419,9 +603,19 @@ export default function App() {
     setTimeout(() => setBurst(false), 450);
 
     const gainedXp = 10;
+    const starsEarned = calcStars({ correct: true, hintUsedLocal: hintUsed, revealedLocal: answerRevealed });
+
     setXp((x) => x + gainedXp);
     setCoins((c) => c + (question.reward ?? 5));
-    setMessage(`Bravo ! ${theme.sparkle}`);
+
+    // Bonus fun: streak => bonus XP
+    const streakBonus = Math.min(10, stats.streak >= 2 ? 2 : 0) + (stats.streak >= 4 ? 2 : 0);
+
+    if (streakBonus) setXp((x) => x + streakBonus);
+
+    setMessage(`Bravo ! +${starsEarned}⭐ ${theme.sparkle}`);
+
+    updateStatsOnAnswer({ qType: question.type, correct: true, starsEarned });
 
     setLevel((lvl) => {
       const next = xp + gainedXp >= lvl * 50 ? lvl + 1 : lvl;
@@ -437,8 +631,10 @@ export default function App() {
     setShake(true);
     setTimeout(() => setShake(false), 350);
 
-    setMessage("Oups…");
+    setMessage("Oups… 😅");
     setShowSteps(true);
+
+    updateStatsOnAnswer({ qType: question.type, correct: false, starsEarned: 0 });
 
     setLives((l) => {
       const next = l - 1;
@@ -524,7 +720,7 @@ export default function App() {
     },
     card: {
       width: "100%",
-      maxWidth: 460,
+      maxWidth: 520,
       margin: "0 auto",
       background: theme.card,
       borderRadius: 22,
@@ -558,7 +754,7 @@ export default function App() {
       border: "1px solid rgba(0,0,0,0.15)",
       background: "white",
       fontWeight: 700,
-      maxWidth: 210,
+      maxWidth: 220,
     },
     iconBtn: {
       padding: "8px 10px",
@@ -586,7 +782,7 @@ export default function App() {
     },
     title: { margin: 0, fontSize: 26, letterSpacing: 0.2 },
     subtitle: { marginTop: 6, marginBottom: 12, opacity: 0.85 },
-    stats: {
+    statsGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(4, 1fr)",
       gap: 8,
@@ -661,9 +857,40 @@ export default function App() {
       border: "1px solid rgba(0,0,0,0.08)",
     },
     checkboxRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0" },
+    small: { fontSize: 12, opacity: 0.85 },
+    badge: {
+      padding: "8px 10px",
+      borderRadius: 14,
+      border: "1px solid rgba(0,0,0,0.10)",
+      background: "white",
+      marginBottom: 8,
+    },
+    table: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 13,
+      overflow: "hidden",
+      borderRadius: 12,
+    },
+    th: { textAlign: "left", padding: 8, borderBottom: "1px solid rgba(0,0,0,0.08)" },
+    td: { padding: 8, borderBottom: "1px solid rgba(0,0,0,0.06)" },
   };
 
   const activeProfile = profiles.find((p) => p.id === activeProfileId);
+
+  const starsPct = pct(stats.starsTotal, stats.starsMax);
+  const totalRate = pct(stats.totalCorrect, stats.totalAttempts);
+
+  function revealAnswer() {
+    setAnswerRevealed(true);
+    setShowSteps(true);
+    setMessage(`Réponse : ${question.type === "fraction" ? "regarde l’explication" : question.answer} 👀`);
+  }
+
+  function toggleHint() {
+    setHintUsed(true);
+    setShowSteps(true);
+  }
 
   return (
     <div style={styles.page}>
@@ -693,18 +920,10 @@ export default function App() {
             <button style={styles.iconBtn} onClick={addProfile} title="Ajouter profil">
               ➕ Profil
             </button>
-            <button
-              style={styles.iconBtn}
-              onClick={() => activeProfile && renameProfile(activeProfile.id)}
-              title="Renommer"
-            >
+            <button style={styles.iconBtn} onClick={() => activeProfile && renameProfile(activeProfile.id)} title="Renommer">
               ✏️
             </button>
-            <button
-              style={styles.iconBtn}
-              onClick={() => activeProfile && deleteProfile(activeProfile.id)}
-              title="Supprimer"
-            >
+            <button style={styles.iconBtn} onClick={() => activeProfile && deleteProfile(activeProfile.id)} title="Supprimer">
               🗑️
             </button>
           </div>
@@ -712,8 +931,9 @@ export default function App() {
 
         <div style={styles.pillRow}>
           <span style={styles.pill}>Thème : {theme.name}</span>
-          <span style={styles.pill}>Exos : {Object.values(exerciseTypes).filter(Boolean).length}</span>
-          <span style={styles.pill}>Sons : {soundOn ? "ON" : "OFF"}</span>
+          <span style={styles.pill}>Combo : x{stats.streak} 🔥</span>
+          <span style={styles.pill}>Étoiles : {starsPct}% ⭐</span>
+          <span style={styles.pill}>Adaptatif : {adaptiveMode ? "ON" : "OFF"}</span>
         </div>
 
         <div style={styles.mascot}>{avatarEmoji}</div>
@@ -722,7 +942,7 @@ export default function App() {
           {activeProfile ? `Profil : ${activeProfile.name}` : "Choisis un profil"} • {theme.sparkle}
         </p>
 
-        <div style={styles.stats}>
+        <div style={styles.statsGrid}>
           <div>Niv {level}</div>
           <div>XP {xp}</div>
           <div>💰 {coins}</div>
@@ -747,6 +967,19 @@ export default function App() {
           Valider
         </button>
 
+        {/* HELPERS (fun + pedagogy) */}
+        <div style={styles.row}>
+          <button style={styles.secondaryBtn} onClick={toggleHint}>
+            💡 Indice
+          </button>
+          <button style={styles.secondaryBtn} onClick={revealAnswer}>
+            👀 Voir la réponse
+          </button>
+          <button style={styles.secondaryBtn} onClick={() => setShowSteps((s) => !s)}>
+            📘 Explication
+          </button>
+        </div>
+
         {message && <div style={{ marginTop: 10, fontWeight: 900 }}>{message}</div>}
 
         {showSteps && (
@@ -759,9 +992,13 @@ export default function App() {
                 </li>
               ))}
             </ol>
+            <div style={{ marginTop: 8, ...styles.small }}>
+              ⭐ Étoiles : 3⭐ si tu réussis sans aide • 2⭐ avec indice • 1⭐ si tu vois la réponse
+            </div>
           </div>
         )}
 
+        {/* MAIN ACTIONS */}
         <div style={styles.row}>
           <button style={styles.secondaryBtn} onClick={() => setShowShop((s) => !s)}>
             🛒 Boutique
@@ -771,6 +1008,9 @@ export default function App() {
           </button>
           <button style={styles.secondaryBtn} onClick={() => setShowSettings((s) => !s)}>
             ⚙️ Réglages
+          </button>
+          <button style={styles.secondaryBtn} onClick={() => setShowParents((s) => !s)}>
+            👨‍👩‍👧 Parents
           </button>
         </div>
 
@@ -824,18 +1064,19 @@ export default function App() {
               </div>
             </div>
 
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontWeight: 900, marginBottom: 6 }}>🧠 Mode adaptatif</div>
+              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <input type="checkbox" checked={adaptiveMode} onChange={(e) => setAdaptiveMode(e.target.checked)} />
+                Proposer plus d’exercices là où l’enfant se trompe
+              </label>
+            </div>
+
             <div style={{ marginBottom: 8 }}>
               <div style={{ fontWeight: 900, marginBottom: 6 }}>🧠 Types d’exercices</div>
               {Object.keys(exerciseTypes).map((k) => (
                 <div key={k} style={styles.checkboxRow}>
-                  <span style={{ fontWeight: 800 }}>
-                    {k === "addition" && "Addition"}
-                    {k === "subtraction" && "Soustraction"}
-                    {k === "multiplication" && "Multiplication"}
-                    {k === "division" && "Division"}
-                    {k === "fraction" && "Fractions"}
-                    {k === "problem" && "Problèmes"}
-                  </span>
+                  <span style={{ fontWeight: 800 }}>{TYPE_LABEL[k]}</span>
                   <input
                     type="checkbox"
                     checked={exerciseTypes[k]}
@@ -850,6 +1091,64 @@ export default function App() {
 
             <div style={styles.row}>
               <button style={styles.secondaryBtn} onClick={() => setShowSettings(false)}>
+                Fermer
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* PARENTS DASHBOARD */}
+        {showParents && (
+          <div style={styles.modal}>
+            <h3 style={{ marginTop: 0 }}>Tableau Parents</h3>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <span style={styles.pill}>Réussite : {totalRate}%</span>
+              <span style={styles.pill}>Meilleur combo : x{stats.bestStreak}</span>
+              <span style={styles.pill}>Étoiles : {starsPct}%</span>
+              <span style={styles.pill}>Réussites : {stats.totalCorrect}</span>
+            </div>
+
+            <h4 style={{ marginBottom: 6 }}>Résultats par type</h4>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Type</th>
+                  <th style={styles.th}>Tentatives</th>
+                  <th style={styles.th}>Réussites</th>
+                  <th style={styles.th}>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys(TYPE_LABEL).map((t) => {
+                  const s = stats.byType[t] ?? { attempts: 0, correct: 0 };
+                  return (
+                    <tr key={t}>
+                      <td style={styles.td}>{TYPE_LABEL[t]}</td>
+                      <td style={styles.td}>{s.attempts}</td>
+                      <td style={styles.td}>{s.correct}</td>
+                      <td style={styles.td}>{pct(s.correct, s.attempts)}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <h4 style={{ marginBottom: 6, marginTop: 12 }}>Badges débloqués</h4>
+            {stats.badges.length === 0 && <div style={styles.small}>Aucun badge pour le moment.</div>}
+            {stats.badges.length > 0 && (
+              <div>
+                {BADGES.filter((b) => stats.badges.includes(b.id)).map((b) => (
+                  <div key={b.id} style={styles.badge}>
+                    <div style={{ fontWeight: 900 }}>{b.name}</div>
+                    <div style={styles.small}>{b.desc}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={styles.row}>
+              <button style={styles.secondaryBtn} onClick={() => setShowParents(false)}>
                 Fermer
               </button>
             </div>
