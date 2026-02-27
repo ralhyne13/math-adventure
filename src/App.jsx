@@ -541,135 +541,139 @@ export default function App() {
   /* =======================
      UI styles
   ====================== */
-  const styles = {
-    page: {
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 16,
-      background: theme.bg,
-      fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
-    },
-    card: {
-      width: "100%",
-      maxWidth: 460,
-      background: theme.card,
-      borderRadius: 22,
-      padding: 16,
-      boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
-      textAlign: "center",
-      transform: shake ? "translateX(-6px)" : "translateX(0px)",
-      transition: "transform 120ms ease",
-      border: `1px solid rgba(0,0,0,0.08)`,
-    },
-    pillRow: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" },
-    pill: {
-      padding: "8px 10px",
-      borderRadius: 999,
-      border: "1px solid rgba(0,0,0,0.12)",
-      background: "white",
-      fontWeight: 800,
-      fontSize: 12,
-    },
-    topRow: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 10,
-      marginBottom: 10,
-      flexWrap: "wrap",
-    },
-    select: {
-      padding: "8px 10px",
-      borderRadius: 12,
-      border: "1px solid rgba(0,0,0,0.15)",
-      background: "white",
-      fontWeight: 700,
-      maxWidth: 210,
-    },
-    iconBtn: {
-      padding: "8px 10px",
-      borderRadius: 12,
-      border: "1px solid rgba(0,0,0,0.12)",
-      background: "white",
-      cursor: "pointer",
-      fontWeight: 800,
-    },
-    installBtn: {
-      width: "100%",
-      padding: "10px 12px",
-      borderRadius: 14,
-      border: "1px solid rgba(0,0,0,0.12)",
-      background: "white",
-      cursor: "pointer",
-      marginBottom: 10,
-      fontWeight: 900,
-    },
-    mascot: {
-      fontSize: 56,
-      transform: burst ? "scale(1.08)" : "scale(1)",
-      transition: "transform 140ms ease",
-      filter: "drop-shadow(0 10px 18px rgba(0,0,0,0.2))",
-    },
-    title: { margin: 0, fontSize: 26, letterSpacing: 0.2 },
-    subtitle: { marginTop: 6, marginBottom: 12, opacity: 0.85 },
-    stats: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)",
-      gap: 8,
-      fontSize: 13,
-      marginBottom: 10,
-      opacity: 0.95,
-    },
-    progressWrap: {
-      height: 10,
-      width: "100%",
-      background: "rgba(0,0,0,0.10)",
-      borderRadius: 999,
-      overflow: "hidden",
-      marginBottom: 10,
-    },
-    progressBar: { height: "100%", background: theme.accent },
-    question: { fontSize: 20, fontWeight: 900, marginTop: 10, marginBottom: 10 },
-    input: {
-      width: "100%",
-      padding: 12,
-      borderRadius: 14,
-      border: "1px solid rgba(0,0,0,0.18)",
-      fontSize: 18,
-      textAlign: "center",
-      outline: "none",
-    },
-    primaryBtn: {
-      width: "100%",
-      marginTop: 10,
-      padding: 12,
-      borderRadius: 14,
-      border: "none",
-      background: theme.accent,
-      color: "white",
-      fontWeight: 900,
-      cursor: "pointer",
-      fontSize: 16,
-    },
-    secondaryBtn: {
-      padding: "10px 12px",
-      borderRadius: 12,
-      border: "1px solid rgba(0,0,0,0.12)",
-      background: "white",
-      cursor: "pointer",
-      fontWeight: 800,
-    },
-    row: { display: "flex", gap: 10, justifyContent: "center", marginTop: 12, flexWrap: "wrap" },
-    steps: {
-      marginTop: 10,
-      background: "rgba(255,255,255,0.85)",
-      padding: 12,
-      borderRadius: 16,
-      textAlign: "left",
-      fontSize: 13,
-      border: "1px solid rgba(0,0,0,0.08)",
+    const styles = {
+  page: {
+    minHeight: "100vh",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    background: theme.bg,
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 480,
+    margin: "0 auto",
+    background: theme.card,
+    borderRadius: 22,
+    padding: 16,
+    boxShadow: "0 20px 50px rgba(0,0,0,0.35)",
+    textAlign: "center",
+    border: "1px solid rgba(0,0,0,0.08)",
+  },
+
+  topRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 12,
+    flexWrap: "wrap",
+  },
+
+  select: {
+    padding: "8px 10px",
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.15)",
+    background: "white",
+    fontWeight: 700,
+  },
+
+  iconBtn: {
+    padding: "8px 10px",
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.12)",
+    background: "white",
+    cursor: "pointer",
+    fontWeight: 800,
+  },
+
+  mascot: {
+    fontSize: 56,
+    marginBottom: 10,
+  },
+
+  title: {
+    margin: 0,
+    fontSize: 26,
+  },
+
+  subtitle: {
+    marginTop: 6,
+    marginBottom: 12,
+    opacity: 0.85,
+  },
+
+  stats: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: 8,
+    fontSize: 13,
+    marginBottom: 10,
+  },
+
+  progressWrap: {
+    height: 10,
+    width: "100%",
+    background: "rgba(0,0,0,0.10)",
+    borderRadius: 999,
+    overflow: "hidden",
+    marginBottom: 10,
+  },
+
+  progressBar: {
+    height: "100%",
+    background: theme.accent,
+  },
+
+  question: {
+    fontSize: 20,
+    fontWeight: 900,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+
+  input: {
+    width: "100%",
+    padding: 12,
+    borderRadius: 14,
+    border: "1px solid rgba(0,0,0,0.18)",
+    fontSize: 18,
+    textAlign: "center",
+  },
+
+  primaryBtn: {
+    width: "100%",
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 14,
+    border: "none",
+    background: theme.accent,
+    color: "white",
+    fontWeight: 900,
+    cursor: "pointer",
+    fontSize: 16,
+  },
+
+  secondaryBtn: {
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid rgba(0,0,0,0.12)",
+    background: "white",
+    cursor: "pointer",
+    fontWeight: 800,
+  },
+
+  row: {
+    display: "flex",
+    gap: 10,
+    justifyContent: "center",
+    marginTop: 12,
+    flexWrap: "wrap",
+  
     },
     shop: {
       marginTop: 12,
