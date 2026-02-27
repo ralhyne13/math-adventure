@@ -551,6 +551,8 @@ export default function App() {
     padding: 16,
     background: theme.bg,
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+    backgroundSize: "cover",
+    backgroundRepeat: "no-repeat",
   },
 
   card: {
