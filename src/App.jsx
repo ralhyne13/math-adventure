@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /* =======================
    📱 PWA install hook
@@ -29,7 +29,7 @@ function usePWAInstall() {
 }
 
 /* =======================
-   🧠 Questions
+   🧠 Question generators
 ======================= */
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -37,38 +37,82 @@ function addition(level) {
   const max = level * 5 + 10;
   const a = rand(1, max);
   const b = rand(1, max);
-  return { text: `${a} + ${b}`, answer: a + b, explanation: `${a} + ${b} = ${a + b}`, reward: 5 };
+  return {
+    type: "addition",
+    text: `${a} + ${b}`,
+    answer: a + b,
+    steps: [
+      `On additionne les deux nombres.`,
+      `${a} + ${b} = ${a + b}`,
+    ],
+    reward: 5,
+  };
 }
 
 function subtraction(level) {
   const max = level * 5 + 10;
   const a = rand(5, max);
   const b = rand(1, a);
-  return { text: `${a} - ${b}`, answer: a - b, explanation: `${a} - ${b} = ${a - b}`, reward: 6 };
+  return {
+    type: "subtraction",
+    text: `${a} - ${b}`,
+    answer: a - b,
+    steps: [
+      `On retire ${b} à ${a}.`,
+      `${a} - ${b} = ${a - b}`,
+    ],
+    reward: 6,
+  };
 }
 
 function multiplication(level) {
   const max = Math.min(12, level + 5);
   const a = rand(2, max);
   const b = rand(2, max);
-  return { text: `${a} × ${b}`, answer: a * b, explanation: `${a} × ${b} = ${a * b}`, reward: 8 };
+  return {
+    type: "multiplication",
+    text: `${a} × ${b}`,
+    answer: a * b,
+    steps: [
+      `Multiplier = addition répétée.`,
+      `${a} × ${b} = ${a} ajouté ${b} fois`,
+      `Résultat : ${a * b}`,
+    ],
+    reward: 8,
+  };
 }
 
 function division(level) {
   const b = rand(2, Math.min(10, level + 3));
   const result = rand(2, 12);
   const a = b * result;
-  return { text: `${a} ÷ ${b}`, answer: result, explanation: `${a} ÷ ${b} = ${result}`, reward: 10 };
+  return {
+    type: "division",
+    text: `${a} ÷ ${b}`,
+    answer: result,
+    steps: [
+      `Diviser = partager en parts égales.`,
+      `On cherche combien de fois ${b} rentre dans ${a}.`,
+      `${a} ÷ ${b} = ${result}`,
+    ],
+    reward: 10,
+  };
 }
 
 function fraction() {
   const d = rand(2, 10);
   const n1 = rand(1, d);
   const n2 = rand(1, d);
+  const num = n1 + n2;
   return {
+    type: "fraction",
     text: `${n1}/${d} + ${n2}/${d}`,
-    answer: (n1 + n2) / d,
-    explanation: `Même dénominateur → ${n1}+${n2}=${n1 + n2} → ${(n1 + n2)}/${d}`,
+    answer: num / d,
+    steps: [
+      `Les dénominateurs sont identiques (${d}).`,
+      `On additionne les numérateurs : ${n1} + ${n2} = ${num}.`,
+      `Résultat : ${num}/${d}`,
+    ],
     reward: 12,
   };
 }
@@ -77,22 +121,57 @@ function wordProblem(level) {
   const apples = rand(3, 10 + level);
   const eaten = rand(1, apples - 1);
   return {
+    type: "problem",
     text: `Tu as ${apples} pommes. Tu en manges ${eaten}. Combien reste-t-il ?`,
     answer: apples - eaten,
-    explanation: `${apples} - ${eaten} = ${apples - eaten}`,
+    steps: [
+      `On part de ${apples}.`,
+      `On enlève ${eaten}.`,
+      `${apples} - ${eaten} = ${apples - eaten}`,
+    ],
     reward: 15,
   };
 }
 
-const GENERATORS = [addition, subtraction, multiplication, division, fraction, wordProblem];
-function generateQuestion(level) {
-  const gen = GENERATORS[rand(0, GENERATORS.length - 1)];
-  return gen(level);
-}
+const GEN_MAP = {
+  addition,
+  subtraction,
+  multiplication,
+  division,
+  fraction,
+  problem: wordProblem,
+};
 
 /* =======================
-   🧍 Avatars
+   🎨 Themes (Design)
 ======================= */
+const THEMES = [
+  {
+    id: "space",
+    name: "Espace 🚀",
+    bg: "linear-gradient(135deg,#0b1020,#1d2b64,#6a11cb)",
+    card: "rgba(255,255,255,0.95)",
+    accent: "#7c3aed",
+    sparkle: "✨",
+  },
+  {
+    id: "jungle",
+    name: "Jungle 🐒",
+    bg: "linear-gradient(135deg,#064e3b,#10b981,#a7f3d0)",
+    card: "rgba(255,255,255,0.95)",
+    accent: "#059669",
+    sparkle: "🌿",
+  },
+  {
+    id: "magic",
+    name: "Magie 🪄",
+    bg: "linear-gradient(135deg,#111827,#7c3aed,#f472b6)",
+    card: "rgba(255,255,255,0.95)",
+    accent: "#ec4899",
+    sparkle: "🪄",
+  },
+];
+
 const AVATARS = [
   { id: "cat", emoji: "🐱", price: 0 },
   { id: "robot", emoji: "🤖", price: 40 },
@@ -100,65 +179,260 @@ const AVATARS = [
   { id: "wizard", emoji: "🧙", price: 120 },
 ];
 
+function uid() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+/* =======================
+   🔊 Simple sounds
+   Put files in /public:
+   - /sfx-correct.mp3
+   - /sfx-wrong.mp3
+======================= */
+function useSfx(enabled) {
+  const okRef = useRef(null);
+  const badRef = useRef(null);
+
+  useEffect(() => {
+    okRef.current = new Audio("/sfx-correct.mp3");
+    badRef.current = new Audio("/sfx-wrong.mp3");
+  }, []);
+
+  const playOk = () => {
+    if (!enabled || !okRef.current) return;
+    okRef.current.currentTime = 0;
+    okRef.current.play().catch(() => {});
+  };
+  const playBad = () => {
+    if (!enabled || !badRef.current) return;
+    badRef.current.currentTime = 0;
+    badRef.current.play().catch(() => {});
+  };
+
+  return { playOk, playBad };
+}
+
 export default function App() {
   const { installable, install } = usePWAInstall();
 
+  /* =======================
+     👧 Multi-profils
+  ====================== */
+  const [profiles, setProfiles] = useState([]);
+  const [activeProfileId, setActiveProfileId] = useState(null);
+
+  /* =======================
+     ⚙️ Global settings
+  ====================== */
+  const [themeId, setThemeId] = useState("space");
+  const [soundOn, setSoundOn] = useState(true);
+
+  /* =======================
+     🎮 Game state (per profile)
+  ====================== */
   const [level, setLevel] = useState(1);
   const [xp, setXp] = useState(0);
   const [coins, setCoins] = useState(0);
   const [lives, setLives] = useState(3);
-
   const [timer, setTimer] = useState(20);
-  const [question, setQuestion] = useState(() => generateQuestion(1));
-  const [input, setInput] = useState("");
-  const [message, setMessage] = useState("");
-  const [showExplanation, setShowExplanation] = useState(false);
 
   const [ownedAvatars, setOwnedAvatars] = useState(["cat"]);
   const [currentAvatar, setCurrentAvatar] = useState("cat");
-  const [showShop, setShowShop] = useState(false);
 
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
 
-  // LOAD
+  /* =======================
+     🧠 Pedagogy settings
+  ====================== */
+  const [exerciseTypes, setExerciseTypes] = useState({
+    addition: true,
+    subtraction: true,
+    multiplication: true,
+    division: true,
+    fraction: true,
+    problem: true,
+  });
+
+  /* =======================
+     UI
+  ====================== */
+  const [question, setQuestion] = useState(() => addition(1));
+  const [input, setInput] = useState("");
+  const [message, setMessage] = useState("");
+  const [showSteps, setShowSteps] = useState(false);
+
+  const [showShop, setShowShop] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [burst, setBurst] = useState(false);
+
+  const theme = useMemo(() => THEMES.find((t) => t.id === themeId) ?? THEMES[0], [themeId]);
+  const avatarEmoji = useMemo(() => AVATARS.find((a) => a.id === currentAvatar)?.emoji ?? "🐱", [currentAvatar]);
+  const progress = (xp % (level * 50)) / (level * 50) * 100;
+
+  const { playOk, playBad } = useSfx(soundOn);
+
+  /* =======================
+     Load global + profiles
+  ====================== */
   useEffect(() => {
-    const saved = localStorage.getItem("mathAdventurePWA");
-    if (!saved) return;
-    const d = JSON.parse(saved);
-    setLevel(d.level ?? 1);
-    setXp(d.xp ?? 0);
-    setCoins(d.coins ?? 0);
-    setLives(d.lives ?? 3);
-    setOwnedAvatars(d.ownedAvatars ?? ["cat"]);
-    setCurrentAvatar(d.currentAvatar ?? "cat");
-    setDailyRewardClaimed(d.dailyRewardClaimed ?? false);
-    setQuestion(generateQuestion(d.level ?? 1));
+    const saved = localStorage.getItem("mathAdventureGlobal");
+    if (saved) {
+      const d = JSON.parse(saved);
+      setThemeId(d.themeId ?? "space");
+      setSoundOn(d.soundOn ?? true);
+    }
+
+    const p = localStorage.getItem("mathAdventureProfiles");
+    if (p) {
+      const d = JSON.parse(p);
+      setProfiles(d.profiles ?? []);
+      setActiveProfileId(d.activeProfileId ?? null);
+    } else {
+      // create default profile
+      const defaultId = uid();
+      const defaultProfile = { id: defaultId, name: "Joueur 1", data: null };
+      setProfiles([defaultProfile]);
+      setActiveProfileId(defaultId);
+    }
   }, []);
 
-  // SAVE
+  /* =======================
+     Save global + profiles
+  ====================== */
   useEffect(() => {
-    localStorage.setItem(
-      "mathAdventurePWA",
-      JSON.stringify({ level, xp, coins, lives, ownedAvatars, currentAvatar, dailyRewardClaimed })
-    );
-  }, [level, xp, coins, lives, ownedAvatars, currentAvatar, dailyRewardClaimed]);
+    localStorage.setItem("mathAdventureGlobal", JSON.stringify({ themeId, soundOn }));
+  }, [themeId, soundOn]);
 
-  // TIMER
+  useEffect(() => {
+    localStorage.setItem("mathAdventureProfiles", JSON.stringify({ profiles, activeProfileId }));
+  }, [profiles, activeProfileId]);
+
+  /* =======================
+     Apply active profile data
+  ====================== */
+  useEffect(() => {
+    if (!activeProfileId) return;
+    const p = profiles.find((x) => x.id === activeProfileId);
+    if (!p) return;
+
+    const data = p.data;
+    if (!data) {
+      // default fresh state
+      setLevel(1);
+      setXp(0);
+      setCoins(0);
+      setLives(3);
+      setTimer(20);
+      setOwnedAvatars(["cat"]);
+      setCurrentAvatar("cat");
+      setDailyRewardClaimed(false);
+      setExerciseTypes({
+        addition: true,
+        subtraction: true,
+        multiplication: true,
+        division: true,
+        fraction: true,
+        problem: true,
+      });
+      setQuestion(addition(1));
+      setInput("");
+      setMessage("");
+      setShowSteps(false);
+      return;
+    }
+
+    setLevel(data.level ?? 1);
+    setXp(data.xp ?? 0);
+    setCoins(data.coins ?? 0);
+    setLives(data.lives ?? 3);
+    setTimer(data.timer ?? 20);
+
+    setOwnedAvatars(data.ownedAvatars ?? ["cat"]);
+    setCurrentAvatar(data.currentAvatar ?? "cat");
+
+    setDailyRewardClaimed(data.dailyRewardClaimed ?? false);
+    setExerciseTypes(data.exerciseTypes ?? exerciseTypes);
+
+    setQuestion(data.question ?? addition(data.level ?? 1));
+    setInput("");
+    setMessage("");
+    setShowSteps(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProfileId]);
+
+  /* =======================
+     Persist current profile state
+  ====================== */
+  useEffect(() => {
+    if (!activeProfileId) return;
+
+    setProfiles((prev) =>
+      prev.map((p) => {
+        if (p.id !== activeProfileId) return p;
+        return {
+          ...p,
+          data: {
+            level,
+            xp,
+            coins,
+            lives,
+            timer,
+            ownedAvatars,
+            currentAvatar,
+            dailyRewardClaimed,
+            exerciseTypes,
+            question,
+          },
+        };
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    level,
+    xp,
+    coins,
+    lives,
+    timer,
+    ownedAvatars,
+    currentAvatar,
+    dailyRewardClaimed,
+    exerciseTypes,
+    question,
+    activeProfileId,
+  ]);
+
+  /* =======================
+     Timer
+  ====================== */
   useEffect(() => {
     if (timer <= 0) {
-      loseLife();
+      onWrong(true);
       return;
     }
     const i = setInterval(() => setTimer((t) => t - 1), 1000);
     return () => clearInterval(i);
   }, [timer]);
 
+  function getEnabledGenerators() {
+    const enabled = Object.entries(exerciseTypes)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+
+    // sécurité : si tout décoché → on remet addition
+    if (enabled.length === 0) return ["addition"];
+    return enabled;
+  }
+
   function newQuestion(nextLevel = level) {
-    setQuestion(generateQuestion(nextLevel));
+    const enabled = getEnabledGenerators();
+    const pick = enabled[rand(0, enabled.length - 1)];
+    const gen = GEN_MAP[pick] || addition;
+    const q = gen(nextLevel);
+    setQuestion(q);
     setTimer(20);
     setInput("");
-    setShowExplanation(false);
-    setMessage("");
+    setShowSteps(false);
   }
 
   function resetGame() {
@@ -170,40 +444,52 @@ export default function App() {
     newQuestion(1);
   }
 
-  function loseLife() {
+  function onCorrect() {
+    playOk();
+    setBurst(true);
+    setTimeout(() => setBurst(false), 450);
+
+    const gainedXp = 10;
+    setXp((x) => x + gainedXp);
+    setCoins((c) => c + (question.reward ?? 5));
+    setMessage(`Bravo ! ${theme.sparkle}`);
+
+    // level up
+    setLevel((lvl) => {
+      const next = xp + gainedXp >= lvl * 50 ? lvl + 1 : lvl;
+      if (next !== lvl) setMessage(`Niveau supérieur ! 🚀`);
+      return next;
+    });
+
+    setTimeout(() => newQuestion(), 900);
+  }
+
+  function onWrong(fromTimeout = false) {
+    playBad();
+    setShake(true);
+    setTimeout(() => setShake(false), 350);
+
+    setMessage(fromTimeout ? "Temps écoulé ⏱️" : "Oups…");
+    setShowSteps(true);
+
     setLives((l) => {
-      if (l - 1 <= 0) {
+      const next = l - 1;
+      if (next <= 0) {
         alert("Partie terminée ! On recommence au niveau 1.");
         resetGame();
         return 3;
       }
-      return l - 1;
+      return next;
     });
-    newQuestion();
+
+    // on pose une nouvelle question après un court délai
+    setTimeout(() => newQuestion(), 1200);
   }
 
   function checkAnswer() {
     const correct = Number(input) === question.answer;
-
-    if (correct) {
-      const gainedXp = 10;
-      setXp((x) => x + gainedXp);
-      setCoins((c) => c + (question.reward ?? 5));
-      setMessage("Bonne réponse 🎉");
-
-      // level up
-      setLevel((lvl) => {
-        const next = xp + gainedXp >= lvl * 50 ? lvl + 1 : lvl;
-        if (next !== lvl) setMessage("Niveau supérieur ! 🚀");
-        return next;
-      });
-
-      setTimeout(() => newQuestion(), 900);
-    } else {
-      setMessage("Incorrect 😢");
-      setShowExplanation(true);
-      loseLife();
-    }
+    if (correct) onCorrect();
+    else onWrong(false);
   }
 
   function buyAvatar(avatar) {
@@ -220,8 +506,192 @@ export default function App() {
     setMessage("Cadeau reçu : +30 pièces 🎁");
   }
 
-  const avatarEmoji = useMemo(() => AVATARS.find((a) => a.id === currentAvatar)?.emoji ?? "🐱", [currentAvatar]);
-  const progress = (xp % (level * 50)) / (level * 50) * 100;
+  /* =======================
+     Profiles actions
+  ====================== */
+  function addProfile() {
+    const name = prompt("Nom du profil ?");
+    if (!name) return;
+    const id = uid();
+    const p = { id, name, data: null };
+    setProfiles((prev) => [...prev, p]);
+    setActiveProfileId(id);
+  }
+
+  function renameProfile(id) {
+    const p = profiles.find((x) => x.id === id);
+    if (!p) return;
+    const name = prompt("Nouveau nom :", p.name);
+    if (!name) return;
+    setProfiles((prev) => prev.map((x) => (x.id === id ? { ...x, name } : x)));
+  }
+
+  function deleteProfile(id) {
+    if (profiles.length <= 1) {
+      alert("Il faut au moins 1 profil.");
+      return;
+    }
+    const ok = confirm("Supprimer ce profil ? (progression perdue)");
+    if (!ok) return;
+    const next = profiles.filter((p) => p.id !== id);
+    setProfiles(next);
+    if (activeProfileId === id) setActiveProfileId(next[0]?.id ?? null);
+  }
+
+  /* =======================
+     UI styles
+  ====================== */
+  const styles = {
+    page: {
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16,
+      background: theme.bg,
+      fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+    },
+    card: {
+      width: "100%",
+      maxWidth: 460,
+      background: theme.card,
+      borderRadius: 22,
+      padding: 16,
+      boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
+      textAlign: "center",
+      transform: shake ? "translateX(-6px)" : "translateX(0px)",
+      transition: "transform 120ms ease",
+      border: `1px solid rgba(0,0,0,0.08)`,
+    },
+    pillRow: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" },
+    pill: {
+      padding: "8px 10px",
+      borderRadius: 999,
+      border: "1px solid rgba(0,0,0,0.12)",
+      background: "white",
+      fontWeight: 800,
+      fontSize: 12,
+    },
+    topRow: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 10,
+      flexWrap: "wrap",
+    },
+    select: {
+      padding: "8px 10px",
+      borderRadius: 12,
+      border: "1px solid rgba(0,0,0,0.15)",
+      background: "white",
+      fontWeight: 700,
+      maxWidth: 210,
+    },
+    iconBtn: {
+      padding: "8px 10px",
+      borderRadius: 12,
+      border: "1px solid rgba(0,0,0,0.12)",
+      background: "white",
+      cursor: "pointer",
+      fontWeight: 800,
+    },
+    installBtn: {
+      width: "100%",
+      padding: "10px 12px",
+      borderRadius: 14,
+      border: "1px solid rgba(0,0,0,0.12)",
+      background: "white",
+      cursor: "pointer",
+      marginBottom: 10,
+      fontWeight: 900,
+    },
+    mascot: {
+      fontSize: 56,
+      transform: burst ? "scale(1.08)" : "scale(1)",
+      transition: "transform 140ms ease",
+      filter: "drop-shadow(0 10px 18px rgba(0,0,0,0.2))",
+    },
+    title: { margin: 0, fontSize: 26, letterSpacing: 0.2 },
+    subtitle: { marginTop: 6, marginBottom: 12, opacity: 0.85 },
+    stats: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: 8,
+      fontSize: 13,
+      marginBottom: 10,
+      opacity: 0.95,
+    },
+    progressWrap: {
+      height: 10,
+      width: "100%",
+      background: "rgba(0,0,0,0.10)",
+      borderRadius: 999,
+      overflow: "hidden",
+      marginBottom: 10,
+    },
+    progressBar: { height: "100%", background: theme.accent },
+    question: { fontSize: 20, fontWeight: 900, marginTop: 10, marginBottom: 10 },
+    input: {
+      width: "100%",
+      padding: 12,
+      borderRadius: 14,
+      border: "1px solid rgba(0,0,0,0.18)",
+      fontSize: 18,
+      textAlign: "center",
+      outline: "none",
+    },
+    primaryBtn: {
+      width: "100%",
+      marginTop: 10,
+      padding: 12,
+      borderRadius: 14,
+      border: "none",
+      background: theme.accent,
+      color: "white",
+      fontWeight: 900,
+      cursor: "pointer",
+      fontSize: 16,
+    },
+    secondaryBtn: {
+      padding: "10px 12px",
+      borderRadius: 12,
+      border: "1px solid rgba(0,0,0,0.12)",
+      background: "white",
+      cursor: "pointer",
+      fontWeight: 800,
+    },
+    row: { display: "flex", gap: 10, justifyContent: "center", marginTop: 12, flexWrap: "wrap" },
+    steps: {
+      marginTop: 10,
+      background: "rgba(255,255,255,0.85)",
+      padding: 12,
+      borderRadius: 16,
+      textAlign: "left",
+      fontSize: 13,
+      border: "1px solid rgba(0,0,0,0.08)",
+    },
+    shop: {
+      marginTop: 12,
+      textAlign: "left",
+      background: "rgba(255,255,255,0.70)",
+      padding: 12,
+      borderRadius: 16,
+      border: "1px solid rgba(0,0,0,0.08)",
+    },
+    shopRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 0" },
+    modal: {
+      marginTop: 12,
+      textAlign: "left",
+      background: "rgba(255,255,255,0.70)",
+      padding: 12,
+      borderRadius: 16,
+      border: "1px solid rgba(0,0,0,0.08)",
+    },
+    checkboxRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0" },
+  };
+
+  const activeProfile = profiles.find((p) => p.id === activeProfileId);
 
   return (
     <div style={styles.page}>
@@ -232,9 +702,53 @@ export default function App() {
           </button>
         )}
 
-        <div style={{ fontSize: 54 }}>{avatarEmoji}</div>
-        <h1 style={{ margin: 0 }}>Aventure Math</h1>
-        <p style={{ marginTop: 6, marginBottom: 12, opacity: 0.8 }}>Jeu de maths + progression + récompenses</p>
+        {/* Top controls */}
+        <div style={styles.topRow}>
+          <select
+            value={activeProfileId ?? ""}
+            onChange={(e) => setActiveProfileId(e.target.value)}
+            style={styles.select}
+            title="Choisir un profil"
+          >
+            {profiles.map((p) => (
+              <option key={p.id} value={p.id}>
+                👤 {p.name}
+              </option>
+            ))}
+          </select>
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button style={styles.iconBtn} onClick={addProfile} title="Ajouter profil">
+              ➕ Profil
+            </button>
+            <button
+              style={styles.iconBtn}
+              onClick={() => activeProfile && renameProfile(activeProfile.id)}
+              title="Renommer"
+            >
+              ✏️
+            </button>
+            <button
+              style={styles.iconBtn}
+              onClick={() => activeProfile && deleteProfile(activeProfile.id)}
+              title="Supprimer"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <div style={styles.pillRow}>
+          <span style={styles.pill}>Thème : {theme.name}</span>
+          <span style={styles.pill}>Exos : {Object.values(exerciseTypes).filter(Boolean).length}</span>
+          <span style={styles.pill}>Sons : {soundOn ? "ON" : "OFF"}</span>
+        </div>
+
+        <div style={styles.mascot}>{avatarEmoji}</div>
+        <h1 style={styles.title}>Aventure Math</h1>
+        <p style={styles.subtitle}>
+          {activeProfile ? `Profil : ${activeProfile.name}` : "Choisis un profil"} • {theme.sparkle}
+        </p>
 
         <div style={styles.stats}>
           <div>Niv {level}</div>
@@ -247,7 +761,7 @@ export default function App() {
           <div style={{ ...styles.progressBar, width: `${Math.max(0, Math.min(100, progress))}%` }} />
         </div>
 
-        <div style={{ fontWeight: 600 }}>⏱ {timer}s</div>
+        <div style={{ fontWeight: 900 }}>⏱ {timer}s</div>
 
         <div style={styles.question}>{question.text}</div>
 
@@ -263,19 +777,34 @@ export default function App() {
           Valider
         </button>
 
-        {message && <div style={{ marginTop: 10, fontWeight: 600 }}>{message}</div>}
+        {message && <div style={{ marginTop: 10, fontWeight: 900 }}>{message}</div>}
 
-        {showExplanation && <div style={styles.explain}>💡 {question.explanation}</div>}
+        {showSteps && (
+          <div style={styles.steps}>
+            <div style={{ fontWeight: 900, marginBottom: 6 }}>💡 Explication :</div>
+            <ol style={{ margin: 0, paddingLeft: 18 }}>
+              {(question.steps ?? [question.explanation ?? ""]).filter(Boolean).map((s, idx) => (
+                <li key={idx} style={{ marginBottom: 4 }}>
+                  {s}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         <div style={styles.row}>
-          <button onClick={() => setShowShop((s) => !s)} style={styles.secondaryBtn}>
+          <button style={styles.secondaryBtn} onClick={() => setShowShop((s) => !s)}>
             🛒 Boutique
           </button>
-          <button onClick={claimDailyReward} style={styles.secondaryBtn} disabled={dailyRewardClaimed}>
+          <button style={styles.secondaryBtn} onClick={claimDailyReward} disabled={dailyRewardClaimed}>
             🎁 Cadeau du jour
+          </button>
+          <button style={styles.secondaryBtn} onClick={() => setShowSettings((s) => !s)}>
+            ⚙️ Réglages
           </button>
         </div>
 
+        {/* SHOP */}
         {showShop && (
           <div style={styles.shop}>
             <h3 style={{ marginTop: 0 }}>Boutique d’avatars</h3>
@@ -297,122 +826,66 @@ export default function App() {
             ))}
           </div>
         )}
+
+        {/* SETTINGS */}
+        {showSettings && (
+          <div style={styles.modal}>
+            <h3 style={{ marginTop: 0 }}>Réglages</h3>
+
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontWeight: 900, marginBottom: 6 }}>🎨 Thème</div>
+              <select value={themeId} onChange={(e) => setThemeId(e.target.value)} style={styles.select}>
+                {THEMES.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontWeight: 900, marginBottom: 6 }}>🔊 Sons</div>
+              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} />
+                Activer les sons (bonne réponse / erreur)
+              </label>
+              <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
+                Astuce : ajoute <code>/public/sfx-correct.mp3</code> et <code>/public/sfx-wrong.mp3</code>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontWeight: 900, marginBottom: 6 }}>🧠 Types d’exercices</div>
+              {Object.keys(exerciseTypes).map((k) => (
+                <div key={k} style={styles.checkboxRow}>
+                  <span style={{ fontWeight: 800 }}>
+                    {k === "addition" && "Addition"}
+                    {k === "subtraction" && "Soustraction"}
+                    {k === "multiplication" && "Multiplication"}
+                    {k === "division" && "Division"}
+                    {k === "fraction" && "Fractions"}
+                    {k === "problem" && "Problèmes"}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={exerciseTypes[k]}
+                    onChange={(e) => setExerciseTypes((p) => ({ ...p, [k]: e.target.checked }))}
+                  />
+                </div>
+              ))}
+              <div style={{ fontSize: 12, opacity: 0.8, marginTop: 6 }}>
+                Tu peux choisir ce que l’enfant pratique.
+              </div>
+            </div>
+
+            <div style={styles.row}>
+              <button style={styles.secondaryBtn} onClick={() => setShowSettings(false)}>
+                Fermer
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    background: "linear-gradient(135deg, #dbeafe, #e9d5ff)",
-    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
-  },
-  card: {
-    width: "100%",
-    maxWidth: 420,
-    background: "white",
-    borderRadius: 20,
-    padding: 18,
-    boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
-    textAlign: "center",
-  },
-  installBtn: {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.12)",
-    background: "white",
-    cursor: "pointer",
-    marginBottom: 10,
-    fontWeight: 700,
-  },
-  stats: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 8,
-    fontSize: 13,
-    marginBottom: 10,
-    opacity: 0.9,
-  },
-  progressWrap: {
-    height: 10,
-    width: "100%",
-    background: "rgba(0,0,0,0.08)",
-    borderRadius: 999,
-    overflow: "hidden",
-    marginBottom: 10,
-  },
-  progressBar: {
-    height: "100%",
-    background: "#6366f1",
-  },
-  question: {
-    fontSize: 20,
-    fontWeight: 800,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  input: {
-    width: "100%",
-    padding: 12,
-    borderRadius: 14,
-    border: "1px solid rgba(0,0,0,0.18)",
-    fontSize: 18,
-    textAlign: "center",
-    outline: "none",
-  },
-  primaryBtn: {
-    width: "100%",
-    marginTop: 10,
-    padding: 12,
-    borderRadius: 14,
-    border: "none",
-    background: "#6366f1",
-    color: "white",
-    fontWeight: 800,
-    cursor: "pointer",
-    fontSize: 16,
-  },
-  secondaryBtn: {
-    padding: "10px 12px",
-    borderRadius: 12,
-    border: "1px solid rgba(0,0,0,0.12)",
-    background: "white",
-    cursor: "pointer",
-    fontWeight: 700,
-  },
-  row: {
-    display: "flex",
-    gap: 10,
-    justifyContent: "center",
-    marginTop: 12,
-    flexWrap: "wrap",
-  },
-  explain: {
-    marginTop: 10,
-    background: "rgba(99,102,241,0.08)",
-    padding: 10,
-    borderRadius: 14,
-    textAlign: "left",
-    fontSize: 13,
-  },
-  shop: {
-    marginTop: 12,
-    textAlign: "left",
-    background: "rgba(0,0,0,0.04)",
-    padding: 12,
-    borderRadius: 16,
-  },
-  shopRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-    padding: "8px 0",
-  },
-};
