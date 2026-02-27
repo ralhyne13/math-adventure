@@ -234,7 +234,7 @@ export default function App() {
   const [xp, setXp] = useState(0);
   const [coins, setCoins] = useState(0);
   const [lives, setLives] = useState(3);
-  const [timer, setTimer] = useState(20);
+  
 
   const [ownedAvatars, setOwnedAvatars] = useState(["cat"]);
   const [currentAvatar, setCurrentAvatar] = useState("cat");
@@ -346,7 +346,7 @@ export default function App() {
     setXp(data.xp ?? 0);
     setCoins(data.coins ?? 0);
     setLives(data.lives ?? 3);
-    setTimer(data.timer ?? 20);
+    
 
     setOwnedAvatars(data.ownedAvatars ?? ["cat"]);
     setCurrentAvatar(data.currentAvatar ?? "cat");
@@ -405,14 +405,7 @@ export default function App() {
   /* =======================
      Timer
   ====================== */
-  useEffect(() => {
-    if (timer <= 0) {
-      onWrong(true);
-      return;
-    }
-    const i = setInterval(() => setTimer((t) => t - 1), 1000);
-    return () => clearInterval(i);
-  }, [timer]);
+
 
   function getEnabledGenerators() {
     const enabled = Object.entries(exerciseTypes)
@@ -430,7 +423,7 @@ export default function App() {
     const gen = GEN_MAP[pick] || addition;
     const q = gen(nextLevel);
     setQuestion(q);
-    setTimer(20);
+
     setInput("");
     setShowSteps(false);
   }
@@ -461,7 +454,7 @@ export default function App() {
       return next;
     });
 
-    setTimeout(() => newQuestion(), 900);
+
   }
 
   function onWrong(fromTimeout = false) {
@@ -767,7 +760,7 @@ export default function App() {
           <div style={{ ...styles.progressBar, width: `${Math.max(0, Math.min(100, progress))}%` }} />
         </div>
 
-        <div style={{ fontWeight: 900 }}>⏱ {timer}s</div>
+        
 
         <div style={styles.question}>{question.text}</div>
 
