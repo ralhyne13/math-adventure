@@ -164,11 +164,9 @@ function diffFactor(diffId) {
 
 /* ------------------------ XP / Level ------------------------ */
 function xpToNext(level) {
-  // Progression douce au début puis augmente
   return 120 + level * 35;
 }
 function awardLevelCoins(levelGained) {
-  // bonus coins au level up
   return 25 + levelGained * 5;
 }
 
@@ -376,7 +374,33 @@ function generateDailyMissions() {
   return shuffle(pool).slice(0, 3).map(m => ({ ...m, progress: 0, claimed: false }));
 }
 
-const LS_KEY = "math-duel-v3";
+const LS_KEY = "math-duel-v4"; // <- on incrémente la clé pour éviter conflits avec anciens saves
+
+/* ------------------------ Achievements (Badges) ------------------------ */
+const ACHIEVEMENTS = [
+  { id: "streak5",  icon: "🔥", title: "Combo 5",  desc: "Atteins un combo de 5.", reward: 50,  type: "streak", target: 5 },
+  { id: "streak10", icon: "🔥", title: "Combo 10", desc: "Atteins un combo de 10.", reward: 90, type: "streak", target: 10 },
+  { id: "streak20", icon: "🔥", title: "Combo 20", desc: "Atteins un combo de 20.", reward: 160, type: "streak", target: 20 },
+
+  { id: "right50",  icon: "✅", title: "50 bonnes",  desc: "Totalise 50 bonnes réponses.", reward: 80,  type: "right", target: 50 },
+  { id: "right100", icon: "✅", title: "100 bonnes", desc: "Totalise 100 bonnes réponses.", reward: 140, type: "right", target: 100 },
+  { id: "right300", icon: "✅", title: "300 bonnes", desc: "Totalise 300 bonnes réponses.", reward: 260, type: "right", target: 300 },
+
+  { id: "q100",  icon: "🎯", title: "100 questions",  desc: "Réponds à 100 questions.", reward: 90,  type: "questions", target: 100 },
+  { id: "q500",  icon: "🎯", title: "500 questions",  desc: "Réponds à 500 questions.", reward: 220, type: "questions", target: 500 },
+  { id: "q1000", icon: "🎯", title: "1000 questions", desc: "Réponds à 1000 questions.", reward: 400, type: "questions", target: 1000 },
+
+  { id: "acc90_50", icon: "🎖️", title: "Précision 90%", desc: "Atteins 90% de précision sur au moins 50 réponses.", reward: 200, type: "accuracy", target: 90 },
+];
+
+function formatDateFR(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("fr-FR");
+  } catch {
+    return "";
+  }
+}
 
 /* ------------------------ App ------------------------ */
 export default function App() {
@@ -397,6 +421,7 @@ export default function App() {
       level: saved?.level ?? 1,
       xp: saved?.xp ?? 0,
 
+      // records
       records: saved?.records ?? {},
       bestStreak: saved?.bestStreak ?? 0,
       totalRight: saved?.totalRight ?? 0,
@@ -415,6 +440,9 @@ export default function App() {
       dailyGiftClaimed: saved?.dailyGiftClaimed ?? false,
       dailyMissions: saved?.dailyMissions ?? null,
       dailyStats: saved?.dailyStats ?? { right: 0, questions: 0, bestStreak: 0 },
+
+      // achievements
+      achievements: saved?.achievements ?? {}, // { [id]: { unlocked:true, date: iso } }
     };
   }, []);
 
@@ -448,6 +476,9 @@ export default function App() {
   const [dailyMissions, setDailyMissions] = useState(initial.dailyMissions);
   const [dailyStats, setDailyStats] = useState(initial.dailyStats);
 
+  const [achievements, setAchievements] = useState(initial.achievements);
+  const [badgePop, setBadgePop] = useState(null); // { title, desc, reward, icon }
+
   // Session/game loop (illimité)
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -465,12 +496,14 @@ export default function App() {
 
   const lockRef = useRef(false);
   const autoTimerRef = useRef(null);
+  const badgeTimerRef = useRef(null);
 
   // Modals
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [shopTab, setShopTab] = useState("skins"); // skins | avatars
+  const [profileTab, setProfileTab] = useState("stats"); // stats | badges
 
   const avatar = AVATARS.find(a => a.id === avatarId) ?? AVATARS[0];
   const skin = SKINS.find(s => s.id === skinId) ?? SKINS[0];
@@ -510,6 +543,7 @@ export default function App() {
       records, bestStreak, totalRight, totalWrong, totalQuestions,
       audioOn, vibrateOn, autoNextOn, autoNextMs, reduceMotion,
       dayKey, dailyGiftClaimed, dailyMissions, dailyStats,
+      achievements,
     });
   }, [
     skinId, gradeId, diffId, modeId,
@@ -517,7 +551,8 @@ export default function App() {
     level, xp,
     records, bestStreak, totalRight, totalWrong, totalQuestions,
     audioOn, vibrateOn, autoNextOn, autoNextMs, reduceMotion,
-    dayKey, dailyGiftClaimed, dailyMissions, dailyStats
+    dayKey, dailyGiftClaimed, dailyMissions, dailyStats,
+    achievements,
   ]);
 
   // Reset question when mode/grade/diff change (sans reset profil)
@@ -538,17 +573,22 @@ export default function App() {
     }
   }
 
+  function showBadgePopup(payload) {
+    setBadgePop(payload);
+    if (badgeTimerRef.current) clearTimeout(badgeTimerRef.current);
+    badgeTimerRef.current = setTimeout(() => setBadgePop(null), 2600);
+  }
+
   function awardCoins(amount) {
     setCoins(c => c + Math.max(0, amount));
   }
 
   function awardXp(amount) {
-    let add = Math.max(0, amount);
+    const add = Math.max(0, amount);
     setXp((cur) => {
       let xpNow = cur + add;
       let lvl = level;
 
-      // on boucle si plusieurs levels d’un coup
       while (xpNow >= xpToNext(lvl)) {
         xpNow -= xpToNext(lvl);
         lvl += 1;
@@ -645,14 +685,57 @@ export default function App() {
     newQuestion(true);
   }
 
+  function isUnlocked(achId) {
+    return !!achievements?.[achId]?.unlocked;
+  }
+
+  function unlockAchievement(a) {
+    if (isUnlocked(a.id)) return;
+
+    const iso = new Date().toISOString();
+    setAchievements(prev => ({
+      ...(prev ?? {}),
+      [a.id]: { unlocked: true, date: iso },
+    }));
+
+    awardCoins(a.reward);
+    showBadgePopup({
+      icon: a.icon,
+      title: `Badge débloqué : ${a.title}`,
+      desc: `+${a.reward} coins • ${a.desc}`,
+      reward: a.reward,
+    });
+  }
+
+  function checkAchievements(snapshot) {
+    // snapshot: { streak, totalRight, totalQuestions, totalAnswers, accuracy }
+    for (const a of ACHIEVEMENTS) {
+      if (isUnlocked(a.id)) continue;
+
+      if (a.type === "streak" && snapshot.streak >= a.target) unlockAchievement(a);
+      if (a.type === "right" && snapshot.totalRight >= a.target) unlockAchievement(a);
+      if (a.type === "questions" && snapshot.totalQuestions >= a.target) unlockAchievement(a);
+      if (a.type === "accuracy" && snapshot.totalAnswers >= 50 && snapshot.accuracy >= a.target) unlockAchievement(a);
+    }
+  }
+
   function submit(choice) {
     if (lockRef.current) return;
     lockRef.current = true;
     clearAutoTimer();
 
     setPicked(choice);
-
     const isCorrect = choice === q.correct;
+
+    // Calcul "next" (fiable pour achievements + affichage instantané)
+    const nextTotalQuestions = totalQuestions + 1;
+    const nextTotalRight = totalRight + (isCorrect ? 1 : 0);
+    const nextTotalWrong = totalWrong + (isCorrect ? 0 : 1);
+    const nextStreak = isCorrect ? (streak + 1) : 0;
+    const nextScoreAdd = isCorrect ? (10 + Math.min(18, streak * 2)) : 0;
+
+    const nextTotalAnswers = nextTotalRight + nextTotalWrong;
+    const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
 
     // compteurs globaux
     setTotalQuestions(x => x + 1);
@@ -683,8 +766,7 @@ export default function App() {
         return next;
       });
 
-      const addPts = 10 + Math.min(18, streak * 2);
-      setScore(s => s + addPts);
+      setScore(s => s + nextScoreAdd);
 
       setStreak(st => {
         const ns = st + 1;
@@ -692,14 +774,14 @@ export default function App() {
         return ns;
       });
 
-      // XP: récompense + bonus combo léger
+      // XP
       awardXp(10 + Math.min(8, streak));
 
       setExplain(q.explain(choice));
       setShowExplain(true);
 
       // record session (score)
-      updateRecordIfNeeded(score + addPts);
+      updateRecordIfNeeded(score + nextScoreAdd);
     } else {
       setStatus("bad");
       playBeep("bad", audioOn);
@@ -712,12 +794,21 @@ export default function App() {
       setTotalWrong(x => x + 1);
       setStreak(0);
 
-      // XP petit quand même (apprentissage)
+      // XP petit quand même
       awardXp(4);
 
       setExplain(q.explain(choice));
       setShowExplain(true);
     }
+
+    // ✅ Achievements check
+    checkAchievements({
+      streak: nextStreak,
+      totalRight: nextTotalRight,
+      totalQuestions: nextTotalQuestions,
+      totalAnswers: nextTotalAnswers,
+      accuracy: nextAccuracy,
+    });
 
     // Auto-next si activé
     if (autoNextOn) {
@@ -777,8 +868,28 @@ export default function App() {
   const xpNeed = xpToNext(level);
   const xpPct = Math.round((xp / xpNeed) * 100);
 
+  const unlockedCount = useMemo(() => {
+    return ACHIEVEMENTS.filter(a => isUnlocked(a.id)).length;
+  }, [achievements]);
+
   return (
     <div className="shell">
+      {/* Badge popup */}
+      {badgePop && (
+        <div className="badgePop">
+          <div className="badgePopInner smooth">
+            <div className="badgeIcon" style={{ background: "rgba(0,0,0,.22)" }}>{badgePop.icon}</div>
+            <div style={{ flex: 1 }}>
+              <div className="badgePopTitle">{badgePop.title}</div>
+              <div className="badgePopSub">{badgePop.desc}</div>
+            </div>
+            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setBadgePop(null)}>
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="topbar">
         <div className="brand">
           <div className="logo smooth hover-lift" />
@@ -796,6 +907,7 @@ export default function App() {
 
           <span className="pill">Q#{questionIndex}</span>
           <span className="pill">Record: {bestScore}</span>
+          <span className="pill">Badges: {unlockedCount}/{ACHIEVEMENTS.length}</span>
 
           <button className="btn smooth hover-lift press" onClick={() => setShowSettings(true)}>
             Réglages
@@ -1129,45 +1241,102 @@ export default function App() {
 
       {/* Profil */}
       {showProfile && (
-        <Modal title="Profil — Stats & Records" onClose={() => setShowProfile(false)}>
-          <div className="toast" style={{ marginTop: 0 }}>
-            <div>
-              <strong>Global</strong>
-              <div className="sub" style={{ marginTop: 8 }}>
-                Niveau : <b>{level}</b> • Coins : <b>{coins}</b><br />
-                Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b><br />
-                Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b>
-              </div>
+        <Modal title="Profil — Stats & Badges" onClose={() => setShowProfile(false)}>
+          <div className="tabs">
+            <button className={`btn smooth hover-lift press ${profileTab === "stats" ? "btnPrimary" : ""}`} onClick={() => setProfileTab("stats")}>
+              📊 Stats
+            </button>
+            <button className={`btn smooth hover-lift press ${profileTab === "badges" ? "btnPrimary" : ""}`} onClick={() => setProfileTab("badges")}>
+              🏅 Badges
+            </button>
+            <div className="coins" style={{ marginLeft: "auto" }}>
+              <span className="coinDot" />
+              <span>{coins} coins</span>
             </div>
           </div>
 
-          <div className="small" style={{ marginTop: 12 }}>
-            Records par classe → difficulté → mode (best score session):
-          </div>
+          {profileTab === "stats" && (
+            <>
+              <div className="toast" style={{ marginTop: 0 }}>
+                <div>
+                  <strong>Global</strong>
+                  <div className="sub" style={{ marginTop: 8 }}>
+                    Niveau : <b>{level}</b> • Coins : <b>{coins}</b><br />
+                    Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b><br />
+                    Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b>
+                  </div>
+                </div>
+              </div>
 
-          <div style={{ marginTop: 10, display:"grid", gap: 10 }}>
-            {GRADES.map(g => (
-              <div key={g.id} className="shopCard">
-                <div style={{ fontWeight: 1100, marginBottom: 6 }}>{g.label}</div>
-                {DIFFS.map(d => (
-                  <div key={d.id} style={{ marginBottom: 10 }}>
-                    <div className="small" style={{ marginBottom: 6 }}>• {d.label}</div>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(2, minmax(0, 1fr))", gap: 8 }}>
-                      {MODES.map(m => {
-                        const v = records?.[g.id]?.[d.id]?.[m.id]?.bestScore ?? 0;
-                        return (
-                          <div key={m.id} className="statBox" style={{ padding: 10 }}>
-                            <div className="statLabel">{m.label}</div>
-                            <div className="statValue" style={{ fontSize: 18 }}>{v}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
+              <div className="small" style={{ marginTop: 12 }}>
+                Records par classe → difficulté → mode (best score session):
+              </div>
+
+              <div style={{ marginTop: 10, display:"grid", gap: 10 }}>
+                {GRADES.map(g => (
+                  <div key={g.id} className="shopCard">
+                    <div style={{ fontWeight: 1100, marginBottom: 6 }}>{g.label}</div>
+                    {DIFFS.map(d => (
+                      <div key={d.id} style={{ marginBottom: 10 }}>
+                        <div className="small" style={{ marginBottom: 6 }}>• {d.label}</div>
+                        <div style={{ display:"grid", gridTemplateColumns:"repeat(2, minmax(0, 1fr))", gap: 8 }}>
+                          {MODES.map(m => {
+                            const v = records?.[g.id]?.[d.id]?.[m.id]?.bestScore ?? 0;
+                            return (
+                              <div key={m.id} className="statBox" style={{ padding: 10 }}>
+                                <div className="statLabel">{m.label}</div>
+                                <div className="statValue" style={{ fontSize: 18 }}>{v}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
+
+          {profileTab === "badges" && (
+            <>
+              <div className="toast" style={{ marginTop: 0 }}>
+                <div>
+                  <strong>Badges</strong>
+                  <div className="sub" style={{ marginTop: 8 }}>
+                    Débloqués : <b>{unlockedCount}</b> / <b>{ACHIEVEMENTS.length}</b><br/>
+                    Astuce : vise les combos 🔥 et la précision 🎖️
+                  </div>
+                </div>
+                <span className="pill">+ coins</span>
+              </div>
+
+              <div className="badgeGrid">
+                {ACHIEVEMENTS.map(a => {
+                  const unlocked = isUnlocked(a.id);
+                  const dateIso = achievements?.[a.id]?.date;
+                  return (
+                    <div key={a.id} className={`badgeCard smooth hover-lift ${unlocked ? "" : "badgeLocked"}`}>
+                      <div className="badgeIcon">
+                        {unlocked ? a.icon : "🔒"}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div className="badgeTitle">{unlocked ? a.title : "Badge verrouillé"}</div>
+                        <div className="badgeDesc">{unlocked ? a.desc : "Continue à jouer pour le débloquer."}</div>
+
+                        <div className="badgeMeta">
+                          <span className="badgeProgress">🎁 +{a.reward} coins</span>
+                          {unlocked && dateIso && (
+                            <span className="badgeProgress">📅 {formatDateFR(dateIso)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </Modal>
       )}
 
