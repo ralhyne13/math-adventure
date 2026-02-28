@@ -15,7 +15,8 @@ function shuffle(arr) {
 }
 
 function gcd(a, b) {
-  a = Math.abs(a); b = Math.abs(b);
+  a = Math.abs(a);
+  b = Math.abs(b);
   while (b !== 0) {
     const t = a % b;
     a = b;
@@ -47,7 +48,9 @@ function safeLSGet(key, fallback) {
   }
 }
 function safeLSSet(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
 }
 
 function parisDayKey() {
@@ -82,8 +85,8 @@ function playBeep(kind = "ok", enabled = true) {
       o.frequency.setValueAtTime(180, now);
       o.frequency.exponentialRampToValueAtTime(120, now + 0.12);
       g.gain.setValueAtTime(0.001, now);
-      g.gain.exponentialRampToValueAtTime(0.20, now + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.001, now + 0.20);
+      g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
       o.start(now);
       o.stop(now + 0.22);
     }
@@ -94,27 +97,105 @@ function playBeep(kind = "ok", enabled = true) {
 
 /* ------------------------ Skins + Avatars ------------------------ */
 const SKINS = [
-  { id: "neon-night", name: "Neon Night", price: 0, desc: "Violet + vert, premium", animated: true,
-    vars: { "--bg1":"#0b1020","--bg2":"#0b1228","--accent":"#7c3aed","--accent2":"#22c55e","--text":"#eaf0ff","--muted":"rgba(234,240,255,.72)" } },
-  { id: "ocean-glass", name: "Ocean Glass", price: 120, desc: "Bleu + cyan, calme", animated: true,
-    vars: { "--bg1":"#071523","--bg2":"#071a2b","--accent":"#3b82f6","--accent2":"#22d3ee","--text":"#eaf6ff","--muted":"rgba(234,246,255,.70)" } },
-  { id: "sunset-luxe", name: "Sunset Luxe", price: 180, desc: "Rose + ambre, punchy", animated: true,
-    vars: { "--bg1":"#1a0b1d","--bg2":"#140a16","--accent":"#ec4899","--accent2":"#f59e0b","--text":"#fff0fb","--muted":"rgba(255,240,251,.70)" } },
-  { id: "mint-minimal", name: "Mint Minimal", price: 150, desc: "Menthe, ultra clean", animated: false,
-    vars: { "--bg1":"#071a16","--bg2":"#04110f","--accent":"#10b981","--accent2":"#a7f3d0","--text":"#eafff9","--muted":"rgba(234,255,249,.70)" } },
-  { id: "mono-premium", name: "Mono Premium", price: 220, desc: "Noir + argent, sobre", animated: false,
-    vars: { "--bg1":"#090b10","--bg2":"#06070b","--accent":"#a3a3a3","--accent2":"#ffffff","--text":"#f5f7ff","--muted":"rgba(245,247,255,.68)" } },
-  { id: "candy-play", name: "Candy Play", price: 160, desc: "Ludique, coloré", animated: true,
-    vars: { "--bg1":"#0a0f25","--bg2":"#070b1a","--accent":"#a855f7","--accent2":"#60a5fa","--text":"#eef2ff","--muted":"rgba(238,242,255,.72)" } },
+  {
+    id: "neon-night",
+    name: "Neon Night",
+    price: 0,
+    desc: "Violet + vert, premium",
+    animated: true,
+    vars: {
+      "--bg1": "#0b1020",
+      "--bg2": "#0b1228",
+      "--accent": "#7c3aed",
+      "--accent2": "#22c55e",
+      "--text": "#eaf0ff",
+      "--muted": "rgba(234,240,255,.72)",
+    },
+  },
+  {
+    id: "ocean-glass",
+    name: "Ocean Glass",
+    price: 120,
+    desc: "Bleu + cyan, calme",
+    animated: true,
+    vars: {
+      "--bg1": "#071523",
+      "--bg2": "#071a2b",
+      "--accent": "#3b82f6",
+      "--accent2": "#22d3ee",
+      "--text": "#eaf6ff",
+      "--muted": "rgba(234,246,255,.70)",
+    },
+  },
+  {
+    id: "sunset-luxe",
+    name: "Sunset Luxe",
+    price: 180,
+    desc: "Rose + ambre, punchy",
+    animated: true,
+    vars: {
+      "--bg1": "#1a0b1d",
+      "--bg2": "#140a16",
+      "--accent": "#ec4899",
+      "--accent2": "#f59e0b",
+      "--text": "#fff0fb",
+      "--muted": "rgba(255,240,251,.70)",
+    },
+  },
+  {
+    id: "mint-minimal",
+    name: "Mint Minimal",
+    price: 150,
+    desc: "Menthe, ultra clean",
+    animated: false,
+    vars: {
+      "--bg1": "#071a16",
+      "--bg2": "#04110f",
+      "--accent": "#10b981",
+      "--accent2": "#a7f3d0",
+      "--text": "#eafff9",
+      "--muted": "rgba(234,255,249,.70)",
+    },
+  },
+  {
+    id: "mono-premium",
+    name: "Mono Premium",
+    price: 220,
+    desc: "Noir + argent, sobre",
+    animated: false,
+    vars: {
+      "--bg1": "#090b10",
+      "--bg2": "#06070b",
+      "--accent": "#a3a3a3",
+      "--accent2": "#ffffff",
+      "--text": "#f5f7ff",
+      "--muted": "rgba(245,247,255,.68)",
+    },
+  },
+  {
+    id: "candy-play",
+    name: "Candy Play",
+    price: 160,
+    desc: "Ludique, coloré",
+    animated: true,
+    vars: {
+      "--bg1": "#0a0f25",
+      "--bg2": "#070b1a",
+      "--accent": "#a855f7",
+      "--accent2": "#60a5fa",
+      "--text": "#eef2ff",
+      "--muted": "rgba(238,242,255,.72)",
+    },
+  },
 ];
 
 const AVATARS = [
-  { id: "owl",   name: "Hibou",   emoji: "🦉", price: 0 },
-  { id: "robot", name: "Robot",   emoji: "🤖", price: 120 },
-  { id: "fox",   name: "Renard",  emoji: "🦊", price: 140 },
+  { id: "owl", name: "Hibou", emoji: "🦉", price: 0 },
+  { id: "robot", name: "Robot", emoji: "🤖", price: 120 },
+  { id: "fox", name: "Renard", emoji: "🦊", price: 140 },
   { id: "astro", name: "Astronaute", emoji: "🧑‍🚀", price: 200 },
-  { id: "dragon",name: "Dragon",  emoji: "🐉", price: 260 },
-  { id: "ninja", name: "Ninja",   emoji: "🥷", price: 220 },
+  { id: "dragon", name: "Dragon", emoji: "🐉", price: 260 },
+  { id: "ninja", name: "Ninja", emoji: "🥷", price: 220 },
 ];
 
 /* ------------------------ Grades + difficulté + modes ------------------------ */
@@ -145,18 +226,32 @@ const MODES = [
   { id: "eqFrac", label: "Équivalences", icon: "≡" },
 ];
 
+function modeName(mId) {
+  return MODES.find((m) => m.id === mId)?.label ?? mId;
+}
+
 function gradeBase(gradeId) {
   switch (gradeId) {
-    case "CP":  return { addMax: 20, subMax: 20, mulA: 5,  mulB: 5,  divB: 5,  fracDen: 6 };
-    case "CE1": return { addMax: 100, subMax: 100, mulA: 7,  mulB: 7,  divB: 7,  fracDen: 9 };
-    case "CE2": return { addMax: 500, subMax: 500, mulA: 10, mulB: 10, divB: 10, fracDen: 12 };
-    case "CM1": return { addMax: 2000, subMax: 2000, mulA: 12, mulB: 12, divB: 12, fracDen: 14 };
-    case "CM2": return { addMax: 5000, subMax: 5000, mulA: 15, mulB: 15, divB: 15, fracDen: 18 };
-    case "6e":  return { addMax: 20000, subMax: 20000, mulA: 20, mulB: 20, divB: 20, fracDen: 20 };
-    case "5e":  return { addMax: 50000, subMax: 50000, mulA: 30, mulB: 30, divB: 30, fracDen: 24 };
-    case "4e":  return { addMax: 100000, subMax: 100000, mulA: 50, mulB: 50, divB: 50, fracDen: 30 };
-    case "3e":  return { addMax: 200000, subMax: 200000, mulA: 80, mulB: 80, divB: 80, fracDen: 36 };
-    default:    return { addMax: 100, subMax: 100, mulA: 10, mulB: 10, divB: 10, fracDen: 12 };
+    case "CP":
+      return { addMax: 20, subMax: 20, mulA: 5, mulB: 5, divB: 5, fracDen: 6 };
+    case "CE1":
+      return { addMax: 100, subMax: 100, mulA: 7, mulB: 7, divB: 7, fracDen: 9 };
+    case "CE2":
+      return { addMax: 500, subMax: 500, mulA: 10, mulB: 10, divB: 10, fracDen: 12 };
+    case "CM1":
+      return { addMax: 2000, subMax: 2000, mulA: 12, mulB: 12, divB: 12, fracDen: 14 };
+    case "CM2":
+      return { addMax: 5000, subMax: 5000, mulA: 15, mulB: 15, divB: 15, fracDen: 18 };
+    case "6e":
+      return { addMax: 20000, subMax: 20000, mulA: 20, mulB: 20, divB: 20, fracDen: 20 };
+    case "5e":
+      return { addMax: 50000, subMax: 50000, mulA: 30, mulB: 30, divB: 30, fracDen: 24 };
+    case "4e":
+      return { addMax: 100000, subMax: 100000, mulA: 50, mulB: 50, divB: 50, fracDen: 30 };
+    case "3e":
+      return { addMax: 200000, subMax: 200000, mulA: 80, mulB: 80, divB: 80, fracDen: 36 };
+    default:
+      return { addMax: 100, subMax: 100, mulA: 10, mulB: 10, divB: 10, fracDen: 12 };
   }
 }
 function diffFactor(diffId) {
@@ -173,15 +268,14 @@ function awardLevelCoins(levelGained) {
   return 25 + levelGained * 5;
 }
 
-/* ------------------------ (1) Ligues (6) ------------------------ */
-/* Mix score session + précision globale + combo max (léger) */
+/* ------------------------ (1) Ligues ------------------------ */
 const LEAGUES = [
-  { id: "bronze",   name: "Bronze",   icon: "🥉", min: 0 },
-  { id: "silver",   name: "Argent",   icon: "🥈", min: 260 },
-  { id: "gold",     name: "Or",       icon: "🥇", min: 520 },
-  { id: "plat",     name: "Platine",  icon: "💠", min: 820 },
-  { id: "diamond",  name: "Diamant",  icon: "💎", min: 1150 },
-  { id: "master",   name: "Master",   icon: "👑", min: 1500 },
+  { id: "bronze", name: "Bronze", icon: "🥉", min: 0 },
+  { id: "silver", name: "Argent", icon: "🥈", min: 260 },
+  { id: "gold", name: "Or", icon: "🥇", min: 520 },
+  { id: "plat", name: "Platine", icon: "💠", min: 820 },
+  { id: "diamond", name: "Diamant", icon: "💎", min: 1150 },
+  { id: "master", name: "Master", icon: "👑", min: 1500 },
 ];
 
 function computeRating({ score, accuracy, bestStreak, level }) {
@@ -203,7 +297,7 @@ function leagueReward(rankGained) {
   return 80 + rankGained * 60;
 }
 
-/* ------------------------ Anti répétitions (6) ------------------------ */
+/* ------------------------ Anti répétitions ------------------------ */
 function questionSignature(q, modeId, gradeId, diffId) {
   const base = `${modeId}|${gradeId}|${diffId}|${q.row.kind}|${q.correct}`;
   if (q.row.kind === "op") return `${base}|${q.row.a}|${q.row.op}|${q.row.b}`;
@@ -234,9 +328,10 @@ function makeQAdd(cfg) {
     row: { kind: "op", a, op: "+", b },
     correct,
     choices: makeChoicesNumber(correct, Math.max(6, Math.round(max * 0.12))),
-    explain: (picked) => picked === correct
-      ? `✅ ${a} + ${b} = ${correct}.`
-      : `❌ Addition : ${a} + ${b} = ${correct}. Tu as choisi ${picked}.`,
+    explain: (picked) =>
+      picked === correct
+        ? `✅ ${a} + ${b} = ${correct}.`
+        : `❌ Addition : ${a} + ${b} = ${correct}. Tu as choisi ${picked}.`,
   };
 }
 
@@ -251,9 +346,10 @@ function makeQSub(cfg) {
     row: { kind: "op", a, op: "−", b },
     correct,
     choices: makeChoicesNumber(correct, Math.max(6, Math.round(max * 0.12))),
-    explain: (picked) => picked === correct
-      ? `✅ ${a} − ${b} = ${correct}.`
-      : `❌ Soustraction : ${a} − ${b} = ${correct}. Tu as choisi ${picked}.`,
+    explain: (picked) =>
+      picked === correct
+        ? `✅ ${a} − ${b} = ${correct}.`
+        : `❌ Soustraction : ${a} − ${b} = ${correct}. Tu as choisi ${picked}.`,
   };
 }
 
@@ -267,10 +363,11 @@ function makeQMul(cfg) {
     prompt: "Calcule :",
     row: { kind: "op", a, op: "×", b },
     correct,
-    choices: makeChoicesNumber(correct, Math.max(6, Math.round((aMax * bMax) * 0.08))),
-    explain: (picked) => picked === correct
-      ? `✅ ${a} × ${b} = ${correct}.`
-      : `❌ Multiplication : ${a} × ${b} = ${correct}. Tu as choisi ${picked}.`,
+    choices: makeChoicesNumber(correct, Math.max(6, Math.round(aMax * bMax * 0.08))),
+    explain: (picked) =>
+      picked === correct
+        ? `✅ ${a} × ${b} = ${correct}.`
+        : `❌ Multiplication : ${a} × ${b} = ${correct}. Tu as choisi ${picked}.`,
   };
 }
 
@@ -285,15 +382,16 @@ function makeQDiv(cfg) {
     row: { kind: "op", a, op: "÷", b },
     correct,
     choices: makeChoicesNumber(correct, Math.max(4, Math.round(q * 0.8 + 8))),
-    explain: (picked) => picked === correct
-      ? `✅ ${a} ÷ ${b} = ${correct} car ${b} × ${correct} = ${a}.`
-      : `❌ Division : on cherche x tel que ${b}×x=${a}. Ici x=${correct}. Tu as choisi ${picked}.`,
+    explain: (picked) =>
+      picked === correct
+        ? `✅ ${a} ÷ ${b} = ${correct} car ${b} × ${correct} = ${a}.`
+        : `❌ Division : on cherche x tel que ${b}×x=${a}. Ici x=${correct}. Tu as choisi ${picked}.`,
   };
 }
 
-/* (7) Explications fractions adaptées au niveau */
+/* Explications fractions adaptées au niveau */
 function fracCompareExplain({ aN, aD, bN, bD }, picked, correct, gradeId) {
-  const isMiddleSchool = ["6e","5e","4e","3e"].includes(gradeId);
+  const isMiddleSchool = ["6e", "5e", "4e", "3e"].includes(gradeId);
 
   if (isMiddleSchool) {
     const left = aN * bD;
@@ -359,7 +457,7 @@ function makeQEqFrac(cfg, gradeId) {
   const left = aN * bD;
   const right = bN * aD;
 
-  const isMiddleSchool = ["6e","5e","4e","3e"].includes(gradeId);
+  const isMiddleSchool = ["6e", "5e", "4e", "3e"].includes(gradeId);
 
   return {
     prompt: "Ces fractions sont-elles équivalentes ?",
@@ -379,11 +477,14 @@ function makeQEqFrac(cfg, gradeId) {
 
       const factN = bN / aN;
       const factD = bD / aD;
-      const sameFactor = Number.isFinite(factN) && Number.isFinite(factD) && Math.abs(factN - factD) < 1e-9;
+      const sameFactor =
+        Number.isFinite(factN) && Number.isFinite(factD) && Math.abs(factN - factD) < 1e-9;
 
       if (ok && eq) {
         return sameFactor
-          ? `✅ Oui. On multiplie ${aN}/${aD} par ${Math.round(factN)} : ${aN}×${Math.round(factN)}/${aD}×${Math.round(factN)} = ${bN}/${bD}.`
+          ? `✅ Oui. On multiplie ${aN}/${aD} par ${Math.round(
+              factN
+            )} : ${aN}×${Math.round(factN)}/${aD}×${Math.round(factN)} = ${bN}/${bD}.`
           : `✅ Oui. Les deux fractions représentent la même valeur.`;
       }
       if (ok && !eq) return `✅ Non. Elles ne donnent pas la même valeur.`;
@@ -406,13 +507,20 @@ function makeQuestionCore(modeId, gradeId, diffId) {
   };
 
   switch (modeId) {
-    case "add": return makeQAdd(cfg);
-    case "sub": return makeQSub(cfg);
-    case "mul": return makeQMul(cfg);
-    case "div": return makeQDiv(cfg);
-    case "cmpFrac": return makeQCmpFrac(cfg, gradeId);
-    case "eqFrac": return makeQEqFrac(cfg, gradeId);
-    default: return makeQAdd(cfg);
+    case "add":
+      return makeQAdd(cfg);
+    case "sub":
+      return makeQSub(cfg);
+    case "mul":
+      return makeQMul(cfg);
+    case "div":
+      return makeQDiv(cfg);
+    case "cmpFrac":
+      return makeQCmpFrac(cfg, gradeId);
+    case "eqFrac":
+      return makeQEqFrac(cfg, gradeId);
+    default:
+      return makeQAdd(cfg);
   }
 }
 
@@ -442,7 +550,9 @@ function Modal({ title, onClose, children }) {
       <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modalHead">
           <div className="modalTitle">{title}</div>
-          <button className="btn btnGhost smooth hover-lift press" onClick={onClose}>Fermer</button>
+          <button className="btn btnGhost smooth hover-lift press" onClick={onClose}>
+            Fermer
+          </button>
         </div>
         <div className="modalBody">{children}</div>
       </div>
@@ -460,23 +570,25 @@ function generateDailyMissions() {
     { id: "q40", text: "Réponds à 40 questions", type: "questions", target: 40, reward: 120 },
     { id: "q80", text: "Réponds à 80 questions", type: "questions", target: 80, reward: 220 },
   ];
-  return shuffle(pool).slice(0, 3).map(m => ({ ...m, progress: 0, claimed: false }));
+  return shuffle(pool)
+    .slice(0, 3)
+    .map((m) => ({ ...m, progress: 0, claimed: false }));
 }
 
 const LS_KEY = "math-duel-v5";
 
 /* ------------------------ Achievements (Badges) ------------------------ */
 const ACHIEVEMENTS = [
-  { id: "streak5",  icon: "🔥", title: "Combo 5",  desc: "Atteins un combo de 5.", reward: 50,  type: "streak", target: 5 },
+  { id: "streak5", icon: "🔥", title: "Combo 5", desc: "Atteins un combo de 5.", reward: 50, type: "streak", target: 5 },
   { id: "streak10", icon: "🔥", title: "Combo 10", desc: "Atteins un combo de 10.", reward: 90, type: "streak", target: 10 },
   { id: "streak20", icon: "🔥", title: "Combo 20", desc: "Atteins un combo de 20.", reward: 160, type: "streak", target: 20 },
 
-  { id: "right50",  icon: "✅", title: "50 bonnes",  desc: "Totalise 50 bonnes réponses.", reward: 80,  type: "right", target: 50 },
+  { id: "right50", icon: "✅", title: "50 bonnes", desc: "Totalise 50 bonnes réponses.", reward: 80, type: "right", target: 50 },
   { id: "right100", icon: "✅", title: "100 bonnes", desc: "Totalise 100 bonnes réponses.", reward: 140, type: "right", target: 100 },
   { id: "right300", icon: "✅", title: "300 bonnes", desc: "Totalise 300 bonnes réponses.", reward: 260, type: "right", target: 300 },
 
-  { id: "q100",  icon: "🎯", title: "100 questions",  desc: "Réponds à 100 questions.", reward: 90,  type: "questions", target: 100 },
-  { id: "q500",  icon: "🎯", title: "500 questions",  desc: "Réponds à 500 questions.", reward: 220, type: "questions", target: 500 },
+  { id: "q100", icon: "🎯", title: "100 questions", desc: "Réponds à 100 questions.", reward: 90, type: "questions", target: 100 },
+  { id: "q500", icon: "🎯", title: "500 questions", desc: "Réponds à 500 questions.", reward: 220, type: "questions", target: 500 },
   { id: "q1000", icon: "🎯", title: "1000 questions", desc: "Réponds à 1000 questions.", reward: 400, type: "questions", target: 1000 },
 
   { id: "acc90_50", icon: "🎖️", title: "Précision 90%", desc: "Atteins 90% de précision sur au moins 50 réponses.", reward: 200, type: "accuracy", target: 90 },
@@ -491,14 +603,72 @@ function formatDateFR(iso) {
   }
 }
 
+/* ------------------------ (3) Coach helpers ------------------------ */
+function modeHint(modeId) {
+  switch (modeId) {
+    case "div":
+      return "Astuce division : vérifie ton résultat avec × (diviseur × quotient = dividende).";
+    case "sub":
+      return "Astuce soustraction : aligne bien les unités/dizaines et vérifie si tu peux faire l’opération inverse (+).";
+    case "mul":
+      return "Astuce multiplication : utilise les tables / décompose (ex: 7×12 = 7×10 + 7×2).";
+    case "cmpFrac":
+      return "Astuce fractions : mets au même dénominateur OU fais un produit en croix.";
+    case "eqFrac":
+      return "Astuce équivalences : multiplie/Divise numérateur et dénominateur par le même nombre.";
+    case "add":
+    default:
+      return "Astuce addition : vérifie vite avec l’opération inverse (−) si tu doutes.";
+  }
+}
+
+function buildCoachSummary(perfByMode) {
+  const rows = Object.entries(perfByMode || {})
+    .map(([mId, v]) => {
+      const total = v?.total ?? 0;
+      const right = v?.right ?? 0;
+      const acc = total ? Math.round((right / total) * 100) : 0;
+      return { mId, total, right, acc };
+    })
+    .filter((r) => r.total > 0);
+
+  if (!rows.length) {
+    return {
+      title: "Coach",
+      lines: ["Joue encore un peu et je te fais un bilan 👍"],
+      hint: null,
+    };
+  }
+
+  const eligible = rows.filter((r) => r.total >= 3);
+  const used = eligible.length ? eligible : rows;
+
+  const best = [...used].sort((a, b) => b.acc - a.acc || b.total - a.total)[0];
+  const worst = [...used].sort((a, b) => a.acc - b.acc || b.total - a.total)[0];
+
+  const lines = [];
+  lines.push(`Top : ${modeName(best.mId)} — ${best.acc}% (${best.right}/${best.total})`);
+
+  if (worst.mId === best.mId) {
+    lines.push(`Continue sur ${modeName(best.mId)} : garde ce rythme 💪`);
+    return { title: "Coach (bilan 10)", lines, hint: null };
+  }
+
+  lines.push(`À bosser : ${modeName(worst.mId)} — ${worst.acc}% (${worst.right}/${worst.total})`);
+  return { title: "Coach (bilan 10)", lines, hint: modeHint(worst.mId) };
+}
+
 /* ------------------------ App ------------------------ */
 export default function App() {
   const qHistoryRef = useRef([]);
   const autoTimerRef = useRef(null);
   const badgeTimerRef = useRef(null);
 
-  // (5) Level up popup timer
+  // (#5) Level up popup timer
   const levelTimerRef = useRef(null);
+
+  // (#3) Coach popup timer
+  const coachTimerRef = useRef(null);
 
   // refs XP
   const levelRef = useRef(1);
@@ -544,7 +714,7 @@ export default function App() {
       // achievements
       achievements: saved?.achievements ?? {},
 
-      // (1) ligues
+      // ligues
       bestLeagueRank: saved?.bestLeagueRank ?? 0,
     };
   }, []);
@@ -582,10 +752,13 @@ export default function App() {
   const [achievements, setAchievements] = useState(initial.achievements);
   const [badgePop, setBadgePop] = useState(null);
 
-  // (5) LEVEL UP popup state
+  // (#5) LEVEL UP popup state
   const [levelPop, setLevelPop] = useState(null);
 
-  // (1) ligue : meilleure ligue atteinte (rank)
+  // (#3) Coach popup state
+  const [coachPop, setCoachPop] = useState(null);
+
+  // ligue : meilleure ligue atteinte (rank)
   const [bestLeagueRank, setBestLeagueRank] = useState(initial.bestLeagueRank);
 
   // Session
@@ -613,12 +786,26 @@ export default function App() {
   const [shopTab, setShopTab] = useState("skins");
   const [profileTab, setProfileTab] = useState("stats");
 
-  const avatar = AVATARS.find(a => a.id === avatarId) ?? AVATARS[0];
-  const skin = SKINS.find(s => s.id === skinId) ?? SKINS[0];
+  // (#4) historique des 10 dernières réponses (session)
+  const [lastAnswers, setLastAnswers] = useState([]); // [{ ok: true/false }]
+  // (#3) stats par mode sur la session (pour coach)
+  const [sessionAnswered, setSessionAnswered] = useState(0);
+  const [sessionPerf, setSessionPerf] = useState(() => {
+    const o = {};
+    for (const m of MODES) o[m.id] = { right: 0, total: 0 };
+    return o;
+  });
+
+  const avatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
+  const skin = SKINS.find((s) => s.id === skinId) ?? SKINS[0];
 
   // sync refs XP
-  useEffect(() => { levelRef.current = level; }, [level]);
-  useEffect(() => { xpRef.current = xp; }, [xp]);
+  useEffect(() => {
+    levelRef.current = level;
+  }, [level]);
+  useEffect(() => {
+    xpRef.current = xp;
+  }, [xp]);
 
   // Apply skin vars
   useEffect(() => {
@@ -632,7 +819,7 @@ export default function App() {
     document.body.classList.toggle("reduce-motion", !!reduceMotion);
   }, [reduceMotion]);
 
-  // (10) skins animés : active body.anim-skin si skin.animated et pas reduce-motion
+  // skins animés
   useEffect(() => {
     const on = !!skin.animated && !reduceMotion;
     document.body.classList.toggle("anim-skin", on);
@@ -672,22 +859,58 @@ export default function App() {
   // Persist
   useEffect(() => {
     safeLSSet(LS_KEY, {
-      skinId, gradeId, diffId, modeId,
-      coins, avatarId, ownedSkins, ownedAvatars,
-      level, xp,
-      records, bestStreak, totalRight, totalWrong, totalQuestions,
-      audioOn, vibrateOn, autoNextOn, autoNextMs, reduceMotion,
-      dayKey, dailyGiftClaimed, dailyMissions, dailyStats,
+      skinId,
+      gradeId,
+      diffId,
+      modeId,
+      coins,
+      avatarId,
+      ownedSkins,
+      ownedAvatars,
+      level,
+      xp,
+      records,
+      bestStreak,
+      totalRight,
+      totalWrong,
+      totalQuestions,
+      audioOn,
+      vibrateOn,
+      autoNextOn,
+      autoNextMs,
+      reduceMotion,
+      dayKey,
+      dailyGiftClaimed,
+      dailyMissions,
+      dailyStats,
       achievements,
       bestLeagueRank,
     });
   }, [
-    skinId, gradeId, diffId, modeId,
-    coins, avatarId, ownedSkins, ownedAvatars,
-    level, xp,
-    records, bestStreak, totalRight, totalWrong, totalQuestions,
-    audioOn, vibrateOn, autoNextOn, autoNextMs, reduceMotion,
-    dayKey, dailyGiftClaimed, dailyMissions, dailyStats,
+    skinId,
+    gradeId,
+    diffId,
+    modeId,
+    coins,
+    avatarId,
+    ownedSkins,
+    ownedAvatars,
+    level,
+    xp,
+    records,
+    bestStreak,
+    totalRight,
+    totalWrong,
+    totalQuestions,
+    audioOn,
+    vibrateOn,
+    autoNextOn,
+    autoNextMs,
+    reduceMotion,
+    dayKey,
+    dailyGiftClaimed,
+    dailyMissions,
+    dailyStats,
     achievements,
     bestLeagueRank,
   ]);
@@ -700,7 +923,9 @@ export default function App() {
 
   function vibrate(ms) {
     if (!vibrateOn) return;
-    try { navigator.vibrate?.(ms); } catch {}
+    try {
+      navigator.vibrate?.(ms);
+    } catch {}
   }
 
   function clearAutoTimer() {
@@ -716,21 +941,27 @@ export default function App() {
     badgeTimerRef.current = setTimeout(() => setBadgePop(null), 2600);
   }
 
-  // (5) show LEVEL UP popup
+  // (#5) LEVEL UP popup
   function showLevelPopup(payload) {
     setLevelPop(payload);
     if (levelTimerRef.current) clearTimeout(levelTimerRef.current);
     levelTimerRef.current = setTimeout(() => setLevelPop(null), 2800);
   }
 
-  function awardCoins(amount) {
-    setCoins(c => c + Math.max(0, amount));
+  // (#3) Coach popup
+  function showCoachPopup(payload) {
+    setCoachPop(payload);
+    if (coachTimerRef.current) clearTimeout(coachTimerRef.current);
+    coachTimerRef.current = setTimeout(() => setCoachPop(null), 4200);
   }
 
-  // XP robuste (+ LEVEL UP feedback)
+  function awardCoins(amount) {
+    setCoins((c) => c + Math.max(0, amount));
+  }
+
+  // XP robuste (+ #5 feedback)
   function awardXp(amount) {
     const add = Math.max(0, amount);
-
     const startLevel = levelRef.current;
 
     let lvl = levelRef.current;
@@ -754,11 +985,9 @@ export default function App() {
     setLevel(lvl);
     setXp(xpNow);
 
-    // (5) Popup + mini feedback si level up
     if (lvl > startLevel) {
       if (vibrateOn) vibrate(30);
       playBeep("ok", audioOn);
-
       showLevelPopup({
         toLevel: lvl,
         gainedLevels: levelsGained,
@@ -768,9 +997,9 @@ export default function App() {
   }
 
   function updateDailyMissions(nextDailyStats) {
-    setDailyMissions(prev => {
+    setDailyMissions((prev) => {
       const missions = prev ?? generateDailyMissions();
-      return missions.map(m => {
+      return missions.map((m) => {
         let progress = m.progress;
         if (m.type === "right") progress = nextDailyStats.right;
         if (m.type === "questions") progress = nextDailyStats.questions;
@@ -781,9 +1010,9 @@ export default function App() {
   }
 
   function claimMission(missionId) {
-    setDailyMissions(prev => {
+    setDailyMissions((prev) => {
       const missions = prev ?? [];
-      const idx = missions.findIndex(m => m.id === missionId);
+      const idx = missions.findIndex((m) => m.id === missionId);
       if (idx < 0) return missions;
 
       const m = missions[idx];
@@ -810,7 +1039,7 @@ export default function App() {
 
   // plus de structuredClone
   function updateRecordIfNeeded(finalScore) {
-    setRecords(prev => {
+    setRecords((prev) => {
       const next = JSON.parse(JSON.stringify(prev ?? {}));
       next[gradeId] ??= {};
       next[gradeId][diffId] ??= {};
@@ -860,6 +1089,16 @@ export default function App() {
     setStreak(0);
     setQuestionIndex(1);
     newQuestion(true);
+
+    // (#3/#4) reset session tracking
+    setLastAnswers([]);
+    setSessionAnswered(0);
+    setSessionPerf(() => {
+      const o = {};
+      for (const m of MODES) o[m.id] = { right: 0, total: 0 };
+      return o;
+    });
+    setCoachPop(null);
   }
 
   function isUnlocked(achId) {
@@ -869,7 +1108,7 @@ export default function App() {
   function unlockAchievement(a) {
     if (isUnlocked(a.id)) return;
     const iso = new Date().toISOString();
-    setAchievements(prev => ({
+    setAchievements((prev) => ({
       ...(prev ?? {}),
       [a.id]: { unlocked: true, date: iso },
     }));
@@ -893,6 +1132,14 @@ export default function App() {
     }
   }
 
+  function maybeCoach(afterCount, nextPerf) {
+    // toutes les 10 réponses de session
+    if (afterCount > 0 && afterCount % 10 === 0) {
+      const summary = buildCoachSummary(nextPerf);
+      showCoachPopup(summary);
+    }
+  }
+
   function submit(choice) {
     if (isLocked || showExplain) return;
     setIsLocked(true);
@@ -904,13 +1151,53 @@ export default function App() {
     const nextTotalQuestions = totalQuestions + 1;
     const nextTotalRight = totalRight + (isCorrect ? 1 : 0);
     const nextTotalWrong = totalWrong + (isCorrect ? 0 : 1);
-    const nextStreak = isCorrect ? (streak + 1) : 0;
-    const nextScoreAdd = isCorrect ? (10 + Math.min(18, streak * 2)) : 0;
+    const nextStreak = isCorrect ? streak + 1 : 0;
+    const nextScoreAdd = isCorrect ? 10 + Math.min(18, streak * 2) : 0;
 
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
     const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
 
-    setTotalQuestions(x => x + 1);
+    setTotalQuestions((x) => x + 1);
+
+    // (#4) last 10
+    setLastAnswers((prev) => {
+      const next = [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10);
+      return next;
+    });
+
+    // (#3) perf par mode + compteur session
+    setSessionPerf((prev) => {
+      const base = prev ?? {};
+      const cur = base[modeId] ?? { right: 0, total: 0 };
+      const updated = {
+        ...base,
+        [modeId]: {
+          right: cur.right + (isCorrect ? 1 : 0),
+          total: cur.total + 1,
+        },
+      };
+      return updated;
+    });
+
+    setSessionAnswered((n) => {
+      const nextCount = n + 1;
+
+      // on calcule le "nextPerf" de manière sûre (en miroir)
+      const nextPerf = (() => {
+        const base = sessionPerf ?? {};
+        const cur = base[modeId] ?? { right: 0, total: 0 };
+        return {
+          ...base,
+          [modeId]: {
+            right: cur.right + (isCorrect ? 1 : 0),
+            total: cur.total + 1,
+          },
+        };
+      })();
+
+      maybeCoach(nextCount, nextPerf);
+      return nextCount;
+    });
 
     if (isCorrect) {
       setStatus("ok");
@@ -919,13 +1206,13 @@ export default function App() {
       triggerFx("ok");
 
       awardCoins(3);
-      setTotalRight(x => x + 1);
+      setTotalRight((x) => x + 1);
 
-      setScore(s => s + nextScoreAdd);
+      setScore((s) => s + nextScoreAdd);
 
-      setStreak(st => {
+      setStreak((st) => {
         const ns = st + 1;
-        setBestStreak(bs => Math.max(bs, ns));
+        setBestStreak((bs) => Math.max(bs, ns));
         return ns;
       });
 
@@ -941,9 +1228,9 @@ export default function App() {
       vibrate(60);
       triggerFx("bad");
 
-      setCoins(c => Math.max(0, c - 1));
+      setCoins((c) => Math.max(0, c - 1));
 
-      setTotalWrong(x => x + 1);
+      setTotalWrong((x) => x + 1);
       setStreak(0);
 
       awardXp(4);
@@ -953,7 +1240,7 @@ export default function App() {
     }
 
     // daily stats
-    setDailyStats(ds => {
+    setDailyStats((ds) => {
       const next = {
         ...ds,
         questions: ds.questions + 1,
@@ -982,7 +1269,7 @@ export default function App() {
   }
 
   function goNext() {
-    setQuestionIndex(i => i + 1);
+    setQuestionIndex((i) => i + 1);
     newQuestion(true);
   }
 
@@ -993,16 +1280,16 @@ export default function App() {
   function buySkin(s) {
     if (ownedSkins.includes(s.id)) return;
     if (!canBuy(s.price)) return;
-    setCoins(c => c - s.price);
-    setOwnedSkins(list => [...list, s.id]);
+    setCoins((c) => c - s.price);
+    setOwnedSkins((list) => [...list, s.id]);
     setSkinId(s.id);
   }
 
   function buyAvatar(a) {
     if (ownedAvatars.includes(a.id)) return;
     if (!canBuy(a.price)) return;
-    setCoins(c => c - a.price);
-    setOwnedAvatars(list => [...list, a.id]);
+    setCoins((c) => c - a.price);
+    setOwnedAvatars((list) => [...list, a.id]);
     setAvatarId(a.id);
   }
 
@@ -1017,8 +1304,8 @@ export default function App() {
   }
 
   const bestScore = getBestScoreFor(modeId, gradeId, diffId);
-  const modeLabel = MODES.find(m => m.id === modeId)?.label ?? "Mode";
-  const diffLabel = DIFFS.find(d => d.id === diffId)?.label ?? diffId;
+  const modeLabel = MODES.find((m) => m.id === modeId)?.label ?? "Mode";
+  const diffLabel = DIFFS.find((d) => d.id === diffId)?.label ?? diffId;
 
   const accuracy = useMemo(() => {
     const total = totalRight + totalWrong;
@@ -1030,18 +1317,22 @@ export default function App() {
   const xpPct = Math.round((xp / xpNeed) * 100);
 
   const unlockedCount = useMemo(() => {
-    return ACHIEVEMENTS.filter(a => isUnlocked(a.id)).length;
+    return ACHIEVEMENTS.filter((a) => isUnlocked(a.id)).length;
   }, [achievements]);
 
-  // (1) ligue courante + best ligue
   const rating = useMemo(() => {
     return computeRating({ score, accuracy, bestStreak, level });
   }, [score, accuracy, bestStreak, level]);
 
   const league = useMemo(() => leagueFromRating(rating), [rating]);
-  const bestLeague = useMemo(() => ({ ...LEAGUES[Math.max(0, Math.min(bestLeagueRank, LEAGUES.length - 1))], rank: bestLeagueRank }), [bestLeagueRank]);
+  const bestLeague = useMemo(() => {
+    return {
+      ...LEAGUES[Math.max(0, Math.min(bestLeagueRank, LEAGUES.length - 1))],
+      rank: bestLeagueRank,
+    };
+  }, [bestLeagueRank]);
 
-  // (1) si tu montes de ligue : bonus coins + pop
+  // si tu montes de ligue : bonus coins + pop
   useEffect(() => {
     if (league.rank > bestLeagueRank) {
       const gained = league.rank - bestLeagueRank;
@@ -1062,11 +1353,13 @@ export default function App() {
 
   return (
     <div className="shell">
-      {/* (5) LEVEL UP popup */}
+      {/* (#5) LEVEL UP popup */}
       {levelPop && (
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
-            <div className="levelBadge" aria-hidden="true">⬆️</div>
+            <div className="levelBadge" aria-hidden="true">
+              ⬆️
+            </div>
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">LEVEL UP !</div>
               <div className="levelPopSub">
@@ -1087,11 +1380,40 @@ export default function App() {
         </div>
       )}
 
+      {/* (#3) Coach popup */}
+      {coachPop && (
+        <div className="coachPop" role="status" aria-live="polite">
+          <div className="coachPopInner smooth">
+            <div className="coachBadge" aria-hidden="true">
+              🧠
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className="coachPopTitle">{coachPop.title}</div>
+              <div className="coachPopSub" style={{ marginTop: 6 }}>
+                {coachPop.lines?.map((t, i) => (
+                  <div key={i}>{t}</div>
+                ))}
+              </div>
+              {coachPop.hint && (
+                <div className="small" style={{ marginTop: 8 }}>
+                  {coachPop.hint}
+                </div>
+              )}
+            </div>
+            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setCoachPop(null)}>
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Badge popup */}
       {badgePop && (
         <div className="badgePop">
           <div className="badgePopInner smooth">
-            <div className="badgeIcon" style={{ background: "rgba(0,0,0,.22)" }}>{badgePop.icon}</div>
+            <div className="badgeIcon" style={{ background: "rgba(0,0,0,.22)" }}>
+              {badgePop.icon}
+            </div>
             <div style={{ flex: 1 }}>
               <div className="badgePopTitle">{badgePop.title}</div>
               <div className="badgePopSub">{badgePop.desc}</div>
@@ -1107,7 +1429,9 @@ export default function App() {
         <div className="brand">
           <div className="logo smooth hover-lift" />
           <div>
-            <div className="h1">Math Duel <span style={{ opacity: .85 }}>{avatar.emoji}</span></div>
+            <div className="h1">
+              Math Duel <span style={{ opacity: 0.85 }}>{avatar.emoji}</span>
+            </div>
             <div className="sub">
               Illimité • {modeLabel} • {gradeId} • {diffLabel} • Ligue: <b>{league.icon} {league.name}</b>
             </div>
@@ -1147,7 +1471,7 @@ export default function App() {
               <i
                 key={i}
                 style={{
-                  left: `${10 + (i * 9)}%`,
+                  left: `${10 + i * 9}%`,
                   top: `${60 - (i % 4) * 10}%`,
                   animationDelay: `${i * 20}ms`,
                 }}
@@ -1162,27 +1486,67 @@ export default function App() {
 
           <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <select className="select smooth hover-lift" value={modeId} onChange={(e) => setModeId(e.target.value)}>
-              {MODES.map(m => <option key={m.id} value={m.id}>{m.icon} {m.label}</option>)}
+              {MODES.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.icon} {m.label}
+                </option>
+              ))}
             </select>
 
             <select className="select smooth hover-lift" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
-              {GRADES.map(g => <option key={g.id} value={g.id}>{g.label}</option>)}
+              {GRADES.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.label}
+                </option>
+              ))}
             </select>
 
             <select className="select smooth hover-lift" value={diffId} onChange={(e) => setDiffId(e.target.value)}>
-              {DIFFS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+              {DIFFS.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.label}
+                </option>
+              ))}
             </select>
 
-            <button className="btn smooth hover-lift press" onClick={resetSession}>Reset session</button>
+            <button className="btn smooth hover-lift press" onClick={resetSession}>
+              Reset session
+            </button>
           </div>
 
           {/* XP bar */}
           <div className="barWrap" aria-label="xp">
             <div className="bar" style={{ width: `${xpPct}%` }} />
           </div>
-          <div className="small" style={{ marginTop: 8, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-            <span>Niveau <b>{level}</b></span>
-            <span>XP <b>{xp}</b>/<b>{xpNeed}</b></span>
+
+          {/* (#4) mini historique */}
+          <div className="miniHistoryWrap" aria-label="historique des 10 dernières réponses">
+            <div className="miniHistoryLabel">
+              10 dernières :{" "}
+              <span className="miniHistoryCount">
+                {sessionAnswered}/10{" "}
+                {sessionAnswered >= 10 ? `(x${Math.floor(sessionAnswered / 10)})` : ""}
+              </span>
+            </div>
+            <div className="miniHistory">
+              {[...Array(10)].map((_, i) => {
+                const item = lastAnswers[i];
+                const cls = item ? (item.ok ? "ok" : "bad") : "empty";
+                return <span key={i} className={`miniDot ${cls}`} />;
+              })}
+            </div>
+          </div>
+
+          <div
+            className="small"
+            style={{ marginTop: 8, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}
+          >
+            <span>
+              Niveau <b>{level}</b>
+            </span>
+            <span>
+              XP <b>{xp}</b>/<b>{xpNeed}</b>
+            </span>
           </div>
 
           <div className="question">
@@ -1261,7 +1625,10 @@ export default function App() {
         <div className="card smooth">
           <div className="cardTitle">
             <span>Tableau de bord</span>
-            <span className="pill">{skin.name}{skin.animated ? " ✨" : ""}</span>
+            <span className="pill">
+              {skin.name}
+              {skin.animated ? " ✨" : ""}
+            </span>
           </div>
 
           <div className="stats">
@@ -1279,8 +1646,12 @@ export default function App() {
             </div>
             <div className="statBox smooth hover-lift">
               <div className="statLabel">Ligue</div>
-              <div className="statValue" style={{ fontSize: 18 }}>{league.icon} {league.name}</div>
-              <div className="small" style={{ marginTop: 6 }}>Score ligue : <b>{rating}</b></div>
+              <div className="statValue" style={{ fontSize: 18 }}>
+                {league.icon} {league.name}
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Score ligue : <b>{rating}</b>
+              </div>
             </div>
           </div>
 
@@ -1297,11 +1668,19 @@ export default function App() {
               </div>
 
               <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                {(dailyMissions ?? []).map(m => {
+                {(dailyMissions ?? []).map((m) => {
                   const done = m.progress >= m.target;
                   return (
                     <div key={m.id} className="shopCard">
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <div>
                           <div style={{ fontWeight: 1100 }}>{m.text}</div>
                           <div className="small">
@@ -1309,7 +1688,9 @@ export default function App() {
                           </div>
                         </div>
                         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                          <span className="price"><span className="coinDot" /> {m.reward}</span>
+                          <span className="price">
+                            <span className="coinDot" /> {m.reward}
+                          </span>
                           <button
                             className={`btn smooth hover-lift press ${done && !m.claimed ? "btnPrimary" : ""}`}
                             disabled={!done || m.claimed}
@@ -1366,40 +1747,35 @@ export default function App() {
               </div>
 
               <div className="shopGrid">
-                {SKINS.map(s => {
+                {SKINS.map((s) => {
                   const owned = ownedSkins.includes(s.id);
                   const equipped = skinId === s.id;
                   return (
                     <div key={s.id} className="shopCard smooth hover-lift">
                       <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
-                      <div style={{ display:"flex", justifyContent:"space-between", gap:10, alignItems:"center", flexWrap:"wrap" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                         <div>
-                          <div style={{ fontWeight: 1100 }}>{s.name} {s.animated ? "✨" : ""}</div>
+                          <div style={{ fontWeight: 1100 }}>
+                            {s.name} {s.animated ? "✨" : ""}
+                          </div>
                           <div className="small">{s.desc}</div>
                         </div>
-                        <div style={{ display:"flex", gap:10, alignItems:"center", flexWrap:"wrap", justifyContent:"flex-end" }}>
-                          <span className="price"><span className="coinDot" /> {s.price}</span>
+                        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                          <span className="price">
+                            <span className="coinDot" /> {s.price}
+                          </span>
                           {owned ? (
-                            <button
-                              className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`}
-                              onClick={() => equipSkin(s.id)}
-                            >
+                            <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipSkin(s.id)}>
                               {equipped ? "Équipé" : "Équiper"}
                             </button>
                           ) : (
-                            <button
-                              className="btn btnPrimary smooth hover-lift press"
-                              disabled={!canBuy(s.price)}
-                              onClick={() => buySkin(s)}
-                            >
+                            <button className="btn btnPrimary smooth hover-lift press" disabled={!canBuy(s.price)} onClick={() => buySkin(s)}>
                               Acheter
                             </button>
                           )}
                         </div>
                       </div>
-                      {!owned && !canBuy(s.price) && (
-                        <div className="small" style={{ marginTop: 10 }}>Pas assez de coins : missions + cadeau 👀</div>
-                      )}
+                      {!owned && !canBuy(s.price) && <div className="small" style={{ marginTop: 10 }}>Pas assez de coins : missions + cadeau 👀</div>}
                     </div>
                   );
                 })}
@@ -1414,40 +1790,33 @@ export default function App() {
               </div>
 
               <div className="shopGrid">
-                {AVATARS.map(a => {
+                {AVATARS.map((a) => {
                   const owned = ownedAvatars.includes(a.id);
                   const equipped = avatarId === a.id;
                   return (
                     <div key={a.id} className="shopCard smooth hover-lift">
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                         <div>
                           <div className="avatarBig">{a.emoji}</div>
                           <div style={{ fontWeight: 1100 }}>{a.name}</div>
                           <div className="small">Cosmétique</div>
                         </div>
-                        <div style={{ display:"flex", flexDirection:"column", gap:10, alignItems:"flex-end" }}>
-                          <span className="price"><span className="coinDot" /> {a.price}</span>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-end" }}>
+                          <span className="price">
+                            <span className="coinDot" /> {a.price}
+                          </span>
                           {owned ? (
-                            <button
-                              className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`}
-                              onClick={() => equipAvatar(a.id)}
-                            >
+                            <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipAvatar(a.id)}>
                               {equipped ? "Équipé" : "Équiper"}
                             </button>
                           ) : (
-                            <button
-                              className="btn btnPrimary smooth hover-lift press"
-                              disabled={!canBuy(a.price)}
-                              onClick={() => buyAvatar(a)}
-                            >
+                            <button className="btn btnPrimary smooth hover-lift press" disabled={!canBuy(a.price)} onClick={() => buyAvatar(a)}>
                               Acheter
                             </button>
                           )}
                         </div>
                       </div>
-                      {!owned && !canBuy(a.price) && (
-                        <div className="small" style={{ marginTop: 10 }}>Continue à jouer pour gagner des coins 💰</div>
-                      )}
+                      {!owned && !canBuy(a.price) && <div className="small" style={{ marginTop: 10 }}>Continue à jouer pour gagner des coins 💰</div>}
                     </div>
                   );
                 })}
@@ -1479,9 +1848,12 @@ export default function App() {
                 <div>
                   <strong>Global</strong>
                   <div className="sub" style={{ marginTop: 8 }}>
-                    Niveau : <b>{level}</b> • Coins : <b>{coins}</b><br />
-                    Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b><br />
-                    Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b><br />
+                    Niveau : <b>{level}</b> • Coins : <b>{coins}</b>
+                    <br />
+                    Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b>
+                    <br />
+                    Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b>
+                    <br />
                     Meilleure ligue : <b>{bestLeague.icon} {bestLeague.name}</b>
                   </div>
                 </div>
@@ -1491,15 +1863,15 @@ export default function App() {
                 Records par classe → difficulté → mode (best score session):
               </div>
 
-              <div style={{ marginTop: 10, display:"grid", gap: 10 }}>
-                {GRADES.map(g => (
+              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+                {GRADES.map((g) => (
                   <div key={g.id} className="shopCard">
                     <div style={{ fontWeight: 1100, marginBottom: 6 }}>{g.label}</div>
-                    {DIFFS.map(d => (
+                    {DIFFS.map((d) => (
                       <div key={d.id} style={{ marginBottom: 10 }}>
                         <div className="small" style={{ marginBottom: 6 }}>• {d.label}</div>
-                        <div style={{ display:"grid", gridTemplateColumns:"repeat(2, minmax(0, 1fr))", gap: 8 }}>
-                          {MODES.map(m => {
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+                          {MODES.map((m) => {
                             const v = records?.[g.id]?.[d.id]?.[m.id]?.bestScore ?? 0;
                             return (
                               <div key={m.id} className="statBox" style={{ padding: 10 }}>
@@ -1523,7 +1895,8 @@ export default function App() {
                 <div>
                   <strong>Badges</strong>
                   <div className="sub" style={{ marginTop: 8 }}>
-                    Débloqués : <b>{unlockedCount}</b> / <b>{ACHIEVEMENTS.length}</b><br/>
+                    Débloqués : <b>{unlockedCount}</b> / <b>{ACHIEVEMENTS.length}</b>
+                    <br />
                     Astuce : vise les combos 🔥 et la précision 🎖️
                   </div>
                 </div>
@@ -1531,23 +1904,19 @@ export default function App() {
               </div>
 
               <div className="badgeGrid">
-                {ACHIEVEMENTS.map(a => {
+                {ACHIEVEMENTS.map((a) => {
                   const unlocked = isUnlocked(a.id);
                   const dateIso = achievements?.[a.id]?.date;
                   return (
                     <div key={a.id} className={`badgeCard smooth hover-lift ${unlocked ? "" : "badgeLocked"}`}>
-                      <div className="badgeIcon">
-                        {unlocked ? a.icon : "🔒"}
-                      </div>
+                      <div className="badgeIcon">{unlocked ? a.icon : "🔒"}</div>
                       <div style={{ flex: 1 }}>
                         <div className="badgeTitle">{unlocked ? a.title : "Badge verrouillé"}</div>
                         <div className="badgeDesc">{unlocked ? a.desc : "Continue à jouer pour le débloquer."}</div>
 
                         <div className="badgeMeta">
                           <span className="badgeProgress">🎁 +{a.reward} coins</span>
-                          {unlocked && dateIso && (
-                            <span className="badgeProgress">📅 {formatDateFR(dateIso)}</span>
-                          )}
+                          {unlocked && dateIso && <span className="badgeProgress">📅 {formatDateFR(dateIso)}</span>}
                         </div>
                       </div>
                     </div>
@@ -1565,13 +1934,13 @@ export default function App() {
           <div className="shopCard">
             <div style={{ fontWeight: 1100, marginBottom: 8 }}>Audio & vibrations</div>
 
-            <div style={{ display:"grid", gap: 10 }}>
-              <label style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap: 10 }}>
+            <div style={{ display: "grid", gap: 10 }}>
+              <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
                 <span>Sons</span>
                 <input type="checkbox" checked={audioOn} onChange={(e) => setAudioOn(e.target.checked)} />
               </label>
 
-              <label style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap: 10 }}>
+              <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
                 <span>Vibrations (mobile)</span>
                 <input type="checkbox" checked={vibrateOn} onChange={(e) => setVibrateOn(e.target.checked)} />
               </label>
@@ -1581,14 +1950,12 @@ export default function App() {
           <div className="shopCard" style={{ marginTop: 12 }}>
             <div style={{ fontWeight: 1100, marginBottom: 8 }}>Rythme</div>
 
-            <label style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap: 10 }}>
+            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
               <span>Auto-suivant après explication</span>
               <input type="checkbox" checked={autoNextOn} onChange={(e) => setAutoNextOn(e.target.checked)} />
             </label>
 
-            <div className="small" style={{ marginTop: 8 }}>
-              Délai (ms) : {autoNextMs}
-            </div>
+            <div className="small" style={{ marginTop: 8 }}>Délai (ms) : {autoNextMs}</div>
 
             <input
               type="range"
@@ -1604,7 +1971,7 @@ export default function App() {
           <div className="shopCard" style={{ marginTop: 12 }}>
             <div style={{ fontWeight: 1100, marginBottom: 8 }}>Accessibilité</div>
 
-            <label style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap: 10 }}>
+            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
               <span>Réduire les animations</span>
               <input type="checkbox" checked={reduceMotion} onChange={(e) => setReduceMotion(e.target.checked)} />
             </label>
