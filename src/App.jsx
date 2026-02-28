@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /* =======================
    Pro Icons (inline SVG)
-   (no external libraries)
 ======================= */
 function Icon({ children, size = 18 }) {
   return (
@@ -19,6 +18,7 @@ function Icon({ children, size = 18 }) {
     </svg>
   );
 }
+
 const Icons = {
   Game: (p) => (
     <Icon {...p}>
@@ -34,19 +34,14 @@ const Icons = {
   ),
   Shop: (p) => (
     <Icon {...p}>
+      <path d="M6 8h12l-1 13H7L6 8Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M9 8a3 3 0 0 1 6 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       <path
-        d="M6 8h12l-1 13H7L6 8Z"
+        d="M6 8 4.5 4.5h15L18 8"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinejoin="round"
       />
-      <path
-        d="M9 8a3 3 0 0 1 6 0"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path d="M6 8 4.5 4.5h15L18 8" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
     </Icon>
   ),
   Settings: (p) => (
@@ -77,14 +72,25 @@ const Icons = {
   Coin: (p) => (
     <Icon {...p}>
       <ellipse cx="12" cy="12" rx="8" ry="8" stroke="currentColor" strokeWidth="2" />
-      <path d="M9.5 10.5c.5-1 1.6-1.7 2.8-1.7 1.6 0 2.9 1.1 2.9 2.5 0 1.2-.9 2-2.1 2.3l-1.4.3c-1.1.2-1.8.8-1.8 1.7 0 1 1 1.9 2.4 1.9 1.1 0 2.1-.5 2.6-1.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M9.5 10.5c.5-1 1.6-1.7 2.8-1.7 1.6 0 2.9 1.1 2.9 2.5 0 1.2-.9 2-2.1 2.3l-1.4.3c-1.1.2-1.8.8-1.8 1.7 0 1 1 1.9 2.4 1.9 1.1 0 2.1-.5 2.6-1.3"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </Icon>
   ),
   Level: (p) => (
     <Icon {...p}>
       <path d="M4 18V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       <path d="M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M7 15l3-4 3 2 4-6" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      <path
+        d="M7 15l3-4 3 2 4-6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
     </Icon>
   ),
   User: (p) => (
@@ -101,7 +107,12 @@ const Icons = {
   ),
   Edit: (p) => (
     <Icon {...p}>
-      <path d="M4 20h4l10.5-10.5a2 2 0 0 0 0-2.8L17.3 5.5a2 2 0 0 0-2.8 0L4 16v4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path
+        d="M4 20h4l10.5-10.5a2 2 0 0 0 0-2.8L17.3 5.5a2 2 0 0 0-2.8 0L4 16v4Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
       <path d="M13.5 6.5l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </Icon>
   ),
@@ -207,7 +218,13 @@ function fraction() {
 function wordProblem(level) {
   const apples = rand(3, 10 + level);
   const eaten = rand(1, apples - 1);
-  return { type: "problem", text: `Tu as ${apples} pommes. Tu en manges ${eaten}. Combien reste-t-il ?`, answer: apples - eaten, steps: [`${apples} - ${eaten} = ${apples - eaten}`], reward: 15 };
+  return {
+    type: "problem",
+    text: `Tu as ${apples} pommes. Tu en manges ${eaten}. Combien reste-t-il ?`,
+    answer: apples - eaten,
+    steps: [`${apples} - ${eaten} = ${apples - eaten}`],
+    reward: 15,
+  };
 }
 
 const GEN_MAP = { addition, subtraction, multiplication, division, fraction, problem: wordProblem };
@@ -287,6 +304,9 @@ export default function App() {
     problem: true,
   });
 
+  // ✅ Mode scolaire
+  const [schoolMode, setSchoolMode] = useState(true);
+
   const [screen, setScreen] = useState("game"); // game | shop | settings
 
   const [question, setQuestion] = useState(() => addition(1));
@@ -294,6 +314,8 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [showSteps, setShowSteps] = useState(false);
 
+  // ✅ Feedback animations
+  const [feedback, setFeedback] = useState(null); // "ok" | "bad" | null
   const [shake, setShake] = useState(false);
   const [pop, setPop] = useState(false);
 
@@ -327,11 +349,12 @@ export default function App() {
     }
   }, []);
 
-  // SAVE
+  // SAVE GLOBAL
   useEffect(() => {
     localStorage.setItem("mathAdventureGlobal", JSON.stringify({ themeId, soundOn }));
   }, [themeId, soundOn]);
 
+  // SAVE PROFILES INDEX
   useEffect(() => {
     localStorage.setItem("mathAdventureProfiles", JSON.stringify({ profiles, activeProfileId }));
   }, [profiles, activeProfileId]);
@@ -359,10 +382,13 @@ export default function App() {
         fraction: true,
         problem: true,
       });
+      setSchoolMode(true);
+
       setQuestion(addition(1));
       setInput("");
       setMessage("");
       setShowSteps(false);
+      setFeedback(null);
       return;
     }
 
@@ -374,10 +400,15 @@ export default function App() {
     setCurrentAvatar(data.currentAvatar ?? "cat");
     setDailyRewardClaimed(data.dailyRewardClaimed ?? false);
     setExerciseTypes(data.exerciseTypes ?? exerciseTypes);
+
+    // ✅ load schoolMode
+    setSchoolMode(data.schoolMode ?? true);
+
     setQuestion(data.question ?? addition(data.level ?? 1));
     setInput("");
     setMessage("");
     setShowSteps(false);
+    setFeedback(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProfileId]);
 
@@ -398,6 +429,8 @@ export default function App() {
             currentAvatar,
             dailyRewardClaimed,
             exerciseTypes,
+            // ✅ save schoolMode
+            schoolMode,
             question,
           },
         };
@@ -413,6 +446,7 @@ export default function App() {
     currentAvatar,
     dailyRewardClaimed,
     exerciseTypes,
+    schoolMode,
     question,
     activeProfileId,
   ]);
@@ -432,6 +466,7 @@ export default function App() {
     setInput("");
     setShowSteps(false);
     setMessage("");
+    setFeedback(null);
   }
 
   function resetGame() {
@@ -448,10 +483,14 @@ export default function App() {
     setPop(true);
     setTimeout(() => setPop(false), 200);
 
+    // ✅ feedback animation
+    setFeedback("ok");
+    setTimeout(() => setFeedback(null), 600);
+
     const gainedXp = 10;
     setXp((x) => x + gainedXp);
     setCoins((c) => c + (question.reward ?? 5));
-    setMessage("Réponse correcte.");
+    setMessage(schoolMode ? "✅ Réponse correcte." : "Réponse correcte.");
 
     setLevel((lvl) => (xp + gainedXp >= lvl * 50 ? lvl + 1 : lvl));
     setTimeout(() => newQuestion(), 650);
@@ -462,7 +501,11 @@ export default function App() {
     setShake(true);
     setTimeout(() => setShake(false), 320);
 
-    setMessage("Réponse incorrecte. Regarde l’explication.");
+    // ✅ feedback animation
+    setFeedback("bad");
+    setTimeout(() => setFeedback(null), 600);
+
+    setMessage(schoolMode ? "❌ Réponse incorrecte. Regarde la correction." : "Réponse incorrecte.");
     setShowSteps(true);
 
     setLives((l) => {
@@ -495,7 +538,7 @@ export default function App() {
     if (dailyRewardClaimed) return;
     setCoins((c) => c + 30);
     setDailyRewardClaimed(true);
-    setMessage("Cadeau reçu (+30).");
+    setMessage(schoolMode ? "🎁 Récompense du jour : +30 pièces." : "Cadeau reçu (+30).");
   }
 
   const activeProfile = profiles.find((p) => p.id === activeProfileId);
@@ -688,6 +731,16 @@ export default function App() {
       justifyContent: "center",
       gap: 10,
     }),
+    schoolBox: {
+      marginBottom: 10,
+      textAlign: "left",
+      padding: 12,
+      borderRadius: 16,
+      background: "rgba(255,255,255,0.08)",
+      border: "1px solid rgba(255,255,255,0.12)",
+    },
+    schoolLabel: { fontSize: 12, letterSpacing: 0.4, textTransform: "uppercase", opacity: 0.75, fontWeight: 900 },
+    schoolText: { marginTop: 6, fontWeight: 800, opacity: 0.92, fontSize: 13, lineHeight: 1.35 },
   };
 
   const Keyframes = () => (
@@ -695,8 +748,6 @@ export default function App() {
       @media (min-width: 980px){
         .gridDesktop { grid-template-columns: 380px 1fr !important; }
       }
-      .hoverLift:hover { transform: translateY(-2px); background: rgba(0,0,0,0.26); }
-      .tap:active { transform: scale(0.98); }
       button:disabled { opacity: 0.55; cursor: not-allowed; }
     `}</style>
   );
@@ -704,16 +755,27 @@ export default function App() {
   return (
     <div style={styles.app}>
       <Keyframes />
+
       <div style={styles.container}>
         {/* TOP BAR */}
         <div style={styles.topbar}>
           <div style={styles.brand}>
-            <div style={{ width: 34, height: 34, borderRadius: 12, background: `linear-gradient(135deg, ${accent}, ${accent2})`, display: "grid", placeItems: "center", boxShadow: "0 12px 28px rgba(0,0,0,0.35)" }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 12,
+                background: `linear-gradient(135deg, ${accent}, ${accent2})`,
+                display: "grid",
+                placeItems: "center",
+                boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
+              }}
+            >
               <Icons.Game size={18} />
             </div>
             <div>
               <div style={styles.brandTitle}>Aventure Math</div>
-              <div style={styles.brandSub}>Typo Inter • Icônes SVG</div>
+              <div style={styles.brandSub}>{schoolMode ? "Mode scolaire • fluide" : "Mode fun • fluide"}</div>
             </div>
           </div>
 
@@ -735,7 +797,11 @@ export default function App() {
           {/* LEFT */}
           <div style={{ ...styles.glass, ...styles.panel }}>
             {installable && (
-              <button className="tap hoverLift" onClick={install} style={{ ...styles.secondaryBtn, width: "100%", justifyContent: "center" }}>
+              <button
+                className="smooth hover-lift press"
+                onClick={install}
+                style={{ ...styles.secondaryBtn, width: "100%", justifyContent: "center" }}
+              >
                 <Icons.Game size={18} /> Installer l’application
               </button>
             )}
@@ -753,13 +819,21 @@ export default function App() {
               </div>
 
               <div style={{ ...styles.row, marginTop: 10 }}>
-                <button className="tap hoverLift" style={styles.iconBtn} onClick={addProfile}>
+                <button className="smooth hover-lift press" style={styles.iconBtn} onClick={addProfile}>
                   <Icons.Plus size={18} /> Ajouter
                 </button>
-                <button className="tap hoverLift" style={styles.iconBtn} onClick={() => activeProfile && renameProfile(activeProfile.id)}>
+                <button
+                  className="smooth hover-lift press"
+                  style={styles.iconBtn}
+                  onClick={() => activeProfile && renameProfile(activeProfile.id)}
+                >
                   <Icons.Edit size={18} /> Renommer
                 </button>
-                <button className="tap hoverLift" style={styles.iconBtn} onClick={() => activeProfile && deleteProfile(activeProfile.id)}>
+                <button
+                  className="smooth hover-lift press"
+                  style={styles.iconBtn}
+                  onClick={() => activeProfile && deleteProfile(activeProfile.id)}
+                >
                   <Icons.Trash size={18} /> Supprimer
                 </button>
               </div>
@@ -775,18 +849,29 @@ export default function App() {
                 <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8, fontWeight: 700 }}>
                   {Math.round(progress)}% vers le prochain niveau
                 </div>
+
+                {schoolMode && (
+                  <div style={{ marginTop: 10, fontSize: 12, opacity: 0.86, fontWeight: 750 }}>
+                    Objectif : atteindre {level * 50} XP pour passer au niveau {level + 1}.
+                  </div>
+                )}
               </div>
 
               <div style={{ marginTop: 16 }}>
                 <div style={styles.h2}>ACTIONS</div>
                 <div style={{ ...styles.row, marginTop: 10 }}>
-                  <button className="tap hoverLift" style={styles.secondaryBtn} onClick={claimDailyReward} disabled={dailyRewardClaimed}>
+                  <button
+                    className="smooth hover-lift press"
+                    style={styles.secondaryBtn}
+                    onClick={claimDailyReward}
+                    disabled={dailyRewardClaimed}
+                  >
                     <Icons.Coin size={18} /> Cadeau
                   </button>
-                  <button className="tap hoverLift" style={styles.secondaryBtn} onClick={() => setShowSteps((s) => !s)}>
-                    <Icons.Settings size={18} /> Explication
+                  <button className="smooth hover-lift press" style={styles.secondaryBtn} onClick={() => setShowSteps((s) => !s)}>
+                    <Icons.Settings size={18} /> Correction
                   </button>
-                  <button className="tap hoverLift" style={styles.secondaryBtn} onClick={() => newQuestion()}>
+                  <button className="smooth hover-lift press" style={styles.secondaryBtn} onClick={() => newQuestion()}>
                     <Icons.Game size={18} /> Nouvelle
                   </button>
                 </div>
@@ -805,10 +890,12 @@ export default function App() {
                 </div>
                 <div style={{ marginTop: 6, fontSize: 13, opacity: 0.82, fontWeight: 700 }}>
                   {screen === "game"
-                    ? "Réponds calmement, sans limite de temps."
+                    ? schoolMode
+                      ? "Lis la consigne, calcule, puis vérifie avec la correction."
+                      : "Réponds calmement, sans limite de temps."
                     : screen === "shop"
                     ? "Achète des avatars avec tes pièces."
-                    : "Personnalise le thème, les sons et les exercices."}
+                    : "Personnalise le thème, le mode scolaire, les sons et les exercices."}
                 </div>
               </div>
               <span style={styles.pill}>
@@ -818,9 +905,26 @@ export default function App() {
 
             {screen === "game" && (
               <>
-                <div style={{ marginTop: 14, ...styles.card }}>
+                {schoolMode && (
+                  <div style={{ marginTop: 14, ...styles.schoolBox }} className="smooth">
+                    <div style={styles.schoolLabel}>Consigne</div>
+                    <div style={styles.schoolText}>
+                      Calcule et écris la réponse. Si tu te trompes, lis la correction (étapes).
+                    </div>
+                  </div>
+                )}
+
+                {/* MAIN EXO CARD with feedback classes */}
+                <div
+                  style={{ marginTop: 14, ...styles.card }}
+                  className={`smooth ${
+                    feedback === "ok" ? "pulse-ok" : ""
+                  } ${feedback === "bad" ? "pulse-bad" : ""}`}
+                >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                    <div style={{ fontSize: 18, fontWeight: 900, opacity: 0.9 }}>Mascotte</div>
+                    <div style={{ fontSize: 14, fontWeight: 900, opacity: 0.88 }}>
+                      {schoolMode ? "Calcul" : "Question"}
+                    </div>
                     <div style={{ fontSize: 28 }}>{avatarEmoji}</div>
                   </div>
 
@@ -832,29 +936,31 @@ export default function App() {
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       style={styles.input}
-                      placeholder="Ta réponse"
+                      placeholder={schoolMode ? "Écris ta réponse" : "Ta réponse"}
                     />
                   </div>
 
                   <div style={{ marginTop: 12 }}>
-                    <button className="tap" onClick={checkAnswer} style={styles.primaryBtn}>
+                    <button className="smooth press" onClick={checkAnswer} style={styles.primaryBtn}>
                       Valider
                     </button>
                   </div>
 
                   <div style={{ ...styles.row, marginTop: 12, justifyContent: "center" }}>
-                    <button className="tap hoverLift" style={styles.secondaryBtn} onClick={() => newQuestion()}>
+                    <button className="smooth hover-lift press" style={styles.secondaryBtn} onClick={() => newQuestion()}>
                       <Icons.Game size={18} /> Nouvelle question
                     </button>
-                    <button className="tap hoverLift" style={styles.secondaryBtn} onClick={() => setInput("")}>
+                    <button className="smooth hover-lift press" style={styles.secondaryBtn} onClick={() => setInput("")}>
                       <Icons.Settings size={18} /> Effacer
                     </button>
                   </div>
                 </div>
 
                 {showSteps && (
-                  <div style={styles.steps}>
-                    <div style={{ fontWeight: 900, marginBottom: 8 }}>Explication</div>
+                  <div style={styles.steps} className="smooth">
+                    <div style={{ fontWeight: 900, marginBottom: 8 }}>
+                      {schoolMode ? "✅ Correction (étapes)" : "Explication"}
+                    </div>
                     <ol style={{ margin: 0, paddingLeft: 18 }}>
                       {(question.steps ?? []).map((s, idx) => (
                         <li key={idx} style={{ marginBottom: 6 }}>
@@ -868,8 +974,10 @@ export default function App() {
             )}
 
             {screen === "shop" && (
-              <div style={{ marginTop: 14, ...styles.card }}>
-                <div style={{ fontWeight: 900, marginBottom: 10 }}>Avatar actuel : <span style={{ fontSize: 26 }}>{avatarEmoji}</span></div>
+              <div style={{ marginTop: 14, ...styles.card }} className="smooth">
+                <div style={{ fontWeight: 900, marginBottom: 10 }}>
+                  Avatar actuel : <span style={{ fontSize: 26 }}>{avatarEmoji}</span>
+                </div>
 
                 {AVATARS.map((a) => (
                   <div
@@ -892,11 +1000,11 @@ export default function App() {
                     </div>
 
                     {ownedAvatars.includes(a.id) ? (
-                      <button className="tap hoverLift" style={styles.secondaryBtn} onClick={() => setCurrentAvatar(a.id)}>
+                      <button className="smooth hover-lift press" style={styles.secondaryBtn} onClick={() => setCurrentAvatar(a.id)}>
                         {currentAvatar === a.id ? "Équipé" : "Équiper"}
                       </button>
                     ) : (
-                      <button className="tap hoverLift" style={styles.secondaryBtn} onClick={() => buyAvatar(a)} disabled={coins < a.price}>
+                      <button className="smooth hover-lift press" style={styles.secondaryBtn} onClick={() => buyAvatar(a)} disabled={coins < a.price}>
                         Acheter
                       </button>
                     )}
@@ -906,13 +1014,13 @@ export default function App() {
             )}
 
             {screen === "settings" && (
-              <div style={{ marginTop: 14, ...styles.card }}>
+              <div style={{ marginTop: 14, ...styles.card }} className="smooth">
                 <div style={{ fontWeight: 900, marginBottom: 10 }}>Thème</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
                   {THEMES.map((t) => (
                     <button
                       key={t.id}
-                      className="tap hoverLift"
+                      className="smooth hover-lift press"
                       onClick={() => setThemeId(t.id)}
                       style={{
                         ...styles.secondaryBtn,
@@ -924,6 +1032,13 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+
+                {/* ✅ School mode toggle */}
+                <div style={{ marginTop: 14, fontWeight: 900 }}>🎓 Mode scolaire</div>
+                <label style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8, fontWeight: 800 }}>
+                  <input type="checkbox" checked={schoolMode} onChange={(e) => setSchoolMode(e.target.checked)} />
+                  Interface plus “école” (consignes + correction + objectif)
+                </label>
 
                 <div style={{ marginTop: 14, fontWeight: 900 }}>Sons</div>
                 <label style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8, fontWeight: 800 }}>
@@ -946,6 +1061,7 @@ export default function App() {
                         border: "1px solid rgba(255,255,255,0.12)",
                         fontWeight: 900,
                       }}
+                      className="smooth"
                     >
                       <span>{TYPE_LABEL[k]}</span>
                       <input
@@ -958,7 +1074,7 @@ export default function App() {
                 </div>
 
                 <div style={{ ...styles.row, marginTop: 14, justifyContent: "center" }}>
-                  <button className="tap hoverLift" style={styles.secondaryBtn} onClick={resetGame}>
+                  <button className="smooth hover-lift press" style={styles.secondaryBtn} onClick={resetGame}>
                     Réinitialiser
                   </button>
                 </div>
@@ -970,13 +1086,13 @@ export default function App() {
 
       {/* Bottom NAV */}
       <div style={styles.nav}>
-        <button style={styles.navBtn(screen === "game")} onClick={() => setScreen("game")}>
+        <button style={styles.navBtn(screen === "game")} onClick={() => setScreen("game")} className="smooth press">
           <Icons.Game size={18} /> Jeu
         </button>
-        <button style={styles.navBtn(screen === "shop")} onClick={() => setScreen("shop")}>
+        <button style={styles.navBtn(screen === "shop")} onClick={() => setScreen("shop")} className="smooth press">
           <Icons.Shop size={18} /> Boutique
         </button>
-        <button style={styles.navBtn(screen === "settings")} onClick={() => setScreen("settings")}>
+        <button style={styles.navBtn(screen === "settings")} onClick={() => setScreen("settings")} className="smooth press">
           <Icons.Settings size={18} /> Réglages
         </button>
       </div>
