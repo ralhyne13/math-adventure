@@ -193,6 +193,7 @@ body.reduce-motion *{
   padding: 10px 12px;
   font-weight: 900;
   outline: none;
+  min-height: 48px; /* (8) hitbox */
 }
 .select:focus{
   border-color: color-mix(in srgb, var(--accent) 60%, rgba(255,255,255,.12));
@@ -208,6 +209,7 @@ body.reduce-motion *{
   padding: 12px 14px;
   font-weight: 1000;
   cursor:pointer;
+  min-height: 48px; /* (8) hitbox */
 }
 .btn:hover{ background: rgba(255,255,255,.10); transform: translateY(-1px); }
 .btn:disabled{ opacity: .55; cursor:not-allowed; transform:none; }
@@ -220,6 +222,15 @@ body.reduce-motion *{
 .btnGhost{ background: transparent; }
 
 .small{ font-size: 12px; color: var(--muted); }
+
+/* (8) Focus visible */
+.btn:focus-visible,
+.choice:focus-visible,
+.select:focus-visible{
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 70%, rgba(255,255,255,.12));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
 
 /* Bars */
 .barWrap{
@@ -307,6 +318,7 @@ body.reduce-motion *{
   font-weight: 1100;
   cursor:pointer;
   text-align:center;
+  min-height: 48px; /* (8) hitbox */
 }
 .choice:hover{ background: rgba(255,255,255,.10); transform: translateY(-1px); }
 .choice[aria-pressed="true"]{

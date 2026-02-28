@@ -23,6 +23,9 @@ function gcd(a, b) {
   }
   return a || 1;
 }
+function lcm(a, b) {
+  return Math.abs(a * b) / gcd(a, b);
+}
 function simplify(n, d) {
   const g = gcd(n, d);
   return [n / g, d / g];
@@ -170,6 +173,16 @@ function awardLevelCoins(levelGained) {
   return 25 + levelGained * 5;
 }
 
+/* ------------------------ Anti répétitions (6) ------------------------ */
+function questionSignature(q, modeId, gradeId, diffId) {
+  // signature “stable” pour éviter les doublons récents
+  const base = `${modeId}|${gradeId}|${diffId}|${q.row.kind}|${q.correct}`;
+  if (q.row.kind === "op") return `${base}|${q.row.a}|${q.row.op}|${q.row.b}`;
+  if (q.row.kind === "fracCmp") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.bN}/${q.row.bD}`;
+  if (q.row.kind === "fracEq") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.bN}/${q.row.bD}`;
+  return base;
+}
+
 /* ------------------------ Questions ------------------------ */
 function makeChoicesNumber(correct, spread = 10) {
   const s = Math.max(3, spread);
@@ -249,7 +262,34 @@ function makeQDiv(cfg) {
   };
 }
 
-function makeQCmpFrac(cfg) {
+/* (7) Explications fractions adaptées au niveau */
+function fracCompareExplain({ aN, aD, bN, bD }, picked, correct, gradeId) {
+  const isMiddleSchool = ["6e","5e","4e","3e"].includes(gradeId);
+
+  if (isMiddleSchool) {
+    const left = aN * bD;
+    const right = bN * aD;
+    const cmp = left > right ? ">" : left < right ? "<" : "=";
+    if (picked === correct) {
+      return `✅ Produit en croix : ${aN}×${bD}=${left} et ${bN}×${aD}=${right}. Donc ${aN}/${aD} ${cmp} ${bN}/${bD}.`;
+    }
+    return `❌ Produit en croix : ${aN}×${bD}=${left} et ${bN}×${aD}=${right}. Comme ${left} ${cmp} ${right}, la bonne réponse est "${correct}".`;
+  }
+
+  // primaire/collège bas : dénominateur commun
+  const common = lcm(aD, bD);
+  const aMul = common / aD;
+  const bMul = common / bD;
+  const aEq = aN * aMul;
+  const bEq = bN * bMul;
+  const cmp = aEq > bEq ? ">" : aEq < bEq ? "<" : "=";
+
+  const line = `On met au même dénominateur ${common} : ${aN}/${aD} = ${aEq}/${common} et ${bN}/${bD} = ${bEq}/${common}.`;
+  if (picked === correct) return `✅ ${line} Puis on compare ${aEq} et ${bEq} → ${aEq} ${cmp} ${bEq}.`;
+  return `❌ ${line} Comme ${aEq} ${cmp} ${bEq}, la bonne réponse est "${correct}".`;
+}
+
+function makeQCmpFrac(cfg, gradeId) {
   const denMax = Math.max(6, cfg.fracDen);
   const aD = randInt(2, denMax);
   const bD = randInt(2, denMax);
@@ -265,19 +305,11 @@ function makeQCmpFrac(cfg) {
     row: { kind: "fracCmp", aN: saN, aD: saD, bN: sbN, bD: sbD },
     correct,
     choices: ["<", "=", ">"],
-    explain: (picked) => {
-      const left = saN * sbD;
-      const right = sbN * saD;
-      const cmp = left > right ? ">" : left < right ? "<" : "=";
-      if (picked === correct) {
-        return `✅ Produit en croix : ${saN}×${sbD}=${left} et ${sbN}×${saD}=${right}. Donc ${saN}/${saD} ${cmp} ${sbN}/${sbD}.`;
-      }
-      return `❌ Produit en croix : ${saN}×${sbD}=${left} et ${sbN}×${saD}=${right}. Comme ${left} ${cmp} ${right}, la bonne réponse est "${correct}".`;
-    },
+    explain: (picked) => fracCompareExplain({ aN: saN, aD: saD, bN: sbN, bD: sbD }, picked, correct, gradeId),
   };
 }
 
-function makeQEqFrac(cfg) {
+function makeQEqFrac(cfg, gradeId) {
   const denMax = Math.max(6, cfg.fracDen);
   let aD = randInt(2, denMax);
   let aN = randInt(1, aD - 1);
@@ -299,6 +331,8 @@ function makeQEqFrac(cfg) {
   const left = aN * bD;
   const right = bN * aD;
 
+  const isMiddleSchool = ["6e","5e","4e","3e"].includes(gradeId);
+
   return {
     prompt: "Ces fractions sont-elles équivalentes ?",
     row: { kind: "fracEq", aN, aD, bN, bD },
@@ -307,15 +341,33 @@ function makeQEqFrac(cfg) {
     explain: (picked) => {
       const ok = picked === correct;
       const eq = left === right;
-      const test = `Test : ${aN}×${bD}=${left} et ${bN}×${aD}=${right}.`;
-      if (ok && eq) return `✅ Oui. ${test} (égalité) → équivalentes.`;
-      if (ok && !eq) return `✅ Non. ${test} (différent) → pas équivalentes.`;
-      return `❌ Réponse attendue : ${correct}. ${test} → ${eq ? "équivalentes" : "pas équivalentes"}.`;
+
+      if (isMiddleSchool) {
+        const test = `Test : ${aN}×${bD}=${left} et ${bN}×${aD}=${right}.`;
+        if (ok && eq) return `✅ Oui. ${test} (égalité) → équivalentes.`;
+        if (ok && !eq) return `✅ Non. ${test} (différent) → pas équivalentes.`;
+        return `❌ Réponse attendue : ${correct}. ${test} → ${eq ? "équivalentes" : "pas équivalentes"}.`;
+      }
+
+      // primaire/collège bas : montrer le facteur si possible
+      // on tente de voir si b est un multiple exact de a
+      const factN = bN / aN;
+      const factD = bD / aD;
+      const sameFactor = Number.isFinite(factN) && Number.isFinite(factD) && Math.abs(factN - factD) < 1e-9;
+
+      if (ok && eq) {
+        return sameFactor
+          ? `✅ Oui. On multiplie ${aN}/${aD} par ${Math.round(factN)} : ${aN}×${Math.round(factN)}/${aD}×${Math.round(factN)} = ${bN}/${bD}.`
+          : `✅ Oui. Les deux fractions représentent la même valeur.`;
+      }
+      if (ok && !eq) return `✅ Non. Elles ne donnent pas la même valeur.`;
+
+      return `❌ Réponse attendue : ${correct}. ${eq ? "Elles sont équivalentes." : "Elles ne sont pas équivalentes."}`;
     },
   };
 }
 
-function makeQuestion(modeId, gradeId, diffId) {
+function makeQuestionCore(modeId, gradeId, diffId) {
   const base = gradeBase(gradeId);
   const f = diffFactor(diffId);
   const cfg = {
@@ -326,15 +378,28 @@ function makeQuestion(modeId, gradeId, diffId) {
     divB: Math.round(base.divB * f),
     fracDen: Math.round(base.fracDen * f),
   };
+
   switch (modeId) {
     case "add": return makeQAdd(cfg);
     case "sub": return makeQSub(cfg);
     case "mul": return makeQMul(cfg);
     case "div": return makeQDiv(cfg);
-    case "cmpFrac": return makeQCmpFrac(cfg);
-    case "eqFrac": return makeQEqFrac(cfg);
+    case "cmpFrac": return makeQCmpFrac(cfg, gradeId);
+    case "eqFrac": return makeQEqFrac(cfg, gradeId);
     default: return makeQAdd(cfg);
   }
+}
+
+function makeQuestion(modeId, gradeId, diffId, historyRef) {
+  // (6) on évite les dernières questions
+  const hist = historyRef?.current ?? [];
+  for (let tries = 0; tries < 20; tries++) {
+    const q = makeQuestionCore(modeId, gradeId, diffId);
+    const sig = questionSignature(q, modeId, gradeId, diffId);
+    if (!hist.includes(sig)) return q;
+  }
+  // fallback si vraiment on n’y arrive pas
+  return makeQuestionCore(modeId, gradeId, diffId);
 }
 
 /* ------------------------ UI components ------------------------ */
@@ -374,7 +439,7 @@ function generateDailyMissions() {
   return shuffle(pool).slice(0, 3).map(m => ({ ...m, progress: 0, claimed: false }));
 }
 
-const LS_KEY = "math-duel-v4"; // <- on incrémente la clé pour éviter conflits avec anciens saves
+const LS_KEY = "math-duel-v4";
 
 /* ------------------------ Achievements (Badges) ------------------------ */
 const ACHIEVEMENTS = [
@@ -404,6 +469,14 @@ function formatDateFR(iso) {
 
 /* ------------------------ App ------------------------ */
 export default function App() {
+  const qHistoryRef = useRef([]); // (6) historique signatures
+  const autoTimerRef = useRef(null);
+  const badgeTimerRef = useRef(null);
+
+  // (2) refs pour éviter “state capturé” dans XP/level
+  const levelRef = useRef(1);
+  const xpRef = useRef(0);
+
   const initial = useMemo(() => {
     const saved = safeLSGet(LS_KEY, null);
     return {
@@ -442,7 +515,7 @@ export default function App() {
       dailyStats: saved?.dailyStats ?? { right: 0, questions: 0, bestStreak: 0 },
 
       // achievements
-      achievements: saved?.achievements ?? {}, // { [id]: { unlocked:true, date: iso } }
+      achievements: saved?.achievements ?? {},
     };
   }, []);
 
@@ -477,36 +550,39 @@ export default function App() {
   const [dailyStats, setDailyStats] = useState(initial.dailyStats);
 
   const [achievements, setAchievements] = useState(initial.achievements);
-  const [badgePop, setBadgePop] = useState(null); // { title, desc, reward, icon }
+  const [badgePop, setBadgePop] = useState(null);
 
-  // Session/game loop (illimité)
+  // Session/game loop
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(1);
 
-  const [q, setQ] = useState(() => makeQuestion(modeId, gradeId, diffId));
+  const [q, setQ] = useState(() => makeQuestion(modeId, gradeId, diffId, qHistoryRef));
   const [picked, setPicked] = useState(null);
   const [status, setStatus] = useState("idle"); // idle | ok | bad
   const [explain, setExplain] = useState("");
   const [showExplain, setShowExplain] = useState(false);
 
+  // (1) lock UI robuste
+  const [isLocked, setIsLocked] = useState(false);
+
   // FX
   const [fx, setFx] = useState("none"); // none | ok | bad
   const [spark, setSpark] = useState(false);
-
-  const lockRef = useRef(false);
-  const autoTimerRef = useRef(null);
-  const badgeTimerRef = useRef(null);
 
   // Modals
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [shopTab, setShopTab] = useState("skins"); // skins | avatars
+  const [shopTab, setShopTab] = useState("skins");
   const [profileTab, setProfileTab] = useState("stats"); // stats | badges
 
   const avatar = AVATARS.find(a => a.id === avatarId) ?? AVATARS[0];
   const skin = SKINS.find(s => s.id === skinId) ?? SKINS[0];
+
+  // sync refs (2)
+  useEffect(() => { levelRef.current = level; }, [level]);
+  useEffect(() => { xpRef.current = xp; }, [xp]);
 
   // Apply skin vars
   useEffect(() => {
@@ -520,17 +596,34 @@ export default function App() {
     document.body.classList.toggle("reduce-motion", !!reduceMotion);
   }, [reduceMotion]);
 
-  // Daily reset (Paris)
+  function resetDailyFor(today) {
+    setDayKey(today);
+    setDailyGiftClaimed(false);
+    setDailyMissions(generateDailyMissions());
+    setDailyStats({ right: 0, questions: 0, bestStreak: 0 });
+  }
+
+  // Daily init + (3) auto-check si l’app reste ouverte
   useEffect(() => {
     const today = parisDayKey();
     if (dayKey !== today) {
-      setDayKey(today);
-      setDailyGiftClaimed(false);
-      setDailyMissions(generateDailyMissions());
-      setDailyStats({ right: 0, questions: 0, bestStreak: 0 });
+      resetDailyFor(today);
     } else {
       if (!dailyMissions) setDailyMissions(generateDailyMissions());
     }
+
+    const t = setInterval(() => {
+      const nowKey = parisDayKey();
+      setDayKey((prev) => {
+        if (prev !== nowKey) {
+          resetDailyFor(nowKey);
+          return nowKey;
+        }
+        return prev;
+      });
+    }, 60_000);
+
+    return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -555,7 +648,7 @@ export default function App() {
     achievements,
   ]);
 
-  // Reset question when mode/grade/diff change (sans reset profil)
+  // Reset question when mode/grade/diff change
   useEffect(() => {
     newQuestion(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -583,22 +676,23 @@ export default function App() {
     setCoins(c => c + Math.max(0, amount));
   }
 
+  // (2) XP robuste via refs + setState “atomique”
   function awardXp(amount) {
     const add = Math.max(0, amount);
-    setXp((cur) => {
-      let xpNow = cur + add;
-      let lvl = level;
 
-      while (xpNow >= xpToNext(lvl)) {
-        xpNow -= xpToNext(lvl);
-        lvl += 1;
-        const bonus = awardLevelCoins(lvl);
-        awardCoins(bonus);
-      }
+    let lvl = levelRef.current;
+    let xpNow = xpRef.current + add;
 
-      if (lvl !== level) setLevel(lvl);
-      return xpNow;
-    });
+    while (xpNow >= xpToNext(lvl)) {
+      xpNow -= xpToNext(lvl);
+      lvl += 1;
+      awardCoins(awardLevelCoins(lvl));
+    }
+
+    levelRef.current = lvl;
+    xpRef.current = xpNow;
+    setLevel(lvl);
+    setXp(xpNow);
   }
 
   function updateDailyMissions(nextDailyStats) {
@@ -642,9 +736,10 @@ export default function App() {
     return records?.[gId]?.[dId]?.[mId]?.bestScore ?? 0;
   }
 
+  // (4) plus de structuredClone
   function updateRecordIfNeeded(finalScore) {
     setRecords(prev => {
-      const next = structuredClone(prev ?? {});
+      const next = JSON.parse(JSON.stringify(prev ?? {}));
       next[gradeId] ??= {};
       next[gradeId][diffId] ??= {};
       next[gradeId][diffId][modeId] ??= { bestScore: 0 };
@@ -665,16 +760,26 @@ export default function App() {
     setTimeout(() => setFx("none"), 750);
   }
 
+  function pushHistory(qNew) {
+    const sig = questionSignature(qNew, modeId, gradeId, diffId);
+    const arr = qHistoryRef.current ?? [];
+    const next = [sig, ...arr];
+    qHistoryRef.current = next.slice(0, 12); // garde les 12 dernières
+  }
+
   function newQuestion(resetPick = false) {
     clearAutoTimer();
-    setQ(makeQuestion(modeId, gradeId, diffId));
+    const qNew = makeQuestion(modeId, gradeId, diffId, qHistoryRef);
+    pushHistory(qNew);
+
+    setQ(qNew);
     setStatus("idle");
     setExplain("");
     setShowExplain(false);
     setFx("none");
     setSpark(false);
+    setIsLocked(false); // (1) unlock ici
     if (resetPick) setPicked(null);
-    lockRef.current = false;
   }
 
   function resetSession() {
@@ -691,13 +796,11 @@ export default function App() {
 
   function unlockAchievement(a) {
     if (isUnlocked(a.id)) return;
-
     const iso = new Date().toISOString();
     setAchievements(prev => ({
       ...(prev ?? {}),
       [a.id]: { unlocked: true, date: iso },
     }));
-
     awardCoins(a.reward);
     showBadgePopup({
       icon: a.icon,
@@ -708,7 +811,6 @@ export default function App() {
   }
 
   function checkAchievements(snapshot) {
-    // snapshot: { streak, totalRight, totalQuestions, totalAnswers, accuracy }
     for (const a of ACHIEVEMENTS) {
       if (isUnlocked(a.id)) continue;
 
@@ -720,14 +822,15 @@ export default function App() {
   }
 
   function submit(choice) {
-    if (lockRef.current) return;
-    lockRef.current = true;
+    // (1) anti double-clic
+    if (isLocked || showExplain) return;
+    setIsLocked(true);
     clearAutoTimer();
 
     setPicked(choice);
     const isCorrect = choice === q.correct;
 
-    // Calcul "next" (fiable pour achievements + affichage instantané)
+    // prochains totaux (fiables pour achievements)
     const nextTotalQuestions = totalQuestions + 1;
     const nextTotalRight = totalRight + (isCorrect ? 1 : 0);
     const nextTotalWrong = totalWrong + (isCorrect ? 0 : 1);
@@ -740,17 +843,6 @@ export default function App() {
     // compteurs globaux
     setTotalQuestions(x => x + 1);
 
-    // daily stats (questions)
-    setDailyStats(ds => {
-      const next = {
-        ...ds,
-        questions: ds.questions + 1,
-        bestStreak: Math.max(ds.bestStreak, isCorrect ? (streak + 1) : ds.bestStreak),
-      };
-      updateDailyMissions(next);
-      return next;
-    });
-
     if (isCorrect) {
       setStatus("ok");
       playBeep("ok", audioOn);
@@ -758,13 +850,7 @@ export default function App() {
       triggerFx("ok");
 
       awardCoins(3);
-
       setTotalRight(x => x + 1);
-      setDailyStats(ds => {
-        const next = { ...ds, right: ds.right + 1 };
-        updateDailyMissions(next);
-        return next;
-      });
 
       setScore(s => s + nextScoreAdd);
 
@@ -774,13 +860,11 @@ export default function App() {
         return ns;
       });
 
-      // XP
       awardXp(10 + Math.min(8, streak));
 
       setExplain(q.explain(choice));
       setShowExplain(true);
 
-      // record session (score)
       updateRecordIfNeeded(score + nextScoreAdd);
     } else {
       setStatus("bad");
@@ -788,20 +872,30 @@ export default function App() {
       vibrate(60);
       triggerFx("bad");
 
-      // petite pénalité douce
       setCoins(c => Math.max(0, c - 1));
 
       setTotalWrong(x => x + 1);
       setStreak(0);
 
-      // XP petit quand même
       awardXp(4);
 
       setExplain(q.explain(choice));
       setShowExplain(true);
     }
 
-    // ✅ Achievements check
+    // (5) daily stats en 1 seul update (questions + right + bestStreak)
+    setDailyStats(ds => {
+      const next = {
+        ...ds,
+        questions: ds.questions + 1,
+        right: ds.right + (isCorrect ? 1 : 0),
+        bestStreak: Math.max(ds.bestStreak, nextStreak),
+      };
+      updateDailyMissions(next);
+      return next;
+    });
+
+    // achievements
     checkAchievements({
       streak: nextStreak,
       totalRight: nextTotalRight,
@@ -816,8 +910,6 @@ export default function App() {
         goNext();
       }, clamp(autoNextMs, 600, 6000));
     }
-
-    lockRef.current = false;
   }
 
   function goNext() {
@@ -871,6 +963,8 @@ export default function App() {
   const unlockedCount = useMemo(() => {
     return ACHIEVEMENTS.filter(a => isUnlocked(a.id)).length;
   }, [achievements]);
+
+  const disableChoices = isLocked || showExplain; // (1)
 
   return (
     <div className="shell">
@@ -1005,6 +1099,7 @@ export default function App() {
                   className="choice smooth hover-lift press"
                   onClick={() => submit(c)}
                   aria-pressed={picked === c}
+                  disabled={disableChoices}
                 >
                   {String(c)}
                 </button>
