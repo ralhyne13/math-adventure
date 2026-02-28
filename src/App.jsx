@@ -48,7 +48,6 @@ function safeLSSet(key, value) {
 }
 
 function parisDayKey() {
-  // Clé stable "jour" en timezone Europe/Paris
   return new Date().toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" });
 }
 
@@ -59,7 +58,6 @@ function playBeep(kind = "ok", enabled = true) {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
-
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.connect(g);
@@ -87,7 +85,6 @@ function playBeep(kind = "ok", enabled = true) {
       o.stop(now + 0.22);
     }
 
-    // cleanup
     setTimeout(() => ctx.close().catch(() => {}), 300);
   } catch {}
 }
@@ -165,7 +162,17 @@ function diffFactor(diffId) {
   return 1.35;
 }
 
-/* ------------------------ Question generators ------------------------ */
+/* ------------------------ XP / Level ------------------------ */
+function xpToNext(level) {
+  // Progression douce au début puis augmente
+  return 120 + level * 35;
+}
+function awardLevelCoins(levelGained) {
+  // bonus coins au level up
+  return 25 + levelGained * 5;
+}
+
+/* ------------------------ Questions ------------------------ */
 function makeChoicesNumber(correct, spread = 10) {
   const s = Math.max(3, spread);
   const set = new Set([correct]);
@@ -183,7 +190,6 @@ function makeQAdd(cfg) {
   const b = randInt(0, max);
   const correct = a + b;
   return {
-    type: "number",
     prompt: "Calcule :",
     row: { kind: "op", a, op: "+", b },
     correct,
@@ -201,7 +207,6 @@ function makeQSub(cfg) {
   if (b > a) [a, b] = [b, a];
   const correct = a - b;
   return {
-    type: "number",
     prompt: "Calcule :",
     row: { kind: "op", a, op: "−", b },
     correct,
@@ -219,7 +224,6 @@ function makeQMul(cfg) {
   const b = randInt(0, bMax);
   const correct = a * b;
   return {
-    type: "number",
     prompt: "Calcule :",
     row: { kind: "op", a, op: "×", b },
     correct,
@@ -237,7 +241,6 @@ function makeQDiv(cfg) {
   const a = b * q;
   const correct = q;
   return {
-    type: "number",
     prompt: "Calcule :",
     row: { kind: "op", a, op: "÷", b },
     correct,
@@ -260,7 +263,6 @@ function makeQCmpFrac(cfg) {
   const correct = cmpFractions(saN, saD, sbN, sbD);
 
   return {
-    type: "symbol",
     prompt: "Compare :",
     row: { kind: "fracCmp", aN: saN, aD: saD, bN: sbN, bD: sbD },
     correct,
@@ -300,7 +302,6 @@ function makeQEqFrac(cfg) {
   const right = bN * aD;
 
   return {
-    type: "yesno",
     prompt: "Ces fractions sont-elles équivalentes ?",
     row: { kind: "fracEq", aN, aD, bN, bD },
     correct,
@@ -338,7 +339,7 @@ function makeQuestion(modeId, gradeId, diffId) {
   }
 }
 
-/* ------------------------ UI pieces ------------------------ */
+/* ------------------------ UI components ------------------------ */
 function Fraction({ n, d }) {
   return (
     <div className="fraction" aria-label={`${n} sur ${d}`}>
@@ -364,28 +365,21 @@ function Modal({ title, onClose, children }) {
 
 /* ------------------------ Daily missions ------------------------ */
 function generateDailyMissions() {
-  // 3 missions simples + robustes
   const pool = [
-    { id: "play1", text: "Joue 1 partie (10 manches)", type: "games", target: 1, reward: 40 },
-    { id: "play2", text: "Joue 2 parties", type: "games", target: 2, reward: 80 },
-    { id: "right12", text: "Fais 12 bonnes réponses", type: "right", target: 12, reward: 70 },
-    { id: "right20", text: "Fais 20 bonnes réponses", type: "right", target: 20, reward: 110 },
-    { id: "streak5", text: "Atteins un combo de 5", type: "streak", target: 5, reward: 90 },
-    { id: "streak8", text: "Atteins un combo de 8", type: "streak", target: 8, reward: 140 },
+    { id: "right15", text: "Fais 15 bonnes réponses", type: "right", target: 15, reward: 80 },
+    { id: "right30", text: "Fais 30 bonnes réponses", type: "right", target: 30, reward: 150 },
+    { id: "streak5", text: "Atteins un combo de 5", type: "streak", target: 5, reward: 100 },
+    { id: "streak10", text: "Atteins un combo de 10", type: "streak", target: 10, reward: 190 },
+    { id: "q40", text: "Réponds à 40 questions", type: "questions", target: 40, reward: 120 },
+    { id: "q80", text: "Réponds à 80 questions", type: "questions", target: 80, reward: 220 },
   ];
-  return shuffle(pool).slice(0, 3).map(m => ({
-    ...m,
-    progress: 0,
-    claimed: false,
-  }));
+  return shuffle(pool).slice(0, 3).map(m => ({ ...m, progress: 0, claimed: false }));
 }
 
-const LS_KEY = "math-duel-v2";
+const LS_KEY = "math-duel-v3";
 
 /* ------------------------ App ------------------------ */
 export default function App() {
-  const TOTAL = 10;
-
   const initial = useMemo(() => {
     const saved = safeLSGet(LS_KEY, null);
     return {
@@ -399,19 +393,28 @@ export default function App() {
       ownedSkins: saved?.ownedSkins ?? ["neon-night"],
       ownedAvatars: saved?.ownedAvatars ?? ["owl"],
 
+      // XP
+      level: saved?.level ?? 1,
+      xp: saved?.xp ?? 0,
+
       records: saved?.records ?? {},
       bestStreak: saved?.bestStreak ?? 0,
-      totalGames: saved?.totalGames ?? 0,
       totalRight: saved?.totalRight ?? 0,
       totalWrong: saved?.totalWrong ?? 0,
+      totalQuestions: saved?.totalQuestions ?? 0,
 
+      // settings
       audioOn: saved?.audioOn ?? true,
+      vibrateOn: saved?.vibrateOn ?? true,
+      autoNextOn: saved?.autoNextOn ?? false,
+      autoNextMs: saved?.autoNextMs ?? 1800,
+      reduceMotion: saved?.reduceMotion ?? false,
 
       // daily
       dayKey: saved?.dayKey ?? null,
       dailyGiftClaimed: saved?.dailyGiftClaimed ?? false,
       dailyMissions: saved?.dailyMissions ?? null,
-      dailyStats: saved?.dailyStats ?? { games: 0, right: 0, bestStreak: 0 },
+      dailyStats: saved?.dailyStats ?? { right: 0, questions: 0, bestStreak: 0 },
     };
   }, []);
 
@@ -425,23 +428,31 @@ export default function App() {
   const [ownedSkins, setOwnedSkins] = useState(initial.ownedSkins);
   const [ownedAvatars, setOwnedAvatars] = useState(initial.ownedAvatars);
 
+  const [level, setLevel] = useState(initial.level);
+  const [xp, setXp] = useState(initial.xp);
+
   const [records, setRecords] = useState(initial.records);
   const [bestStreak, setBestStreak] = useState(initial.bestStreak);
-  const [totalGames, setTotalGames] = useState(initial.totalGames);
   const [totalRight, setTotalRight] = useState(initial.totalRight);
   const [totalWrong, setTotalWrong] = useState(initial.totalWrong);
+  const [totalQuestions, setTotalQuestions] = useState(initial.totalQuestions);
 
   const [audioOn, setAudioOn] = useState(initial.audioOn);
+  const [vibrateOn, setVibrateOn] = useState(initial.vibrateOn);
+  const [autoNextOn, setAutoNextOn] = useState(initial.autoNextOn);
+  const [autoNextMs, setAutoNextMs] = useState(initial.autoNextMs);
+  const [reduceMotion, setReduceMotion] = useState(initial.reduceMotion);
 
   const [dayKey, setDayKey] = useState(initial.dayKey);
   const [dailyGiftClaimed, setDailyGiftClaimed] = useState(initial.dailyGiftClaimed);
   const [dailyMissions, setDailyMissions] = useState(initial.dailyMissions);
   const [dailyStats, setDailyStats] = useState(initial.dailyStats);
 
-  // Game
-  const [round, setRound] = useState(1);
+  // Session/game loop (illimité)
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(1);
+
   const [q, setQ] = useState(() => makeQuestion(modeId, gradeId, diffId));
   const [picked, setPicked] = useState(null);
   const [status, setStatus] = useState("idle"); // idle | ok | bad
@@ -453,14 +464,13 @@ export default function App() {
   const [spark, setSpark] = useState(false);
 
   const lockRef = useRef(false);
+  const autoTimerRef = useRef(null);
 
   // Modals
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [shopTab, setShopTab] = useState("skins"); // skins | avatars
-
-  const progressPct = useMemo(() => Math.round(((round - 1) / TOTAL) * 100), [round]);
-  const isGameOver = round > TOTAL;
 
   const avatar = AVATARS.find(a => a.id === avatarId) ?? AVATARS[0];
   const skin = SKINS.find(s => s.id === skinId) ?? SKINS[0];
@@ -472,14 +482,19 @@ export default function App() {
     });
   }, [skin]);
 
-  // Daily reset (missions + gift) by Paris dayKey
+  // Reduce motion toggle
+  useEffect(() => {
+    document.body.classList.toggle("reduce-motion", !!reduceMotion);
+  }, [reduceMotion]);
+
+  // Daily reset (Paris)
   useEffect(() => {
     const today = parisDayKey();
     if (dayKey !== today) {
       setDayKey(today);
       setDailyGiftClaimed(false);
       setDailyMissions(generateDailyMissions());
-      setDailyStats({ games: 0, right: 0, bestStreak: 0 });
+      setDailyStats({ right: 0, questions: 0, bestStreak: 0 });
     } else {
       if (!dailyMissions) setDailyMissions(generateDailyMissions());
     }
@@ -491,36 +506,96 @@ export default function App() {
     safeLSSet(LS_KEY, {
       skinId, gradeId, diffId, modeId,
       coins, avatarId, ownedSkins, ownedAvatars,
-      records, bestStreak, totalGames, totalRight, totalWrong,
-      audioOn,
+      level, xp,
+      records, bestStreak, totalRight, totalWrong, totalQuestions,
+      audioOn, vibrateOn, autoNextOn, autoNextMs, reduceMotion,
       dayKey, dailyGiftClaimed, dailyMissions, dailyStats,
     });
   }, [
     skinId, gradeId, diffId, modeId,
     coins, avatarId, ownedSkins, ownedAvatars,
-    records, bestStreak, totalGames, totalRight, totalWrong,
-    audioOn,
+    level, xp,
+    records, bestStreak, totalRight, totalWrong, totalQuestions,
+    audioOn, vibrateOn, autoNextOn, autoNextMs, reduceMotion,
     dayKey, dailyGiftClaimed, dailyMissions, dailyStats
   ]);
 
-  // Reset game when mode/grade/diff change
+  // Reset question when mode/grade/diff change (sans reset profil)
   useEffect(() => {
-    restart();
+    newQuestion(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeId, gradeId, diffId]);
 
-  function restart() {
-    lockRef.current = false;
-    setRound(1);
-    setScore(0);
-    setStreak(0);
-    setPicked(null);
-    setStatus("idle");
-    setExplain("");
-    setShowExplain(false);
-    setFx("none");
-    setSpark(false);
-    setQ(makeQuestion(modeId, gradeId, diffId));
+  function vibrate(ms) {
+    if (!vibrateOn) return;
+    try { navigator.vibrate?.(ms); } catch {}
+  }
+
+  function clearAutoTimer() {
+    if (autoTimerRef.current) {
+      clearTimeout(autoTimerRef.current);
+      autoTimerRef.current = null;
+    }
+  }
+
+  function awardCoins(amount) {
+    setCoins(c => c + Math.max(0, amount));
+  }
+
+  function awardXp(amount) {
+    let add = Math.max(0, amount);
+    setXp((cur) => {
+      let xpNow = cur + add;
+      let lvl = level;
+
+      // on boucle si plusieurs levels d’un coup
+      while (xpNow >= xpToNext(lvl)) {
+        xpNow -= xpToNext(lvl);
+        lvl += 1;
+        const bonus = awardLevelCoins(lvl);
+        awardCoins(bonus);
+      }
+
+      if (lvl !== level) setLevel(lvl);
+      return xpNow;
+    });
+  }
+
+  function updateDailyMissions(nextDailyStats) {
+    setDailyMissions(prev => {
+      const missions = prev ?? generateDailyMissions();
+      return missions.map(m => {
+        let progress = m.progress;
+        if (m.type === "right") progress = nextDailyStats.right;
+        if (m.type === "questions") progress = nextDailyStats.questions;
+        if (m.type === "streak") progress = nextDailyStats.bestStreak;
+        return { ...m, progress };
+      });
+    });
+  }
+
+  function claimMission(missionId) {
+    setDailyMissions(prev => {
+      const missions = prev ?? [];
+      const idx = missions.findIndex(m => m.id === missionId);
+      if (idx < 0) return missions;
+
+      const m = missions[idx];
+      const done = m.progress >= m.target;
+      if (!done || m.claimed) return missions;
+
+      awardCoins(m.reward);
+      const next = [...missions];
+      next[idx] = { ...m, claimed: true };
+      return next;
+    });
+  }
+
+  function claimDailyGift() {
+    if (dailyGiftClaimed) return;
+    const gift = randInt(40, 90);
+    awardCoins(gift);
+    setDailyGiftClaimed(true);
   }
 
   function getBestScoreFor(mId, gId, dId) {
@@ -541,73 +616,6 @@ export default function App() {
     });
   }
 
-  function updateDailyMissions(nextDailyStats) {
-    // met à jour progress des missions + claim automatique possible
-    setDailyMissions(prev => {
-      const missions = prev ?? generateDailyMissions();
-      return missions.map(m => {
-        let progress = m.progress;
-        if (m.type === "games") progress = nextDailyStats.games;
-        if (m.type === "right") progress = nextDailyStats.right;
-        if (m.type === "streak") progress = nextDailyStats.bestStreak;
-        return { ...m, progress };
-      });
-    });
-  }
-
-  function awardCoins(amount, reason = "") {
-    setCoins(c => c + Math.max(0, amount));
-    // (tu peux afficher un toast “+x coins” plus tard si tu veux)
-  }
-
-  function claimMission(missionId) {
-    setDailyMissions(prev => {
-      const missions = prev ?? [];
-      const idx = missions.findIndex(m => m.id === missionId);
-      if (idx < 0) return missions;
-
-      const m = missions[idx];
-      const done = m.progress >= m.target;
-      if (!done || m.claimed) return missions;
-
-      awardCoins(m.reward, "mission");
-      const next = [...missions];
-      next[idx] = { ...m, claimed: true };
-      return next;
-    });
-  }
-
-  function claimDailyGift() {
-    if (dailyGiftClaimed) return;
-    const gift = randInt(40, 90);
-    awardCoins(gift, "gift");
-    setDailyGiftClaimed(true);
-  }
-
-  function finishGame(finalScore) {
-    setTotalGames(g => g + 1);
-    updateRecordIfNeeded(finalScore);
-
-    // daily stats games +1
-    setDailyStats(ds => {
-      const next = { ...ds, games: ds.games + 1 };
-      updateDailyMissions(next);
-      return next;
-    });
-  }
-
-  function nextQuestion() {
-    if (isGameOver) return;
-    setQ(makeQuestion(modeId, gradeId, diffId));
-    setPicked(null);
-    setStatus("idle");
-    setExplain("");
-    setShowExplain(false);
-    setFx("none");
-    setSpark(false);
-    lockRef.current = false;
-  }
-
   function triggerFx(kind) {
     setFx(kind);
     if (kind === "ok") {
@@ -617,25 +625,60 @@ export default function App() {
     setTimeout(() => setFx("none"), 750);
   }
 
+  function newQuestion(resetPick = false) {
+    clearAutoTimer();
+    setQ(makeQuestion(modeId, gradeId, diffId));
+    setStatus("idle");
+    setExplain("");
+    setShowExplain(false);
+    setFx("none");
+    setSpark(false);
+    if (resetPick) setPicked(null);
+    lockRef.current = false;
+  }
+
+  function resetSession() {
+    clearAutoTimer();
+    setScore(0);
+    setStreak(0);
+    setQuestionIndex(1);
+    newQuestion(true);
+  }
+
   function submit(choice) {
-    if (lockRef.current || isGameOver) return;
+    if (lockRef.current) return;
     lockRef.current = true;
+    clearAutoTimer();
 
     setPicked(choice);
 
     const isCorrect = choice === q.correct;
 
+    // compteurs globaux
+    setTotalQuestions(x => x + 1);
+
+    // daily stats (questions)
+    setDailyStats(ds => {
+      const next = {
+        ...ds,
+        questions: ds.questions + 1,
+        bestStreak: Math.max(ds.bestStreak, isCorrect ? (streak + 1) : ds.bestStreak),
+      };
+      updateDailyMissions(next);
+      return next;
+    });
+
     if (isCorrect) {
       setStatus("ok");
       playBeep("ok", audioOn);
+      vibrate(20);
       triggerFx("ok");
 
-      // coins: petite récompense par bonne réponse
-      awardCoins(3, "correct");
+      awardCoins(3);
 
       setTotalRight(x => x + 1);
       setDailyStats(ds => {
-        const next = { ...ds, right: ds.right + 1, bestStreak: Math.max(ds.bestStreak, streak + 1) };
+        const next = { ...ds, right: ds.right + 1 };
         updateDailyMissions(next);
         return next;
       });
@@ -649,61 +692,47 @@ export default function App() {
         return ns;
       });
 
+      // XP: récompense + bonus combo léger
+      awardXp(10 + Math.min(8, streak));
+
       setExplain(q.explain(choice));
       setShowExplain(true);
+
+      // record session (score)
+      updateRecordIfNeeded(score + addPts);
     } else {
       setStatus("bad");
       playBeep("bad", audioOn);
+      vibrate(60);
       triggerFx("bad");
 
-      // petite “pénalité douce” (pas trop frustrant)
+      // petite pénalité douce
       setCoins(c => Math.max(0, c - 1));
 
       setTotalWrong(x => x + 1);
       setStreak(0);
 
-      setDailyStats(ds => {
-        const next = { ...ds, bestStreak: Math.max(ds.bestStreak, ds.bestStreak) };
-        updateDailyMissions(next);
-        return next;
-      });
+      // XP petit quand même (apprentissage)
+      awardXp(4);
 
       setExplain(q.explain(choice));
       setShowExplain(true);
     }
 
-    // on laisse + de temps + bouton "Suivant"
+    // Auto-next si activé
+    if (autoNextOn) {
+      autoTimerRef.current = setTimeout(() => {
+        goNext();
+      }, clamp(autoNextMs, 600, 6000));
+    }
+
     lockRef.current = false;
   }
 
-  function goNextAfterAnswer() {
-    if (isGameOver) return;
-
-    const nr = round + 1;
-    if (nr <= TOTAL) {
-      setRound(nr);
-      setQ(makeQuestion(modeId, gradeId, diffId));
-      setPicked(null);
-      setStatus("idle");
-      setExplain("");
-      setShowExplain(false);
-      setFx("none");
-      setSpark(false);
-    } else {
-      setRound(nr);
-      finishGame(score);
-    }
+  function goNext() {
+    setQuestionIndex(i => i + 1);
+    newQuestion(true);
   }
-
-  const bestScore = getBestScoreFor(modeId, gradeId, diffId);
-  const modeLabel = MODES.find(m => m.id === modeId)?.label ?? "Mode";
-  const diffLabel = DIFFS.find(d => d.id === diffId)?.label ?? diffId;
-
-  const accuracy = useMemo(() => {
-    const total = totalRight + totalWrong;
-    if (!total) return 0;
-    return Math.round((totalRight / total) * 100);
-  }, [totalRight, totalWrong]);
 
   function canBuy(price) {
     return coins >= price;
@@ -735,6 +764,19 @@ export default function App() {
     setAvatarId(aid);
   }
 
+  const bestScore = getBestScoreFor(modeId, gradeId, diffId);
+  const modeLabel = MODES.find(m => m.id === modeId)?.label ?? "Mode";
+  const diffLabel = DIFFS.find(d => d.id === diffId)?.label ?? diffId;
+
+  const accuracy = useMemo(() => {
+    const total = totalRight + totalWrong;
+    if (!total) return 0;
+    return Math.round((totalRight / total) * 100);
+  }, [totalRight, totalWrong]);
+
+  const xpNeed = xpToNext(level);
+  const xpPct = Math.round((xp / xpNeed) * 100);
+
   return (
     <div className="shell">
       <div className="topbar">
@@ -742,7 +784,7 @@ export default function App() {
           <div className="logo smooth hover-lift" />
           <div>
             <div className="h1">Math Duel <span style={{ opacity: .85 }}>{avatar.emoji}</span></div>
-            <div className="sub">Jeu de maths • {modeLabel} • {gradeId} • {diffLabel}</div>
+            <div className="sub">Illimité • {modeLabel} • {gradeId} • {diffLabel}</div>
           </div>
         </div>
 
@@ -752,13 +794,12 @@ export default function App() {
             <span>{coins} coins</span>
           </div>
 
-          <span className="pill">Manche {Math.min(round, TOTAL)}/{TOTAL}</span>
+          <span className="pill">Q#{questionIndex}</span>
           <span className="pill">Record: {bestScore}</span>
 
-          <button className="btn smooth hover-lift press" onClick={() => setAudioOn(v => !v)} title="Activer/Désactiver sons">
-            {audioOn ? "🔊 Sons" : "🔇 Muet"}
+          <button className="btn smooth hover-lift press" onClick={() => setShowSettings(true)}>
+            Réglages
           </button>
-
           <button className="btn smooth hover-lift press" onClick={() => setShowProfile(true)}>
             Profil
           </button>
@@ -774,7 +815,6 @@ export default function App() {
           {/* FX overlays */}
           <div className={`fx ${fx === "ok" ? "fxOk" : fx === "bad" ? "fxBad" : ""}`} />
           <div className={`sparkles ${spark ? "on" : ""}`}>
-            {/* 10 sparkles */}
             {[...Array(10)].map((_, i) => (
               <i
                 key={i}
@@ -789,7 +829,7 @@ export default function App() {
 
           <div className="cardTitle">
             <span>Choisis la bonne réponse</span>
-            <span className="pill">+10 pts + combo • +3 coins si OK</span>
+            <span className="pill">XP + coins • explication puis Suivant</span>
           </div>
 
           <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -805,11 +845,16 @@ export default function App() {
               {DIFFS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
             </select>
 
-            <button className="btn smooth hover-lift press" onClick={restart}>Rejouer</button>
+            <button className="btn smooth hover-lift press" onClick={resetSession}>Reset session</button>
           </div>
 
-          <div className="progressWrap" aria-label="progression">
-            <div className="progressBar" style={{ width: `${progressPct}%` }} />
+          {/* XP bar */}
+          <div className="barWrap" aria-label="xp">
+            <div className="bar" style={{ width: `${xpPct}%` }} />
+          </div>
+          <div className="small" style={{ marginTop: 8, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+            <span>Niveau <b>{level}</b></span>
+            <span>XP <b>{xp}</b>/<b>{xpNeed}</b></span>
           </div>
 
           <div className="question">
@@ -841,7 +886,6 @@ export default function App() {
               )}
             </div>
 
-            {/* Choices */}
             <div className="controls">
               {q.choices.map((c) => (
                 <button
@@ -849,21 +893,20 @@ export default function App() {
                   className="choice smooth hover-lift press"
                   onClick={() => submit(c)}
                   aria-pressed={picked === c}
-                  disabled={isGameOver}
                 >
                   {String(c)}
                 </button>
               ))}
               <button
                 className="btn btnPrimary smooth hover-lift press"
-                onClick={goNextAfterAnswer}
-                disabled={isGameOver || !showExplain}
+                onClick={goNext}
+                disabled={!showExplain}
+                title={autoNextOn ? "Auto-suivant activé aussi" : "Passe à la question suivante"}
               >
                 Suivant
               </button>
             </div>
 
-            {/* Feedback + explication */}
             {showExplain && (
               <div className={`toast ${status === "ok" ? "ok" : "bad"}`}>
                 <div>
@@ -875,22 +918,11 @@ export default function App() {
                     {explain}
                   </div>
                   <div className="small" style={{ marginTop: 8 }}>
-                    Astuce : prends ton temps. Lis l’explication, puis appuie sur <b>Suivant</b>.
+                    Tu peux lire tranquillement, puis appuyer sur <b>Suivant</b>
+                    {autoNextOn ? ` (auto dans ${Math.round(autoNextMs / 1000)}s).` : "."}
                   </div>
                 </div>
                 <span className="pill">Combo: {streak}</span>
-              </div>
-            )}
-
-            {isGameOver && (
-              <div className="toast">
-                <div>
-                  <strong>🏁 Fin de partie</strong>
-                  <div className="sub" style={{ marginTop: 4 }}>
-                    Score final : <b>{score}</b> • Record (ce mode/classe/difficulté) : <b>{Math.max(bestScore, score)}</b>
-                  </div>
-                </div>
-                <button className="btn btnPrimary smooth hover-lift press" onClick={restart}>Rejouer</button>
               </div>
             )}
           </div>
@@ -905,7 +937,7 @@ export default function App() {
 
           <div className="stats">
             <div className="statBox smooth hover-lift">
-              <div className="statLabel">Score</div>
+              <div className="statLabel">Score session</div>
               <div className="statValue">{score}</div>
             </div>
             <div className="statBox smooth hover-lift">
@@ -913,12 +945,12 @@ export default function App() {
               <div className="statValue">{streak}</div>
             </div>
             <div className="statBox smooth hover-lift">
-              <div className="statLabel">Record (mode)</div>
-              <div className="statValue">{bestScore}</div>
-            </div>
-            <div className="statBox smooth hover-lift">
               <div className="statLabel">Précision</div>
               <div className="statValue">{accuracy}%</div>
+            </div>
+            <div className="statBox smooth hover-lift">
+              <div className="statLabel">Questions totales</div>
+              <div className="statValue">{totalQuestions}</div>
             </div>
           </div>
 
@@ -932,9 +964,6 @@ export default function App() {
                 <button className="btn btnPrimary smooth hover-lift press" onClick={claimDailyGift} disabled={dailyGiftClaimed}>
                   🎁 Récupérer le cadeau
                 </button>
-                <div className="small" style={{ alignSelf: "center" }}>
-                  Missions du jour juste en dessous 👇
-                </div>
               </div>
 
               <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
@@ -942,7 +971,7 @@ export default function App() {
                   const done = m.progress >= m.target;
                   return (
                     <div key={m.id} className="shopCard">
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                         <div>
                           <div style={{ fontWeight: 1100 }}>{m.text}</div>
                           <div className="small">
@@ -968,21 +997,15 @@ export default function App() {
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button
-              className="btn smooth hover-lift press"
-              onClick={() => navigator.clipboard?.writeText(String(score)).catch(() => {})}
-              title="Copier le score"
-            >
+            <button className="btn smooth hover-lift press" onClick={() => navigator.clipboard?.writeText(String(score)).catch(() => {})}>
               Copier score
             </button>
             <button
               className="btn smooth hover-lift press"
               onClick={() => {
-                safeLSSet(LS_KEY, null);
                 localStorage.removeItem(LS_KEY);
                 window.location.reload();
               }}
-              title="Reset complet"
             >
               Reset complet
             </button>
@@ -1012,14 +1035,14 @@ export default function App() {
                 Achète des skins avec tes coins. Ensuite tu peux les équiper.
               </div>
 
-              <div className="skinGrid">
+              <div className="shopGrid">
                 {SKINS.map(s => {
                   const owned = ownedSkins.includes(s.id);
                   const equipped = skinId === s.id;
                   return (
                     <div key={s.id} className="shopCard smooth hover-lift">
                       <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
-                      <div style={{ display:"flex", justifyContent:"space-between", gap:10, alignItems:"center" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", gap:10, alignItems:"center", flexWrap:"wrap" }}>
                         <div>
                           <div style={{ fontWeight: 1100 }}>{s.name}</div>
                           <div className="small">{s.desc}</div>
@@ -1045,7 +1068,7 @@ export default function App() {
                         </div>
                       </div>
                       {!owned && !canBuy(s.price) && (
-                        <div className="small" style={{ marginTop: 10 }}>Pas assez de coins. Fais les missions / cadeau 👀</div>
+                        <div className="small" style={{ marginTop: 10 }}>Pas assez de coins : missions + cadeau 👀</div>
                       )}
                     </div>
                   );
@@ -1060,17 +1083,17 @@ export default function App() {
                 Achète et équipe un avatar (affiché dans le header).
               </div>
 
-              <div className="skinGrid">
+              <div className="shopGrid">
                 {AVATARS.map(a => {
                   const owned = ownedAvatars.includes(a.id);
                   const equipped = avatarId === a.id;
                   return (
                     <div key={a.id} className="shopCard smooth hover-lift">
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, flexWrap:"wrap" }}>
                         <div>
                           <div className="avatarBig">{a.emoji}</div>
                           <div style={{ fontWeight: 1100 }}>{a.name}</div>
-                          <div className="small">Avatar cosmétique</div>
+                          <div className="small">Cosmétique</div>
                         </div>
                         <div style={{ display:"flex", flexDirection:"column", gap:10, alignItems:"flex-end" }}>
                           <span className="price"><span className="coinDot" /> {a.price}</span>
@@ -1106,19 +1129,20 @@ export default function App() {
 
       {/* Profil */}
       {showProfile && (
-        <Modal title="Profil — Records & Stats" onClose={() => setShowProfile(false)}>
+        <Modal title="Profil — Stats & Records" onClose={() => setShowProfile(false)}>
           <div className="toast" style={{ marginTop: 0 }}>
             <div>
-              <strong>Statistiques globales</strong>
+              <strong>Global</strong>
               <div className="sub" style={{ marginTop: 8 }}>
-                Parties : <b>{totalGames}</b> • Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b><br/>
-                Meilleur combo : <b>{bestStreak}</b> • Coins : <b>{coins}</b>
+                Niveau : <b>{level}</b> • Coins : <b>{coins}</b><br />
+                Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b><br />
+                Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b>
               </div>
             </div>
           </div>
 
           <div className="small" style={{ marginTop: 12 }}>
-            Records par classe → difficulté → mode :
+            Records par classe → difficulté → mode (best score session):
           </div>
 
           <div style={{ marginTop: 10, display:"grid", gap: 10 }}>
@@ -1143,6 +1167,59 @@ export default function App() {
                 ))}
               </div>
             ))}
+          </div>
+        </Modal>
+      )}
+
+      {/* Réglages */}
+      {showSettings && (
+        <Modal title="Réglages" onClose={() => setShowSettings(false)}>
+          <div className="shopCard">
+            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Audio & vibrations</div>
+
+            <div style={{ display:"grid", gap: 10 }}>
+              <label style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap: 10 }}>
+                <span>Sons</span>
+                <input type="checkbox" checked={audioOn} onChange={(e) => setAudioOn(e.target.checked)} />
+              </label>
+
+              <label style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap: 10 }}>
+                <span>Vibrations (mobile)</span>
+                <input type="checkbox" checked={vibrateOn} onChange={(e) => setVibrateOn(e.target.checked)} />
+              </label>
+            </div>
+          </div>
+
+          <div className="shopCard" style={{ marginTop: 12 }}>
+            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Rythme</div>
+
+            <label style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap: 10 }}>
+              <span>Auto-suivant après explication</span>
+              <input type="checkbox" checked={autoNextOn} onChange={(e) => setAutoNextOn(e.target.checked)} />
+            </label>
+
+            <div className="small" style={{ marginTop: 8 }}>
+              Délai (ms) : {autoNextMs}
+            </div>
+
+            <input
+              type="range"
+              min={600}
+              max={6000}
+              step={200}
+              value={autoNextMs}
+              onChange={(e) => setAutoNextMs(Number(e.target.value))}
+              style={{ width: "100%", marginTop: 8 }}
+            />
+          </div>
+
+          <div className="shopCard" style={{ marginTop: 12 }}>
+            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Accessibilité</div>
+
+            <label style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap: 10 }}>
+              <span>Réduire les animations</span>
+              <input type="checkbox" checked={reduceMotion} onChange={(e) => setReduceMotion(e.target.checked)} />
+            </label>
           </div>
         </Modal>
       )}
