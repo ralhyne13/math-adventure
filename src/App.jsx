@@ -94,17 +94,17 @@ function playBeep(kind = "ok", enabled = true) {
 
 /* ------------------------ Skins + Avatars ------------------------ */
 const SKINS = [
-  { id: "neon-night", name: "Neon Night", price: 0, desc: "Violet + vert, premium",
+  { id: "neon-night", name: "Neon Night", price: 0, desc: "Violet + vert, premium", animated: true,
     vars: { "--bg1":"#0b1020","--bg2":"#0b1228","--accent":"#7c3aed","--accent2":"#22c55e","--text":"#eaf0ff","--muted":"rgba(234,240,255,.72)" } },
-  { id: "ocean-glass", name: "Ocean Glass", price: 120, desc: "Bleu + cyan, calme",
+  { id: "ocean-glass", name: "Ocean Glass", price: 120, desc: "Bleu + cyan, calme", animated: true,
     vars: { "--bg1":"#071523","--bg2":"#071a2b","--accent":"#3b82f6","--accent2":"#22d3ee","--text":"#eaf6ff","--muted":"rgba(234,246,255,.70)" } },
-  { id: "sunset-luxe", name: "Sunset Luxe", price: 180, desc: "Rose + ambre, punchy",
+  { id: "sunset-luxe", name: "Sunset Luxe", price: 180, desc: "Rose + ambre, punchy", animated: true,
     vars: { "--bg1":"#1a0b1d","--bg2":"#140a16","--accent":"#ec4899","--accent2":"#f59e0b","--text":"#fff0fb","--muted":"rgba(255,240,251,.70)" } },
-  { id: "mint-minimal", name: "Mint Minimal", price: 150, desc: "Menthe, ultra clean",
+  { id: "mint-minimal", name: "Mint Minimal", price: 150, desc: "Menthe, ultra clean", animated: false,
     vars: { "--bg1":"#071a16","--bg2":"#04110f","--accent":"#10b981","--accent2":"#a7f3d0","--text":"#eafff9","--muted":"rgba(234,255,249,.70)" } },
-  { id: "mono-premium", name: "Mono Premium", price: 220, desc: "Noir + argent, sobre",
+  { id: "mono-premium", name: "Mono Premium", price: 220, desc: "Noir + argent, sobre", animated: false,
     vars: { "--bg1":"#090b10","--bg2":"#06070b","--accent":"#a3a3a3","--accent2":"#ffffff","--text":"#f5f7ff","--muted":"rgba(245,247,255,.68)" } },
-  { id: "candy-play", name: "Candy Play", price: 160, desc: "Ludique, coloré",
+  { id: "candy-play", name: "Candy Play", price: 160, desc: "Ludique, coloré", animated: true,
     vars: { "--bg1":"#0a0f25","--bg2":"#070b1a","--accent":"#a855f7","--accent2":"#60a5fa","--text":"#eef2ff","--muted":"rgba(238,242,255,.72)" } },
 ];
 
@@ -173,9 +173,40 @@ function awardLevelCoins(levelGained) {
   return 25 + levelGained * 5;
 }
 
+/* ------------------------ (1) Ligues (6) ------------------------ */
+/* Mix score session + précision globale + combo max (léger) */
+const LEAGUES = [
+  { id: "bronze",   name: "Bronze",   icon: "🥉", min: 0 },
+  { id: "silver",   name: "Argent",   icon: "🥈", min: 260 },
+  { id: "gold",     name: "Or",       icon: "🥇", min: 520 },
+  { id: "plat",     name: "Platine",  icon: "💠", min: 820 },
+  { id: "diamond",  name: "Diamant",  icon: "💎", min: 1150 },
+  { id: "master",   name: "Master",   icon: "👑", min: 1500 },
+];
+
+function computeRating({ score, accuracy, bestStreak, level }) {
+  // score session = principal, précision = gros bonus, streak = petit bonus, niveau = mini bonus
+  const v =
+    score * 1.15 +
+    accuracy * 6 +
+    Math.min(60, bestStreak * 2) +
+    Math.min(80, level * 1.5);
+  return Math.max(0, Math.round(v));
+}
+function leagueFromRating(rating) {
+  let idx = 0;
+  for (let i = 0; i < LEAGUES.length; i++) {
+    if (rating >= LEAGUES[i].min) idx = i;
+  }
+  return { ...LEAGUES[idx], rank: idx };
+}
+function leagueReward(rankGained) {
+  // oui : bonus coins quand tu montes
+  return 80 + rankGained * 60;
+}
+
 /* ------------------------ Anti répétitions (6) ------------------------ */
 function questionSignature(q, modeId, gradeId, diffId) {
-  // signature “stable” pour éviter les doublons récents
   const base = `${modeId}|${gradeId}|${diffId}|${q.row.kind}|${q.correct}`;
   if (q.row.kind === "op") return `${base}|${q.row.a}|${q.row.op}|${q.row.b}`;
   if (q.row.kind === "fracCmp") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.bN}/${q.row.bD}`;
@@ -276,7 +307,6 @@ function fracCompareExplain({ aN, aD, bN, bD }, picked, correct, gradeId) {
     return `❌ Produit en croix : ${aN}×${bD}=${left} et ${bN}×${aD}=${right}. Comme ${left} ${cmp} ${right}, la bonne réponse est "${correct}".`;
   }
 
-  // primaire/collège bas : dénominateur commun
   const common = lcm(aD, bD);
   const aMul = common / aD;
   const bMul = common / bD;
@@ -349,8 +379,6 @@ function makeQEqFrac(cfg, gradeId) {
         return `❌ Réponse attendue : ${correct}. ${test} → ${eq ? "équivalentes" : "pas équivalentes"}.`;
       }
 
-      // primaire/collège bas : montrer le facteur si possible
-      // on tente de voir si b est un multiple exact de a
       const factN = bN / aN;
       const factD = bD / aD;
       const sameFactor = Number.isFinite(factN) && Number.isFinite(factD) && Math.abs(factN - factD) < 1e-9;
@@ -391,14 +419,12 @@ function makeQuestionCore(modeId, gradeId, diffId) {
 }
 
 function makeQuestion(modeId, gradeId, diffId, historyRef) {
-  // (6) on évite les dernières questions
   const hist = historyRef?.current ?? [];
   for (let tries = 0; tries < 20; tries++) {
     const q = makeQuestionCore(modeId, gradeId, diffId);
     const sig = questionSignature(q, modeId, gradeId, diffId);
     if (!hist.includes(sig)) return q;
   }
-  // fallback si vraiment on n’y arrive pas
   return makeQuestionCore(modeId, gradeId, diffId);
 }
 
@@ -439,7 +465,7 @@ function generateDailyMissions() {
   return shuffle(pool).slice(0, 3).map(m => ({ ...m, progress: 0, claimed: false }));
 }
 
-const LS_KEY = "math-duel-v4";
+const LS_KEY = "math-duel-v5";
 
 /* ------------------------ Achievements (Badges) ------------------------ */
 const ACHIEVEMENTS = [
@@ -469,11 +495,11 @@ function formatDateFR(iso) {
 
 /* ------------------------ App ------------------------ */
 export default function App() {
-  const qHistoryRef = useRef([]); // (6) historique signatures
+  const qHistoryRef = useRef([]);
   const autoTimerRef = useRef(null);
   const badgeTimerRef = useRef(null);
 
-  // (2) refs pour éviter “state capturé” dans XP/level
+  // refs XP
   const levelRef = useRef(1);
   const xpRef = useRef(0);
 
@@ -516,6 +542,9 @@ export default function App() {
 
       // achievements
       achievements: saved?.achievements ?? {},
+
+      // (1) ligues
+      bestLeagueRank: saved?.bestLeagueRank ?? 0,
     };
   }, []);
 
@@ -552,22 +581,25 @@ export default function App() {
   const [achievements, setAchievements] = useState(initial.achievements);
   const [badgePop, setBadgePop] = useState(null);
 
-  // Session/game loop
+  // (1) ligue : meilleure ligue atteinte (rank)
+  const [bestLeagueRank, setBestLeagueRank] = useState(initial.bestLeagueRank);
+
+  // Session
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(1);
 
   const [q, setQ] = useState(() => makeQuestion(modeId, gradeId, diffId, qHistoryRef));
   const [picked, setPicked] = useState(null);
-  const [status, setStatus] = useState("idle"); // idle | ok | bad
+  const [status, setStatus] = useState("idle");
   const [explain, setExplain] = useState("");
   const [showExplain, setShowExplain] = useState(false);
 
-  // (1) lock UI robuste
+  // lock anti double-clic
   const [isLocked, setIsLocked] = useState(false);
 
   // FX
-  const [fx, setFx] = useState("none"); // none | ok | bad
+  const [fx, setFx] = useState("none");
   const [spark, setSpark] = useState(false);
 
   // Modals
@@ -575,12 +607,12 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [shopTab, setShopTab] = useState("skins");
-  const [profileTab, setProfileTab] = useState("stats"); // stats | badges
+  const [profileTab, setProfileTab] = useState("stats");
 
   const avatar = AVATARS.find(a => a.id === avatarId) ?? AVATARS[0];
   const skin = SKINS.find(s => s.id === skinId) ?? SKINS[0];
 
-  // sync refs (2)
+  // sync refs XP
   useEffect(() => { levelRef.current = level; }, [level]);
   useEffect(() => { xpRef.current = xp; }, [xp]);
 
@@ -596,6 +628,12 @@ export default function App() {
     document.body.classList.toggle("reduce-motion", !!reduceMotion);
   }, [reduceMotion]);
 
+  // (10) skins animés : active body.anim-skin si skin.animated et pas reduce-motion
+  useEffect(() => {
+    const on = !!skin.animated && !reduceMotion;
+    document.body.classList.toggle("anim-skin", on);
+  }, [skin.animated, reduceMotion]);
+
   function resetDailyFor(today) {
     setDayKey(today);
     setDailyGiftClaimed(false);
@@ -603,7 +641,7 @@ export default function App() {
     setDailyStats({ right: 0, questions: 0, bestStreak: 0 });
   }
 
-  // Daily init + (3) auto-check si l’app reste ouverte
+  // Daily init + auto-check
   useEffect(() => {
     const today = parisDayKey();
     if (dayKey !== today) {
@@ -637,6 +675,7 @@ export default function App() {
       audioOn, vibrateOn, autoNextOn, autoNextMs, reduceMotion,
       dayKey, dailyGiftClaimed, dailyMissions, dailyStats,
       achievements,
+      bestLeagueRank,
     });
   }, [
     skinId, gradeId, diffId, modeId,
@@ -646,6 +685,7 @@ export default function App() {
     audioOn, vibrateOn, autoNextOn, autoNextMs, reduceMotion,
     dayKey, dailyGiftClaimed, dailyMissions, dailyStats,
     achievements,
+    bestLeagueRank,
   ]);
 
   // Reset question when mode/grade/diff change
@@ -676,7 +716,7 @@ export default function App() {
     setCoins(c => c + Math.max(0, amount));
   }
 
-  // (2) XP robuste via refs + setState “atomique”
+  // XP robuste
   function awardXp(amount) {
     const add = Math.max(0, amount);
 
@@ -736,7 +776,7 @@ export default function App() {
     return records?.[gId]?.[dId]?.[mId]?.bestScore ?? 0;
   }
 
-  // (4) plus de structuredClone
+  // plus de structuredClone
   function updateRecordIfNeeded(finalScore) {
     setRecords(prev => {
       const next = JSON.parse(JSON.stringify(prev ?? {}));
@@ -764,7 +804,7 @@ export default function App() {
     const sig = questionSignature(qNew, modeId, gradeId, diffId);
     const arr = qHistoryRef.current ?? [];
     const next = [sig, ...arr];
-    qHistoryRef.current = next.slice(0, 12); // garde les 12 dernières
+    qHistoryRef.current = next.slice(0, 12);
   }
 
   function newQuestion(resetPick = false) {
@@ -778,7 +818,7 @@ export default function App() {
     setShowExplain(false);
     setFx("none");
     setSpark(false);
-    setIsLocked(false); // (1) unlock ici
+    setIsLocked(false);
     if (resetPick) setPicked(null);
   }
 
@@ -822,7 +862,6 @@ export default function App() {
   }
 
   function submit(choice) {
-    // (1) anti double-clic
     if (isLocked || showExplain) return;
     setIsLocked(true);
     clearAutoTimer();
@@ -830,7 +869,6 @@ export default function App() {
     setPicked(choice);
     const isCorrect = choice === q.correct;
 
-    // prochains totaux (fiables pour achievements)
     const nextTotalQuestions = totalQuestions + 1;
     const nextTotalRight = totalRight + (isCorrect ? 1 : 0);
     const nextTotalWrong = totalWrong + (isCorrect ? 0 : 1);
@@ -840,7 +878,6 @@ export default function App() {
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
     const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
 
-    // compteurs globaux
     setTotalQuestions(x => x + 1);
 
     if (isCorrect) {
@@ -883,7 +920,7 @@ export default function App() {
       setShowExplain(true);
     }
 
-    // (5) daily stats en 1 seul update (questions + right + bestStreak)
+    // daily stats
     setDailyStats(ds => {
       const next = {
         ...ds,
@@ -904,7 +941,7 @@ export default function App() {
       accuracy: nextAccuracy,
     });
 
-    // Auto-next si activé
+    // Auto-next
     if (autoNextOn) {
       autoTimerRef.current = setTimeout(() => {
         goNext();
@@ -964,7 +1001,32 @@ export default function App() {
     return ACHIEVEMENTS.filter(a => isUnlocked(a.id)).length;
   }, [achievements]);
 
-  const disableChoices = isLocked || showExplain; // (1)
+  // (1) ligue courante + best ligue
+  const rating = useMemo(() => {
+    return computeRating({ score, accuracy, bestStreak, level });
+  }, [score, accuracy, bestStreak, level]);
+
+  const league = useMemo(() => leagueFromRating(rating), [rating]);
+  const bestLeague = useMemo(() => ({ ...LEAGUES[Math.max(0, Math.min(bestLeagueRank, LEAGUES.length - 1))], rank: bestLeagueRank }), [bestLeagueRank]);
+
+  // (1) si tu montes de ligue : bonus coins + pop
+  useEffect(() => {
+    if (league.rank > bestLeagueRank) {
+      const gained = league.rank - bestLeagueRank;
+      const reward = leagueReward(gained);
+      setBestLeagueRank(league.rank);
+      awardCoins(reward);
+      showBadgePopup({
+        icon: league.icon,
+        title: `Promotion : ${league.name} !`,
+        desc: `Score ligue: ${rating} • +${reward} coins`,
+        reward,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [league.rank]);
+
+  const disableChoices = isLocked || showExplain;
 
   return (
     <div className="shell">
@@ -989,7 +1051,9 @@ export default function App() {
           <div className="logo smooth hover-lift" />
           <div>
             <div className="h1">Math Duel <span style={{ opacity: .85 }}>{avatar.emoji}</span></div>
-            <div className="sub">Illimité • {modeLabel} • {gradeId} • {diffLabel}</div>
+            <div className="sub">
+              Illimité • {modeLabel} • {gradeId} • {diffLabel} • Ligue: <b>{league.icon} {league.name}</b>
+            </div>
           </div>
         </div>
 
@@ -1002,6 +1066,7 @@ export default function App() {
           <span className="pill">Q#{questionIndex}</span>
           <span className="pill">Record: {bestScore}</span>
           <span className="pill">Badges: {unlockedCount}/{ACHIEVEMENTS.length}</span>
+          <span className="pill">Ligue: {league.icon} {league.name} • {rating}</span>
 
           <button className="btn smooth hover-lift press" onClick={() => setShowSettings(true)}>
             Réglages
@@ -1139,7 +1204,7 @@ export default function App() {
         <div className="card smooth">
           <div className="cardTitle">
             <span>Tableau de bord</span>
-            <span className="pill">{skin.name}</span>
+            <span className="pill">{skin.name}{skin.animated ? " ✨" : ""}</span>
           </div>
 
           <div className="stats">
@@ -1156,8 +1221,9 @@ export default function App() {
               <div className="statValue">{accuracy}%</div>
             </div>
             <div className="statBox smooth hover-lift">
-              <div className="statLabel">Questions totales</div>
-              <div className="statValue">{totalQuestions}</div>
+              <div className="statLabel">Ligue</div>
+              <div className="statValue" style={{ fontSize: 18 }}>{league.icon} {league.name}</div>
+              <div className="small" style={{ marginTop: 6 }}>Score ligue : <b>{rating}</b></div>
             </div>
           </div>
 
@@ -1251,7 +1317,7 @@ export default function App() {
                       <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
                       <div style={{ display:"flex", justifyContent:"space-between", gap:10, alignItems:"center", flexWrap:"wrap" }}>
                         <div>
-                          <div style={{ fontWeight: 1100 }}>{s.name}</div>
+                          <div style={{ fontWeight: 1100 }}>{s.name} {s.animated ? "✨" : ""}</div>
                           <div className="small">{s.desc}</div>
                         </div>
                         <div style={{ display:"flex", gap:10, alignItems:"center", flexWrap:"wrap", justifyContent:"flex-end" }}>
@@ -1358,7 +1424,8 @@ export default function App() {
                   <div className="sub" style={{ marginTop: 8 }}>
                     Niveau : <b>{level}</b> • Coins : <b>{coins}</b><br />
                     Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b><br />
-                    Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b>
+                    Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b><br />
+                    Meilleure ligue : <b>{bestLeague.icon} {bestLeague.name}</b>
                   </div>
                 </div>
               </div>
@@ -1484,6 +1551,10 @@ export default function App() {
               <span>Réduire les animations</span>
               <input type="checkbox" checked={reduceMotion} onChange={(e) => setReduceMotion(e.target.checked)} />
             </label>
+
+            <div className="small" style={{ marginTop: 8 }}>
+              Skins animés : {skin.animated ? <b>disponible</b> : <b>skin statique</b>} (désactivé si “réduire” activé)
+            </div>
           </div>
         </Modal>
       )}
