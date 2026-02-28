@@ -57,55 +57,42 @@ function parisDayKey() {
   return new Date().toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" });
 }
 
-/* ------------------------ WebAudio (sons) — iOS stable ------------------------ */
-function createBeepEngine() {
-  const Ctx = window.AudioContext || window.webkitAudioContext;
-  if (!Ctx) return null;
-  const ctx = new Ctx();
-  return {
-    ctx,
-    resume: async () => {
-      try {
-        if (ctx.state === "suspended") await ctx.resume();
-      } catch {}
-    },
-    close: async () => {
-      try {
-        await ctx.close();
-      } catch {}
-    },
-    beep: (kind, enabled) => {
-      if (!enabled) return;
-      try {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.connect(g);
-        g.connect(ctx.destination);
+/* ------------------------ WebAudio (sons) ------------------------ */
+function playBeep(kind = "ok", enabled = true) {
+  if (!enabled) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g);
+    g.connect(ctx.destination);
 
-        const now = ctx.currentTime;
+    const now = ctx.currentTime;
 
-        if (kind === "ok") {
-          o.type = "sine";
-          o.frequency.setValueAtTime(740, now);
-          o.frequency.exponentialRampToValueAtTime(980, now + 0.08);
-          g.gain.setValueAtTime(0.001, now);
-          g.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-          o.start(now);
-          o.stop(now + 0.18);
-        } else {
-          o.type = "square";
-          o.frequency.setValueAtTime(180, now);
-          o.frequency.exponentialRampToValueAtTime(120, now + 0.12);
-          g.gain.setValueAtTime(0.001, now);
-          g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-          o.start(now);
-          o.stop(now + 0.22);
-        }
-      } catch {}
-    },
-  };
+    if (kind === "ok") {
+      o.type = "sine";
+      o.frequency.setValueAtTime(740, now);
+      o.frequency.exponentialRampToValueAtTime(980, now + 0.08);
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      o.start(now);
+      o.stop(now + 0.18);
+    } else {
+      o.type = "square";
+      o.frequency.setValueAtTime(180, now);
+      o.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      o.start(now);
+      o.stop(now + 0.22);
+    }
+
+    setTimeout(() => ctx.close().catch(() => {}), 300);
+  } catch {}
 }
 
 /* ------------------------ Skins + Avatars ------------------------ */
@@ -281,7 +268,7 @@ function awardLevelCoins(levelGained) {
   return 25 + levelGained * 5;
 }
 
-/* ------------------------ Ligues ------------------------ */
+/* ------------------------ (1) Ligues ------------------------ */
 const LEAGUES = [
   { id: "bronze", name: "Bronze", icon: "🥉", min: 0 },
   { id: "silver", name: "Argent", icon: "🥈", min: 260 },
@@ -444,8 +431,7 @@ function makeQCmpFrac(cfg, gradeId) {
     row: { kind: "fracCmp", aN: saN, aD: saD, bN: sbN, bD: sbD },
     correct,
     choices: ["<", "=", ">"],
-    explain: (picked) =>
-      fracCompareExplain({ aN: saN, aD: saD, bN: sbN, bD: sbD }, picked, correct, gradeId),
+    explain: (picked) => fracCompareExplain({ aN: saN, aD: saD, bN: sbN, bD: sbD }, picked, correct, gradeId),
   };
 }
 
@@ -496,9 +482,7 @@ function makeQEqFrac(cfg, gradeId) {
 
       if (ok && eq) {
         return sameFactor
-          ? `✅ Oui. On multiplie ${aN}/${aD} par ${Math.round(
-              factN
-            )} : ${aN}×${Math.round(factN)}/${aD}×${Math.round(factN)} = ${bN}/${bD}.`
+          ? `✅ Oui. On multiplie ${aN}/${aD} par ${Math.round(factN)} : ${aN}×${Math.round(factN)}/${aD}×${Math.round(factN)} = ${bN}/${bD}.`
           : `✅ Oui. Les deux fractions représentent la même valeur.`;
       }
       if (ok && !eq) return `✅ Non. Elles ne donnent pas la même valeur.`;
@@ -564,8 +548,8 @@ function Modal({ title, onClose, children }) {
       <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modalHead">
           <div className="modalTitle">{title}</div>
-          <button className="btn btnGhost smooth hover-lift press" onClick={onClose}>
-            Fermer
+          <button className="btn btnGhost smooth hover-lift press" onClick={onClose} aria-label="Fermer">
+            ✕
           </button>
         </div>
         <div className="modalBody">{children}</div>
@@ -589,7 +573,7 @@ function generateDailyMissions() {
     .map((m) => ({ ...m, progress: 0, claimed: false }));
 }
 
-const LS_KEY = "math-duel-v6";
+const LS_KEY = "math-duel-v5";
 
 /* ------------------------ Achievements (Badges) ------------------------ */
 const ACHIEVEMENTS = [
@@ -617,7 +601,7 @@ function formatDateFR(iso) {
   }
 }
 
-/* ------------------------ Coach helpers ------------------------ */
+/* ------------------------ (3) Coach helpers ------------------------ */
 function modeHint(modeId) {
   switch (modeId) {
     case "div":
@@ -677,53 +661,12 @@ export default function App() {
   const qHistoryRef = useRef([]);
   const autoTimerRef = useRef(null);
   const badgeTimerRef = useRef(null);
+
   const levelTimerRef = useRef(null);
   const coachTimerRef = useRef(null);
 
-  // audio engine stable (iOS)
-  const beepRef = useRef(null);
-  const didResumeAudioRef = useRef(false);
-
-  // refs XP
   const levelRef = useRef(1);
   const xpRef = useRef(0);
-
-  // swipe refs
-  const swipeRef = useRef({ active: false, x0: 0, y0: 0, t0: 0 });
-
-  // question start time (bonus speed possible later)
-  const qStartRef = useRef(Date.now());
-
-  // localStorage throttle
-  const persistTimerRef = useRef(null);
-
-  // responsive
-  const [isCompact, setIsCompact] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia?.("(max-width: 720px)")?.matches ?? false;
-  });
-  const [isTiny, setIsTiny] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia?.("(max-width: 520px)")?.matches ?? false;
-  });
-
-  useEffect(() => {
-    const mq1 = window.matchMedia?.("(max-width: 720px)");
-    const mq2 = window.matchMedia?.("(max-width: 520px)");
-    if (!mq1 || !mq2) return;
-
-    const h1 = () => setIsCompact(mq1.matches);
-    const h2 = () => setIsTiny(mq2.matches);
-    h1();
-    h2();
-
-    mq1.addEventListener?.("change", h1);
-    mq2.addEventListener?.("change", h2);
-    return () => {
-      mq1.removeEventListener?.("change", h1);
-      mq2.removeEventListener?.("change", h2);
-    };
-  }, []);
 
   const initial = useMemo(() => {
     const saved = safeLSGet(LS_KEY, null);
@@ -738,34 +681,28 @@ export default function App() {
       ownedSkins: saved?.ownedSkins ?? ["neon-night"],
       ownedAvatars: saved?.ownedAvatars ?? ["owl"],
 
-      // XP
       level: saved?.level ?? 1,
       xp: saved?.xp ?? 0,
 
-      // records
       records: saved?.records ?? {},
       bestStreak: saved?.bestStreak ?? 0,
       totalRight: saved?.totalRight ?? 0,
       totalWrong: saved?.totalWrong ?? 0,
       totalQuestions: saved?.totalQuestions ?? 0,
 
-      // settings
       audioOn: saved?.audioOn ?? true,
       vibrateOn: saved?.vibrateOn ?? true,
       autoNextOn: saved?.autoNextOn ?? false,
       autoNextMs: saved?.autoNextMs ?? 1800,
       reduceMotion: saved?.reduceMotion ?? false,
 
-      // daily
       dayKey: saved?.dayKey ?? null,
       dailyGiftClaimed: saved?.dailyGiftClaimed ?? false,
       dailyMissions: saved?.dailyMissions ?? null,
       dailyStats: saved?.dailyStats ?? { right: 0, questions: 0, bestStreak: 0 },
 
-      // achievements
       achievements: saved?.achievements ?? {},
 
-      // ligues
       bestLeagueRank: saved?.bestLeagueRank ?? 0,
     };
   }, []);
@@ -803,13 +740,9 @@ export default function App() {
   const [achievements, setAchievements] = useState(initial.achievements);
   const [badgePop, setBadgePop] = useState(null);
 
-  // LEVEL UP popup state
   const [levelPop, setLevelPop] = useState(null);
-
-  // Coach popup state
   const [coachPop, setCoachPop] = useState(null);
 
-  // ligue : meilleure ligue atteinte (rank)
   const [bestLeagueRank, setBestLeagueRank] = useState(initial.bestLeagueRank);
 
   // Session
@@ -823,10 +756,8 @@ export default function App() {
   const [explain, setExplain] = useState("");
   const [showExplain, setShowExplain] = useState(false);
 
-  // lock anti double-clic
   const [isLocked, setIsLocked] = useState(false);
 
-  // FX
   const [fx, setFx] = useState("none");
   const [spark, setSpark] = useState(false);
 
@@ -837,9 +768,9 @@ export default function App() {
   const [shopTab, setShopTab] = useState("skins");
   const [profileTab, setProfileTab] = useState("stats");
 
-  // historique des 10 dernières réponses (session)
-  const [lastAnswers, setLastAnswers] = useState([]); // [{ ok: true/false }]
-  // stats par mode sur la session (pour coach)
+  // (#4) historique des 10 dernières réponses (session)
+  const [lastAnswers, setLastAnswers] = useState([]);
+  // (#3) stats par mode sur la session (pour coach)
   const [sessionAnswered, setSessionAnswered] = useState(0);
   const [sessionPerf, setSessionPerf] = useState(() => {
     const o = {};
@@ -850,9 +781,6 @@ export default function App() {
   const avatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
   const skin = SKINS.find((s) => s.id === skinId) ?? SKINS[0];
 
-  const anyModalOpen = showShop || showProfile || showSettings;
-
-  // sync refs XP
   useEffect(() => {
     levelRef.current = level;
   }, [level]);
@@ -860,38 +788,16 @@ export default function App() {
     xpRef.current = xp;
   }, [xp]);
 
-  // init beep engine once
-  useEffect(() => {
-    beepRef.current = createBeepEngine();
-    return () => {
-      beepRef.current?.close?.();
-      beepRef.current = null;
-    };
-  }, []);
-
-  function ensureAudioUnlocked() {
-    if (didResumeAudioRef.current) return;
-    didResumeAudioRef.current = true;
-    beepRef.current?.resume?.();
-  }
-
-  function playBeep(kind = "ok") {
-    beepRef.current?.beep?.(kind, audioOn);
-  }
-
-  // Apply skin vars
   useEffect(() => {
     Object.entries(skin.vars).forEach(([k, v]) => {
       document.documentElement.style.setProperty(k, v);
     });
   }, [skin]);
 
-  // Reduce motion toggle
   useEffect(() => {
     document.body.classList.toggle("reduce-motion", !!reduceMotion);
   }, [reduceMotion]);
 
-  // skins animés
   useEffect(() => {
     const on = !!skin.animated && !reduceMotion;
     document.body.classList.toggle("anim-skin", on);
@@ -904,7 +810,6 @@ export default function App() {
     setDailyStats({ right: 0, questions: 0, bestStreak: 0 });
   }
 
-  // Daily init + auto-check
   useEffect(() => {
     const today = parisDayKey();
     if (dayKey !== today) {
@@ -928,43 +833,35 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist (throttled to avoid mobile jank)
   useEffect(() => {
-    if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
-    persistTimerRef.current = setTimeout(() => {
-      safeLSSet(LS_KEY, {
-        skinId,
-        gradeId,
-        diffId,
-        modeId,
-        coins,
-        avatarId,
-        ownedSkins,
-        ownedAvatars,
-        level,
-        xp,
-        records,
-        bestStreak,
-        totalRight,
-        totalWrong,
-        totalQuestions,
-        audioOn,
-        vibrateOn,
-        autoNextOn,
-        autoNextMs,
-        reduceMotion,
-        dayKey,
-        dailyGiftClaimed,
-        dailyMissions,
-        dailyStats,
-        achievements,
-        bestLeagueRank,
-      });
-    }, 450);
-
-    return () => {
-      if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
-    };
+    safeLSSet(LS_KEY, {
+      skinId,
+      gradeId,
+      diffId,
+      modeId,
+      coins,
+      avatarId,
+      ownedSkins,
+      ownedAvatars,
+      level,
+      xp,
+      records,
+      bestStreak,
+      totalRight,
+      totalWrong,
+      totalQuestions,
+      audioOn,
+      vibrateOn,
+      autoNextOn,
+      autoNextMs,
+      reduceMotion,
+      dayKey,
+      dailyGiftClaimed,
+      dailyMissions,
+      dailyStats,
+      achievements,
+      bestLeagueRank,
+    });
   }, [
     skinId,
     gradeId,
@@ -994,16 +891,15 @@ export default function App() {
     bestLeagueRank,
   ]);
 
-  // Reset question when mode/grade/diff change
   useEffect(() => {
     newQuestion(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeId, gradeId, diffId]);
 
-  function vibrate(pattern) {
+  function vibrate(ms) {
     if (!vibrateOn) return;
     try {
-      navigator.vibrate?.(pattern);
+      navigator.vibrate?.(ms);
     } catch {}
   }
 
@@ -1036,7 +932,6 @@ export default function App() {
     setCoins((c) => c + Math.max(0, amount));
   }
 
-  // XP robuste (+ feedback level up)
   function awardXp(amount) {
     const add = Math.max(0, amount);
     const startLevel = levelRef.current;
@@ -1063,8 +958,8 @@ export default function App() {
     setXp(xpNow);
 
     if (lvl > startLevel) {
-      vibrate([15, 30, 15]);
-      playBeep("ok");
+      vibrate(30);
+      playBeep("ok", audioOn);
       showLevelPopup({
         toLevel: lvl,
         gainedLevels: levelsGained,
@@ -1149,8 +1044,6 @@ export default function App() {
     const qNew = makeQuestion(modeId, gradeId, diffId, qHistoryRef);
     pushHistory(qNew);
 
-    qStartRef.current = Date.now();
-
     setQ(qNew);
     setStatus("idle");
     setExplain("");
@@ -1205,8 +1098,7 @@ export default function App() {
       if (a.type === "streak" && snapshot.streak >= a.target) unlockAchievement(a);
       if (a.type === "right" && snapshot.totalRight >= a.target) unlockAchievement(a);
       if (a.type === "questions" && snapshot.totalQuestions >= a.target) unlockAchievement(a);
-      if (a.type === "accuracy" && snapshot.totalAnswers >= 50 && snapshot.accuracy >= a.target)
-        unlockAchievement(a);
+      if (a.type === "accuracy" && snapshot.totalAnswers >= 50 && snapshot.accuracy >= a.target) unlockAchievement(a);
     }
   }
 
@@ -1218,7 +1110,6 @@ export default function App() {
   }
 
   function submit(choice) {
-    ensureAudioUnlocked();
     if (isLocked || showExplain) return;
     setIsLocked(true);
     clearAutoTimer();
@@ -1237,20 +1128,22 @@ export default function App() {
 
     setTotalQuestions((x) => x + 1);
 
-    // last 10
-    setLastAnswers((prev) => [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10));
+    setLastAnswers((prev) => {
+      const next = [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10);
+      return next;
+    });
 
-    // perf par mode + compteur session
     setSessionPerf((prev) => {
       const base = prev ?? {};
       const cur = base[modeId] ?? { right: 0, total: 0 };
-      return {
+      const updated = {
         ...base,
         [modeId]: {
           right: cur.right + (isCorrect ? 1 : 0),
           total: cur.total + 1,
         },
       };
+      return updated;
     });
 
     setSessionAnswered((n) => {
@@ -1266,14 +1159,15 @@ export default function App() {
           },
         };
       })();
+
       maybeCoach(nextCount, nextPerf);
       return nextCount;
     });
 
     if (isCorrect) {
       setStatus("ok");
-      playBeep("ok");
-      vibrate(15);
+      playBeep("ok", audioOn);
+      vibrate(20);
       triggerFx("ok");
 
       awardCoins(3);
@@ -1295,8 +1189,8 @@ export default function App() {
       updateRecordIfNeeded(score + nextScoreAdd);
     } else {
       setStatus("bad");
-      playBeep("bad");
-      vibrate(55);
+      playBeep("bad", audioOn);
+      vibrate(60);
       triggerFx("bad");
 
       setCoins((c) => Math.max(0, c - 1));
@@ -1310,7 +1204,6 @@ export default function App() {
       setShowExplain(true);
     }
 
-    // daily stats
     setDailyStats((ds) => {
       const next = {
         ...ds,
@@ -1322,7 +1215,6 @@ export default function App() {
       return next;
     });
 
-    // achievements
     checkAchievements({
       streak: nextStreak,
       totalRight: nextTotalRight,
@@ -1331,7 +1223,6 @@ export default function App() {
       accuracy: nextAccuracy,
     });
 
-    // Auto-next
     if (autoNextOn) {
       autoTimerRef.current = setTimeout(() => {
         goNext();
@@ -1403,7 +1294,6 @@ export default function App() {
     };
   }, [bestLeagueRank]);
 
-  // monte de ligue : bonus coins + pop
   useEffect(() => {
     if (league.rank > bestLeagueRank) {
       const gained = league.rank - bestLeagueRank;
@@ -1422,83 +1312,9 @@ export default function App() {
 
   const disableChoices = isLocked || showExplain;
 
-  /* ------------------------ Keyboard shortcuts (PC) ------------------------ */
-  useEffect(() => {
-    function onKeyDown(e) {
-      if (e.repeat) return;
-
-      // ESC ferme modal / popups
-      if (e.key === "Escape") {
-        if (showShop) setShowShop(false);
-        else if (showProfile) setShowProfile(false);
-        else if (showSettings) setShowSettings(false);
-        else if (levelPop) setLevelPop(null);
-        else if (coachPop) setCoachPop(null);
-        else if (badgePop) setBadgePop(null);
-        return;
-      }
-
-      if (anyModalOpen) return;
-
-      // 1-4 pour choisir (si choices length >=)
-      const idx = ["1", "2", "3", "4"].indexOf(e.key);
-      if (idx >= 0 && !disableChoices) {
-        const c = q.choices[idx];
-        if (c !== undefined) submit(c);
-        return;
-      }
-
-      // Entrée = suivant si explication
-      if (e.key === "Enter" && showExplain) {
-        goNext();
-      }
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [anyModalOpen, disableChoices, q.choices, showExplain, showShop, showProfile, showSettings, levelPop, coachPop, badgePop]);
-
-  /* ------------------------ Swipe (mobile) ------------------------ */
-  function onPointerDown(e) {
-    if (anyModalOpen) return;
-    swipeRef.current = {
-      active: true,
-      x0: e.clientX,
-      y0: e.clientY,
-      t0: Date.now(),
-    };
-  }
-  function onPointerUp(e) {
-    const s = swipeRef.current;
-    if (!s.active) return;
-    s.active = false;
-
-    // if user was scrolling/vertical, ignore
-    const dx = e.clientX - s.x0;
-    const dy = e.clientY - s.y0;
-    const adx = Math.abs(dx);
-    const ady = Math.abs(dy);
-    const dt = Date.now() - s.t0;
-
-    // horizontal swipe threshold
-    if (adx < 60 || ady > 70 || dt > 900) return;
-
-    // swipe left = next (only when explanation visible)
-    if (dx < 0) {
-      if (showExplain) goNext();
-      return;
-    }
-
-    // swipe right = open profile (safe action)
-    if (dx > 0) {
-      setShowProfile(true);
-      setProfileTab("stats");
-    }
-  }
-
   return (
-    <div className={`shell ${isTiny ? "isTiny" : isCompact ? "isCompact" : ""}`}>
-      {/* LEVEL UP popup */}
+    <div className="shell">
+      {/* (#5) LEVEL UP popup */}
       {levelPop && (
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
@@ -1525,7 +1341,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Coach popup */}
+      {/* (#3) Coach popup */}
       {coachPop && (
         <div className="coachPop" role="status" aria-live="polite">
           <div className="coachPopInner smooth">
@@ -1570,69 +1386,83 @@ export default function App() {
         </div>
       )}
 
+      {/* TOPBAR HUD */}
       <div className="topbar">
         <div className="brand">
-          <div className="logo smooth hover-lift" />
+          <div className="logo smooth" />
           <div>
             <div className="h1">
-              Math Duel <span style={{ opacity: 0.85 }}>{avatar.emoji}</span>
+              Math Duel <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
             </div>
             <div className="sub">
-              Illimité • {modeLabel} • {gradeId} • {diffLabel} • Ligue: <b>{league.icon} {league.name}</b>
+              Illimité • {modeLabel} • {gradeId} • {diffLabel} • Ligue:{" "}
+              <b>
+                {league.icon} {league.name}
+              </b>
             </div>
           </div>
         </div>
 
-        <div className="row">
-          <div className="coins smooth hover-lift" title="Monnaie virtuelle">
-            <span className="coinDot" />
-            <span>{coins} coins</span>
+        <div className="hud">
+          <div className="hudLeft">
+            <div className="coins chip coinChip smooth" title="Monnaie virtuelle">
+              <span className="coinDot" />
+              <span>{coins}</span>
+              <span className="chipLabel">coins</span>
+            </div>
+
+            <div className="chip smooth" title="Niveau">
+              <span className="chipIcon">⬆️</span>
+              <span>
+                Lv <b>{level}</b>
+              </span>
+            </div>
+
+            <div className="chip smooth" title="XP">
+              <span className="chipIcon">✨</span>
+              <span className="mono">
+                {xp}/{xpNeed}
+              </span>
+            </div>
           </div>
 
-          {/* Desktop pills only (avoid crowded mobile) */}
-          {!isTiny && (
-            <>
-              <span className="pill">Q#{questionIndex}</span>
-              <span className="pill">Record: {bestScore}</span>
-              {!isCompact && <span className="pill">Badges: {unlockedCount}/{ACHIEVEMENTS.length}</span>}
-              {!isCompact && <span className="pill">Ligue: {league.icon} {league.name} • {rating}</span>}
-            </>
-          )}
+          <div className="hudPills" aria-label="informations">
+            <span className="pill">Q#{questionIndex}</span>
+            <span className="pill">Record: {bestScore}</span>
+            <span className="pill">
+              Badges: {unlockedCount}/{ACHIEVEMENTS.length}
+            </span>
+            <span className="pill">
+              Ligue: {league.icon} {league.name} • {rating}
+            </span>
+          </div>
 
-          {/* Desktop buttons */}
-          {!isTiny && (
-            <>
-              <button className="btn smooth hover-lift press" onClick={() => setShowSettings(true)}>
-                Réglages
-              </button>
-              <button className="btn smooth hover-lift press" onClick={() => setShowProfile(true)}>
-                Profil
-              </button>
-              <button className="btn btnPrimary smooth hover-lift press" onClick={() => setShowShop(true)}>
-                Boutique
-              </button>
-            </>
-          )}
+          <div className="hudRight">
+            <button className="btn smooth hover-lift press" onClick={() => setShowSettings(true)}>
+              Réglages
+            </button>
+            <button className="btn smooth hover-lift press" onClick={() => setShowProfile(true)}>
+              Profil
+            </button>
+            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setShowShop(true)}>
+              Boutique
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className={`grid ${isCompact ? "gridStack" : ""}`}>
+      <div className="grid">
         {/* MAIN */}
-        <div
-          className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad shake" : ""}`}
-          onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-        >
-          {/* FX overlays */}
+        <div className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""}`}>
           <div className={`fx ${fx === "ok" ? "fxOk" : fx === "bad" ? "fxBad" : ""}`} />
           <div className={`sparkles ${spark ? "on" : ""}`}>
             {[...Array(10)].map((_, i) => (
               <i
                 key={i}
                 style={{
-                  left: `${10 + i * 9}%`,
-                  top: `${60 - (i % 4) * 10}%`,
-                  animationDelay: `${i * 20}ms`,
+                  left: `${12 + i * 8}%`,
+                  top: `${62 - (i % 4) * 10}%`,
+                  animationDelay: `${i * 22}ms`,
                 }}
               />
             ))}
@@ -1643,8 +1473,8 @@ export default function App() {
             <span className="pill">XP + coins • explication puis Suivant</span>
           </div>
 
-          <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <select className="select smooth hover-lift" value={modeId} onChange={(e) => setModeId(e.target.value)}>
+          <div className="filters" style={{ marginTop: 10 }}>
+            <select className="select smooth" value={modeId} onChange={(e) => setModeId(e.target.value)}>
               {MODES.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.icon} {m.label}
@@ -1652,7 +1482,7 @@ export default function App() {
               ))}
             </select>
 
-            <select className="select smooth hover-lift" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
+            <select className="select smooth" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
               {GRADES.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.label}
@@ -1660,7 +1490,7 @@ export default function App() {
               ))}
             </select>
 
-            <select className="select smooth hover-lift" value={diffId} onChange={(e) => setDiffId(e.target.value)}>
+            <select className="select smooth" value={diffId} onChange={(e) => setDiffId(e.target.value)}>
               {DIFFS.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.label}
@@ -1678,7 +1508,7 @@ export default function App() {
             <div className="bar" style={{ width: `${xpPct}%` }} />
           </div>
 
-          {/* mini historique */}
+          {/* (#4) mini historique */}
           <div className="miniHistoryWrap" aria-label="historique des 10 dernières réponses">
             <div className="miniHistoryLabel">
               10 dernières :{" "}
@@ -1695,29 +1525,25 @@ export default function App() {
             </div>
           </div>
 
-          <div
-            className="small"
-            style={{ marginTop: 8, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}
-          >
-            <span>
-              Niveau <b>{level}</b>
-            </span>
-            <span>
-              XP <b>{xp}</b>/<b>{xpNeed}</b>
-            </span>
-            {isTiny && (
-              <span className="pill">Q#{questionIndex}</span>
-            )}
-          </div>
-
-          <div className="question">
-            <div className="qPrompt">{q.prompt}</div>
+          {/* HERO QUESTION */}
+          <div className="heroQuestion" data-status={status}>
+            <div className="heroTop">
+              <div className="qPrompt">{q.prompt}</div>
+              <div className="heroMeta">
+                <span className="metaPill">
+                  <span className="metaIcon">🎯</span> Combo <b>{streak}</b>
+                </span>
+                <span className="metaPill">
+                  <span className="metaIcon">📊</span> Précision <b>{accuracy}%</b>
+                </span>
+              </div>
+            </div>
 
             <div className="qRow">
               {q.row.kind === "op" && (
                 <>
                   <div className="bigOp">{q.row.a}</div>
-                  <div className="bigOp">{q.row.op}</div>
+                  <div className="bigOp opSep">{q.row.op}</div>
                   <div className="bigOp">{q.row.b}</div>
                 </>
               )}
@@ -1725,7 +1551,7 @@ export default function App() {
               {q.row.kind === "fracCmp" && (
                 <>
                   <Fraction n={q.row.aN} d={q.row.aD} />
-                  <div className="bigOp">?</div>
+                  <div className="bigOp opSep">?</div>
                   <Fraction n={q.row.bN} d={q.row.bD} />
                 </>
               )}
@@ -1733,25 +1559,30 @@ export default function App() {
               {q.row.kind === "fracEq" && (
                 <>
                   <Fraction n={q.row.aN} d={q.row.aD} />
-                  <div className="bigOp">≡</div>
+                  <div className="bigOp opSep">≡</div>
                   <Fraction n={q.row.bN} d={q.row.bD} />
                 </>
               )}
             </div>
 
             <div className="controls">
-              {q.choices.map((c, idx) => (
-                <button
-                  key={String(c)}
-                  className="choice smooth hover-lift press"
-                  onClick={() => submit(c)}
-                  aria-pressed={picked === c}
-                  disabled={disableChoices}
-                  title={!isTiny ? `Raccourci: ${idx + 1}` : ""}
-                >
-                  {String(c)}
-                </button>
-              ))}
+              {q.choices.map((c) => {
+                const isPressed = picked === c;
+                const stateCls =
+                  showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";
+                return (
+                  <button
+                    key={String(c)}
+                    className={`choice choiceCard smooth press ${stateCls}`}
+                    onClick={() => submit(c)}
+                    aria-pressed={isPressed}
+                    disabled={disableChoices}
+                  >
+                    <span className="choiceValue">{String(c)}</span>
+                  </button>
+                );
+              })}
+
               <button
                 className="btn btnPrimary smooth hover-lift press"
                 onClick={goNext}
@@ -1775,7 +1606,6 @@ export default function App() {
                   <div className="small" style={{ marginTop: 8 }}>
                     Tu peux lire tranquillement, puis appuyer sur <b>Suivant</b>
                     {autoNextOn ? ` (auto dans ${Math.round(autoNextMs / 1000)}s).` : "."}
-                    {isTiny ? <span> • Swipe gauche = suivant</span> : null}
                   </div>
                 </div>
                 <span className="pill">Combo: {streak}</span>
@@ -1785,7 +1615,7 @@ export default function App() {
         </div>
 
         {/* SIDE */}
-        <div className="card smooth sideCard">
+        <div className="card smooth">
           <div className="cardTitle">
             <span>Tableau de bord</span>
             <span className="pill">
@@ -1795,19 +1625,19 @@ export default function App() {
           </div>
 
           <div className="stats">
-            <div className="statBox smooth hover-lift">
+            <div className="statBox smooth">
               <div className="statLabel">Score session</div>
               <div className="statValue">{score}</div>
             </div>
-            <div className="statBox smooth hover-lift">
+            <div className="statBox smooth">
               <div className="statLabel">Combo</div>
               <div className="statValue">{streak}</div>
             </div>
-            <div className="statBox smooth hover-lift">
+            <div className="statBox smooth">
               <div className="statLabel">Précision</div>
               <div className="statValue">{accuracy}%</div>
             </div>
-            <div className="statBox smooth hover-lift">
+            <div className="statBox smooth">
               <div className="statLabel">Ligue</div>
               <div className="statValue" style={{ fontSize: 18 }}>
                 {league.icon} {league.name}
@@ -1835,15 +1665,7 @@ export default function App() {
                   const done = m.progress >= m.target;
                   return (
                     <div key={m.id} className="shopCard">
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 10,
-                          alignItems: "center",
-                          flexWrap: "wrap",
-                        }}
-                      >
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                         <div>
                           <div style={{ fontWeight: 1100 }}>{m.text}</div>
                           <div className="small">
@@ -1886,24 +1708,6 @@ export default function App() {
           </div>
         </div>
       </div>
-
-      {/* Bottom bar mobile */}
-      {isTiny && (
-        <div className="bottomBar" role="navigation" aria-label="Navigation">
-          <button className="navBtn press" onClick={() => setShowSettings(true)} aria-label="Réglages">
-            ⚙️
-            <span>Réglages</span>
-          </button>
-          <button className="navBtn press" onClick={() => setShowProfile(true)} aria-label="Profil">
-            👤
-            <span>Profil</span>
-          </button>
-          <button className="navBtn press navPrimary" onClick={() => setShowShop(true)} aria-label="Boutique">
-            🛒
-            <span>Boutique</span>
-          </button>
-        </div>
-      )}
 
       {/* Boutique */}
       {showShop && (
@@ -2160,26 +1964,6 @@ export default function App() {
             <div className="small" style={{ marginTop: 8 }}>
               Skins animés : {skin.animated ? <b>disponible</b> : <b>skin statique</b>} (désactivé si “réduire” activé)
             </div>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div>
-              <strong>Raccourcis PC</strong>
-              <div className="sub" style={{ marginTop: 6 }}>
-                1–4 pour répondre • Entrée = Suivant • Échap = fermer
-              </div>
-            </div>
-            <span className="pill">Desktop</span>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div>
-              <strong>Gestes mobile</strong>
-              <div className="sub" style={{ marginTop: 6 }}>
-                Swipe gauche = Suivant (après explication) • Swipe droite = Profil
-              </div>
-            </div>
-            <span className="pill">Mobile</span>
           </div>
         </Modal>
       )}
