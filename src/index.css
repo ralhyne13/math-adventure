@@ -601,6 +601,78 @@ body.reduce-motion *{
   color: var(--muted);
 }
 
+/* ---------------- (5) LEVEL UP popup ---------------- */
+.levelPop{
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  top: calc(12px + env(safe-area-inset-top));
+  display:flex;
+  justify-content:center;
+  pointer-events:none;
+  z-index: 85;
+}
+.levelPopInner{
+  pointer-events:auto;
+  width: min(760px, 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background:
+    radial-gradient(420px 240px at 20% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
+    radial-gradient(520px 260px at 90% 60%, color-mix(in srgb, var(--accent2) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, rgba(20,26,52,.92), rgba(10,14,30,.92));
+  box-shadow: 0 22px 80px rgba(0,0,0,.60);
+  padding: 12px 14px;
+  display:flex;
+  gap: 12px;
+  align-items:center;
+  animation: levelPopIn 520ms var(--ease-out) 1;
+}
+@keyframes levelPopIn{
+  0%{ transform: translateY(-10px) scale(.98); opacity: 0; }
+  20%{ opacity: 1; }
+  100%{ transform: translateY(0) scale(1); opacity: 1; }
+}
+body.reduce-motion .levelPopInner{
+  animation: none !important;
+}
+
+.levelBadge{
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.20);
+  font-size: 22px;
+  flex: 0 0 auto;
+}
+.levelPopTitle{
+  font-weight: 1100;
+  letter-spacing: .4px;
+}
+.levelPopSub{
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: rgba(234,240,255,.86);
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items:center;
+}
+.levelCoins{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.18);
+  font-weight: 1100;
+}
+
 /* ---------------- (10) Skins animés ---------------- */
 /* On anime un calque “aurora” derrière, uniquement si body.anim-skin */
 body.anim-skin{

@@ -185,7 +185,6 @@ const LEAGUES = [
 ];
 
 function computeRating({ score, accuracy, bestStreak, level }) {
-  // score session = principal, précision = gros bonus, streak = petit bonus, niveau = mini bonus
   const v =
     score * 1.15 +
     accuracy * 6 +
@@ -201,7 +200,6 @@ function leagueFromRating(rating) {
   return { ...LEAGUES[idx], rank: idx };
 }
 function leagueReward(rankGained) {
-  // oui : bonus coins quand tu montes
   return 80 + rankGained * 60;
 }
 
@@ -499,6 +497,9 @@ export default function App() {
   const autoTimerRef = useRef(null);
   const badgeTimerRef = useRef(null);
 
+  // (5) Level up popup timer
+  const levelTimerRef = useRef(null);
+
   // refs XP
   const levelRef = useRef(1);
   const xpRef = useRef(0);
@@ -580,6 +581,9 @@ export default function App() {
 
   const [achievements, setAchievements] = useState(initial.achievements);
   const [badgePop, setBadgePop] = useState(null);
+
+  // (5) LEVEL UP popup state
+  const [levelPop, setLevelPop] = useState(null);
 
   // (1) ligue : meilleure ligue atteinte (rank)
   const [bestLeagueRank, setBestLeagueRank] = useState(initial.bestLeagueRank);
@@ -712,27 +716,55 @@ export default function App() {
     badgeTimerRef.current = setTimeout(() => setBadgePop(null), 2600);
   }
 
+  // (5) show LEVEL UP popup
+  function showLevelPopup(payload) {
+    setLevelPop(payload);
+    if (levelTimerRef.current) clearTimeout(levelTimerRef.current);
+    levelTimerRef.current = setTimeout(() => setLevelPop(null), 2800);
+  }
+
   function awardCoins(amount) {
     setCoins(c => c + Math.max(0, amount));
   }
 
-  // XP robuste
+  // XP robuste (+ LEVEL UP feedback)
   function awardXp(amount) {
     const add = Math.max(0, amount);
+
+    const startLevel = levelRef.current;
 
     let lvl = levelRef.current;
     let xpNow = xpRef.current + add;
 
+    let levelsGained = 0;
+    let coinsGained = 0;
+
     while (xpNow >= xpToNext(lvl)) {
       xpNow -= xpToNext(lvl);
       lvl += 1;
-      awardCoins(awardLevelCoins(lvl));
+      levelsGained += 1;
+
+      const c = awardLevelCoins(lvl);
+      coinsGained += c;
+      awardCoins(c);
     }
 
     levelRef.current = lvl;
     xpRef.current = xpNow;
     setLevel(lvl);
     setXp(xpNow);
+
+    // (5) Popup + mini feedback si level up
+    if (lvl > startLevel) {
+      if (vibrateOn) vibrate(30);
+      playBeep("ok", audioOn);
+
+      showLevelPopup({
+        toLevel: lvl,
+        gainedLevels: levelsGained,
+        gainedCoins: coinsGained,
+      });
+    }
   }
 
   function updateDailyMissions(nextDailyStats) {
@@ -1030,6 +1062,31 @@ export default function App() {
 
   return (
     <div className="shell">
+      {/* (5) LEVEL UP popup */}
+      {levelPop && (
+        <div className="levelPop" role="status" aria-live="polite">
+          <div className="levelPopInner smooth">
+            <div className="levelBadge" aria-hidden="true">⬆️</div>
+            <div style={{ flex: 1 }}>
+              <div className="levelPopTitle">LEVEL UP !</div>
+              <div className="levelPopSub">
+                Niveau <b>{levelPop.toLevel}</b>
+                {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} •
+                <span className="levelCoins">
+                  <span className="coinDot" /> +{levelPop.gainedCoins} coins
+                </span>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Continue comme ça 🚀
+              </div>
+            </div>
+            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setLevelPop(null)}>
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Badge popup */}
       {badgePop && (
         <div className="badgePop">
