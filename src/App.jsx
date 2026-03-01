@@ -187,6 +187,29 @@ function formatClock(totalSeconds) {
   return `${mm}:${ss}`;
 }
 
+function arenaComboMultiplier(combo) {
+  const c = Math.max(0, Number(combo) || 0);
+  if (c >= 15) return 4;
+  if (c >= 10) return 3;
+  if (c >= 5) return 2;
+  return 1;
+}
+
+function rushComboMultiplier(combo) {
+  const c = Math.max(0, Number(combo) || 0);
+  if (c >= 18) return 4;
+  if (c >= 12) return 3;
+  if (c >= 6) return 2;
+  return 1;
+}
+
+const ARENA_BOSSES = [
+  { id: "hydra", name: "Hydre des Tables", emoji: "🐉" },
+  { id: "golem", name: "Golem du Calcul", emoji: "🪨" },
+  { id: "phantom", name: "Fantome des Fractions", emoji: "👻" },
+  { id: "titan", name: "Titan Algebra", emoji: "🦾" },
+];
+
 function evolvedOwlForLevel(level) {
   if (level >= 30) return { emoji: "🌟🦉🌟", name: "Hibou legendaire" };
   if (level >= 20) return { emoji: "👑🦉", name: "Hibou dore" };
@@ -266,6 +289,7 @@ export default function App() {
         vibrateOn: true,
         autoNextOn: false,
         autoNextMs: 1800,
+        arenaOn: true,
         adaptiveOn: true,
         noPenaltyOnWrong: false,
         reduceMotion: false,
@@ -313,6 +337,7 @@ export default function App() {
       vibrateOn: saved?.vibrateOn ?? true,
       autoNextOn: saved?.autoNextOn ?? false,
       autoNextMs: saved?.autoNextMs ?? 1800,
+      arenaOn: saved?.arenaOn ?? true,
       adaptiveOn: saved?.adaptiveOn ?? true,
       noPenaltyOnWrong: saved?.noPenaltyOnWrong ?? false,
       reduceMotion: saved?.reduceMotion ?? false,
@@ -366,6 +391,7 @@ export default function App() {
   const [vibrateOn, setVibrateOn] = useState(initial.vibrateOn);
   const [autoNextOn, setAutoNextOn] = useState(initial.autoNextOn);
   const [autoNextMs, setAutoNextMs] = useState(initial.autoNextMs);
+  const [arenaOn, setArenaOn] = useState(initial.arenaOn);
   const [adaptiveOn, setAdaptiveOn] = useState(initial.adaptiveOn);
   const [noPenaltyOnWrong, setNoPenaltyOnWrong] = useState(initial.noPenaltyOnWrong);
   const [reduceMotion, setReduceMotion] = useState(initial.reduceMotion);
@@ -426,6 +452,9 @@ export default function App() {
   const [bossActive, setBossActive] = useState(false);
   const [bossRemaining, setBossRemaining] = useState(0);
   const [bossTimeLeft, setBossTimeLeft] = useState(0);
+  const [bossProfile, setBossProfile] = useState(ARENA_BOSSES[0]);
+  const [bossHitFx, setBossHitFx] = useState(false);
+  const [bossAttackFx, setBossAttackFx] = useState(false);
   const [worldBossActive, setWorldBossActive] = useState(false);
   const [worldBossRemaining, setWorldBossRemaining] = useState(0);
 
@@ -523,6 +552,7 @@ export default function App() {
       vibrateOn,
       autoNextOn,
       autoNextMs,
+      arenaOn,
       adaptiveOn,
       noPenaltyOnWrong,
       reduceMotion,
@@ -579,6 +609,7 @@ export default function App() {
     vibrateOn,
     autoNextOn,
     autoNextMs,
+    arenaOn,
     adaptiveOn,
     noPenaltyOnWrong,
     reduceMotion,
@@ -755,11 +786,23 @@ export default function App() {
       setBossTimeLeft(0);
       showCoachPopup({
         title: "Boss termine",
-        lines: ["Tu as termine le boss (3 questions).", "XP bonus x3 applique pendant le boss."],
+        lines: ["Boss KO.", "XP bonus x3 applique pendant le boss."],
         hint: "Le prochain boss arrive dans 10 questions.",
       });
     }
   }, [bossActive, bossRemaining]);
+
+  useEffect(() => {
+    if (!bossAttackFx) return undefined;
+    const t = setTimeout(() => setBossAttackFx(false), 420);
+    return () => clearTimeout(t);
+  }, [bossAttackFx]);
+
+  useEffect(() => {
+    if (!bossHitFx) return undefined;
+    const t = setTimeout(() => setBossHitFx(false), 280);
+    return () => clearTimeout(t);
+  }, [bossHitFx]);
 
   function vibrate(ms) {
     if (!vibrateOn) return;
@@ -878,6 +921,8 @@ export default function App() {
     setHintMsg("");
     setFx("none");
     setSpark(false);
+    setBossHitFx(false);
+    setBossAttackFx(false);
     setIsLocked(false);
     if (resetPick) setPicked(null);
   }
@@ -898,6 +943,8 @@ export default function App() {
     setBossActive(false);
     setBossRemaining(0);
     setBossTimeLeft(0);
+    setBossHitFx(false);
+    setBossAttackFx(false);
     setWorldBossActive(false);
     setWorldBossRemaining(0);
     setScore(0);
@@ -953,6 +1000,8 @@ export default function App() {
     setBossActive(false);
     setBossRemaining(0);
     setBossTimeLeft(0);
+    setBossHitFx(false);
+    setBossAttackFx(false);
     setWorldBossActive(false);
     setWorldBossRemaining(0);
     newQuestion(true);
@@ -1277,6 +1326,7 @@ export default function App() {
     setPicked(choice);
     const isCorrect = choice === q.correct;
     const isRushNow = rushOn && rushTimeLeft > 0;
+    const isArenaNow = arenaOn && !isRushNow && !study5On;
     const isBossNow = bossActive;
     const isWorldBossNow = worldBossActive;
     const fastMode = isRushNow || isBossNow || isWorldBossNow;
@@ -1286,8 +1336,9 @@ export default function App() {
     const nextTotalWrong = totalWrong + (isCorrect ? 0 : 1);
     const nextStreak = isCorrect ? streak + 1 : 0;
     const baseScoreAdd = isCorrect ? 10 + Math.min(18, streak * 2) : 0;
-    const rushMult = isRushNow ? 1 + Math.floor((isCorrect ? rushCombo + 1 : 0) / 5) * 0.2 : 1;
-    const nextScoreAdd = Math.round(baseScoreAdd * rushMult);
+    const rushMult = isRushNow ? rushComboMultiplier(isCorrect ? rushCombo + 1 : rushCombo) : 1;
+    const arenaMult = isArenaNow ? arenaComboMultiplier(isCorrect ? streak + 1 : streak) : 1;
+    const nextScoreAdd = Math.round(baseScoreAdd * (isRushNow ? rushMult : arenaMult));
 
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
     const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
@@ -1315,15 +1366,19 @@ export default function App() {
 
     setTotalQuestions((x) => x + 1);
 
-    if (!bossActive && !worldBossActive && nextTotalQuestions > 0 && nextTotalQuestions % 10 === 0) {
+    if (isArenaNow && !bossActive && !worldBossActive && nextTotalQuestions > 0 && nextTotalQuestions % 10 === 0) {
+      const bossPick = ARENA_BOSSES[randInt(0, ARENA_BOSSES.length - 1)];
+      setBossProfile(bossPick);
+      setBossHitFx(false);
+      setBossAttackFx(false);
       setBossActive(true);
-      setBossRemaining(3);
-      setBossTimeLeft(10);
+      setBossRemaining(100);
+      setBossTimeLeft(12);
       playBeep("level", audioOn);
       vibrate(35);
       showCoachPopup({
         title: "Boss Fight",
-        lines: ["3 questions difficiles", "Temps court", "XP x3"],
+        lines: [`${bossPick.emoji} ${bossPick.name}`, "Boss enrage: 100 HP", "Chaque bonne reponse: -20% HP"],
         hint: "Reste focus jusqu'au bout.",
       });
     }
@@ -1502,7 +1557,12 @@ export default function App() {
     }
 
     if (isBossNow) {
-      setBossRemaining((n) => Math.max(0, n - 1));
+      if (isCorrect) {
+        setBossHitFx(true);
+        setBossRemaining((n) => Math.max(0, n - 20));
+      } else {
+        setBossAttackFx(true);
+      }
       setBossTimeLeft(10);
     }
 
@@ -1719,6 +1779,11 @@ export default function App() {
     return st;
   }, [activityDays]);
 
+  const rushDanger = rushOn && rushTimeLeft <= 10;
+  const rushMultNow = rushOn ? rushComboMultiplier(rushCombo + 1) : 1;
+  const arenaMultNow = arenaOn && !rushOn ? arenaComboMultiplier(streak + 1) : 1;
+  const bossHpPct = clamp(bossRemaining, 0, 100);
+
   const xpPct = Math.round((xp / xpNeed) * 100);
 
   const unlockedCount = useMemo(() => ACHIEVEMENTS.filter((a) => isUnlocked(a.id)).length, [achievements]);
@@ -1820,6 +1885,7 @@ export default function App() {
       vibrateOn: true,
       autoNextOn: false,
       autoNextMs: 1800,
+      arenaOn: true,
       adaptiveOn: true,
       noPenaltyOnWrong: false,
       reduceMotion: false,
@@ -2387,9 +2453,17 @@ export default function App() {
           setShowMethod={setShowMethod}
           rushOn={rushOn}
           rushTimeLeft={rushTimeLeft}
+          rushDanger={rushDanger}
+          rushMultNow={rushMultNow}
+          arenaOn={arenaOn}
+          arenaMultNow={arenaMultNow}
           bossActive={bossActive}
           bossTimeLeft={bossTimeLeft}
           bossRemaining={bossRemaining}
+          bossHpPct={bossHpPct}
+          bossProfile={bossProfile}
+          bossHitFx={bossHitFx}
+          bossAttackFx={bossAttackFx}
         />
         <div className="card smooth">
           <div className="cardTitle">
@@ -2483,10 +2557,35 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
+              <strong>Mode Arena (principal)</strong>
+              <div className="small" style={{ marginTop: 6 }}>
+                Etat: <b>{arenaOn ? "ACTIF" : "OFF"}</b> • Serie infinie • Boss toutes les 10 questions • Multiplicateur combo jusqu'a <b>x4</b>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Multiplicateur actuel: <b>x{arenaMultNow}</b>
+              </div>
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button className={`btn smooth hover-lift press ${arenaOn ? "btnPrimary" : ""}`} onClick={() => setArenaOn((v) => !v)}>
+                  {arenaOn ? "Arena ON" : "Arena OFF"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
               <strong>Rush 60s</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Temps: <b>{rushTimeLeft}s</b> • Score: <b>{rushScore}</b> • Combo: <b>{rushCombo}</b> • Record: <b>{rushBestScore}</b>
               </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Multiplicateur rush: <b>x{rushMultNow}</b> (x2/x3/x4 selon combo)
+              </div>
+              {rushDanger && (
+                <div className="small" style={{ marginTop: 6, color: "rgba(255,170,170,.95)", fontWeight: 1100 }}>
+                  Zone critique: moins de 10 secondes.
+                </div>
+              )}
               {!isPremium && (
                 <div className="small" style={{ marginTop: 6 }}>
                   Limite gratuite: <b>{Math.max(0, 3 - rushTodayCount)}/3</b> rush restants aujourd'hui.
@@ -2639,8 +2738,18 @@ export default function App() {
               <strong>Boss Fight</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Etat: <b>{bossActive ? "ACTIF" : "attente"}</b>
-                {bossActive ? ` • Questions restantes: ${bossRemaining} • Temps: ${bossTimeLeft}s` : ` • Prochain boss toutes les 10 questions`}
+                {bossActive ? ` • HP: ${bossRemaining}% • Temps: ${bossTimeLeft}s` : ` • Prochain boss toutes les 10 questions`}
               </div>
+              {bossActive && (
+                <div className="small" style={{ marginTop: 6 }}>
+                  Boss actuel: <b>{bossProfile?.emoji} {bossProfile?.name}</b>
+                </div>
+              )}
+              {bossActive && (
+                <div className="barWrap" style={{ marginTop: 8 }}>
+                  <div className="bar" style={{ width: `${bossHpPct}%` }} />
+                </div>
+              )}
             </div>
             <span className="pill">XP x3</span>
           </div>

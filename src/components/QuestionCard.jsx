@@ -42,12 +42,20 @@ export default function QuestionCard({
   setShowMethod,
   rushOn,
   rushTimeLeft,
+  rushDanger,
+  rushMultNow,
+  arenaOn,
+  arenaMultNow,
   bossActive,
   bossTimeLeft,
   bossRemaining,
+  bossHpPct,
+  bossProfile,
+  bossHitFx,
+  bossAttackFx,
 }) {
   return (
-    <div className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""}`}>
+    <div className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${bossHitFx ? "bossHitFx" : ""}`}>
       <div className={`fx ${fx === "ok" ? "fxOk" : fx === "bad" ? "fxBad" : ""}`} />
       <div className={`sparkles ${spark ? "on" : ""}`}>
         {[...Array(10)].map((_, i) => (
@@ -114,28 +122,51 @@ export default function QuestionCard({
         </div>
       </div>
 
-      <div className="heroQuestion" data-status={status}>
+      <div className={`heroQuestion ${rushDanger ? "rushDanger" : ""}`} data-status={status}>
         <div className="heroTop">
           <div className="qPrompt">{q.prompt}</div>
           <div className="heroMeta">
             <span className="metaPill">
-              <span className="metaIcon">🎯</span> Combo <b>{streak}</b>
+              <span className="metaIcon">Combo</span> <b>{streak}</b>
             </span>
+            {arenaOn && !rushOn && (
+              <span className="metaPill">
+                <span className="metaIcon">Arena</span> <b>x{arenaMultNow}</b>
+              </span>
+            )}
             <span className="metaPill">
-              <span className="metaIcon">📊</span> Precision <b>{accuracy}%</b>
+              <span className="metaIcon">Precision</span> <b>{accuracy}%</b>
             </span>
             {rushOn && (
               <span className="metaPill">
-                <span className="metaIcon">⚡</span> Rush <b>{rushTimeLeft}s</b>
+                <span className="metaIcon">Rush</span> <b>{rushTimeLeft}s</b> <b>x{rushMultNow}</b>
               </span>
             )}
             {bossActive && (
               <span className="metaPill">
-                <span className="metaIcon">⚔️</span> Boss <b>{bossRemaining}</b> • <b>{bossTimeLeft}s</b>
+                <span className="metaIcon">Boss</span> <b>{bossRemaining}%</b> <b>{bossTimeLeft}s</b>
               </span>
             )}
           </div>
         </div>
+
+        {bossActive && (
+          <>
+            <div className={`bossPanel ${bossHitFx ? "hit" : ""} ${bossAttackFx ? "attack" : ""}`}>
+              <div className="bossAvatar" aria-hidden="true">{bossProfile?.emoji ?? "👹"}</div>
+              <div style={{ flex: 1 }}>
+                <div className="small" style={{ color: "rgba(234,240,255,.92)" }}>
+                  Boss Arena
+                </div>
+                <div style={{ fontWeight: 1100 }}>{bossProfile?.name ?? "Boss mystere"}</div>
+              </div>
+              <span className="pill">HP {bossRemaining}%</span>
+            </div>
+            <div className="bossBarWrap" aria-label="boss hp">
+              <div className="bossBar" style={{ width: `${bossHpPct}%` }} />
+            </div>
+          </>
+        )}
 
         <div className="qRow">
           {q.row.kind === "op" && (
@@ -229,7 +260,7 @@ export default function QuestionCard({
         {showExplain && (
           <div className={`toast ${status === "ok" ? "ok" : "bad"}`}>
             <div>
-              {status === "ok" ? <strong>✅ Bien joue !</strong> : <strong>❌ Oups...</strong>}
+              {status === "ok" ? <strong>Bien joue</strong> : <strong>Oups</strong>}
               <div className="sub" style={{ marginTop: 4 }}>
                 Bonne reponse : <b>{String(q.correct)}</b>
               </div>
