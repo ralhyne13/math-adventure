@@ -54,8 +54,32 @@ function safeLSSet(key, value) {
   } catch {}
 }
 
-function parisDayKey() {
-  return new Date().toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" });
+function parisDayKey(date = new Date()) {
+  return date.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" });
+}
+function dayKeyToDate(dayKey) {
+  // dayKey fr-FR ex: "01/03/2026"
+  const parts = String(dayKey).split("/");
+  if (parts.length !== 3) return null;
+  const [dd, mm, yyyy] = parts.map((x) => parseInt(x, 10));
+  if (!dd || !mm || !yyyy) return null;
+  // créer une date "locale" OK pour comparer jours (on compare uniquement via keys ensuite)
+  return new Date(yyyy, mm - 1, dd, 12, 0, 0);
+}
+function isYesterdayKey(prevKey, todayKey) {
+  const prev = dayKeyToDate(prevKey);
+  const today = dayKeyToDate(todayKey);
+  if (!prev || !today) return false;
+  const diff = Math.round((today.getTime() - prev.getTime()) / (24 * 3600 * 1000));
+  return diff === 1;
+}
+
+/* ------------------------ Password hashing (SHA-256) ------------------------ */
+async function sha256Hex(text) {
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  const bytes = new Uint8Array(buf);
+  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /* ------------------------ WebAudio (sons) ------------------------ */
@@ -190,15 +214,34 @@ const SKINS = [
   },
 ];
 
-// ✅ Boutique premium + raretés + exclusifs
+// ✅ Beaucoup plus de "communs"
 const AVATARS = [
+  // COMMUNS (0-60)
   { id: "owl", name: "Hibou", emoji: "🦉", price: 0, rarity: "Commun" },
+  { id: "cat", name: "Chat", emoji: "🐱", price: 20, rarity: "Commun" },
+  { id: "dog", name: "Chien", emoji: "🐶", price: 20, rarity: "Commun" },
+  { id: "panda", name: "Panda", emoji: "🐼", price: 30, rarity: "Commun" },
+  { id: "koala", name: "Koala", emoji: "🐨", price: 30, rarity: "Commun" },
+  { id: "tiger", name: "Tigre", emoji: "🐯", price: 35, rarity: "Commun" },
+  { id: "penguin", name: "Pingouin", emoji: "🐧", price: 35, rarity: "Commun" },
+  { id: "frog", name: "Grenouille", emoji: "🐸", price: 25, rarity: "Commun" },
+  { id: "unicorn", name: "Licorne", emoji: "🦄", price: 60, rarity: "Commun" },
+  { id: "star", name: "Étoile", emoji: "⭐", price: 25, rarity: "Commun" },
+  { id: "rocket", name: "Fusée", emoji: "🚀", price: 40, rarity: "Commun" },
+  { id: "dice", name: "Dé", emoji: "🎲", price: 25, rarity: "Commun" },
+  { id: "math", name: "Math", emoji: "🧮", price: 35, rarity: "Commun" },
+
+  // RARES
   { id: "robot", name: "Robot", emoji: "🤖", price: 120, rarity: "Rare" },
   { id: "fox", name: "Renard", emoji: "🦊", price: 140, rarity: "Rare" },
+  { id: "pirate", name: "Pirate", emoji: "🏴‍☠️", price: 140, rarity: "Rare" },
+
+  // ÉPIQUES
   { id: "astro", name: "Astronaute", emoji: "🧑‍🚀", price: 200, rarity: "Épique" },
   { id: "ninja", name: "Ninja", emoji: "🥷", price: 220, rarity: "Épique" },
   { id: "dragon", name: "Dragon", emoji: "🐉", price: 260, rarity: "Épique" },
 
+  // EXCLUSIFS
   { id: "king", name: "Roi des Maths", emoji: "👑", price: 420, rarity: "Exclusif" },
   { id: "wizard", name: "Magicien ∑", emoji: "🧙‍♂️", price: 520, rarity: "Exclusif" },
   { id: "genius", name: "Génie π", emoji: "🧠", price: 650, rarity: "Exclusif" },
@@ -275,35 +318,6 @@ function awardLevelCoins(levelGained) {
   return 25 + levelGained * 5;
 }
 
-/* ------------------------ (1) Ligues ------------------------ */
-const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "🥉", min: 0 },
-  { id: "silver", name: "Argent", icon: "🥈", min: 260 },
-  { id: "gold", name: "Or", icon: "🥇", min: 520 },
-  { id: "plat", name: "Platine", icon: "💠", min: 820 },
-  { id: "diamond", name: "Diamant", icon: "💎", min: 1150 },
-  { id: "master", name: "Master", icon: "👑", min: 1500 },
-];
-
-function computeRating({ score, accuracy, bestStreak, level }) {
-  const v =
-    score * 1.15 +
-    accuracy * 6 +
-    Math.min(60, bestStreak * 2) +
-    Math.min(80, level * 1.5);
-  return Math.max(0, Math.round(v));
-}
-function leagueFromRating(rating) {
-  let idx = 0;
-  for (let i = 0; i < LEAGUES.length; i++) {
-    if (rating >= LEAGUES[i].min) idx = i;
-  }
-  return { ...LEAGUES[idx], rank: idx };
-}
-function leagueReward(rankGained) {
-  return 80 + rankGained * 60;
-}
-
 /* ------------------------ Anti répétitions ------------------------ */
 function questionSignature(q, modeId, gradeId, diffId) {
   const base = `${modeId}|${gradeId}|${diffId}|${q.row.kind}|${q.correct}`;
@@ -341,7 +355,6 @@ function makeQAdd(cfg) {
         : `❌ Addition : ${a} + ${b} = ${correct}. Tu as choisi ${picked}.`,
   };
 }
-
 function makeQSub(cfg) {
   const max = Math.max(10, cfg.subMax);
   let a = randInt(0, max);
@@ -359,7 +372,6 @@ function makeQSub(cfg) {
         : `❌ Soustraction : ${a} − ${b} = ${correct}. Tu as choisi ${picked}.`,
   };
 }
-
 function makeQMul(cfg) {
   const aMax = Math.max(3, cfg.mulA);
   const bMax = Math.max(3, cfg.mulB);
@@ -377,7 +389,6 @@ function makeQMul(cfg) {
         : `❌ Multiplication : ${a} × ${b} = ${correct}. Tu as choisi ${picked}.`,
   };
 }
-
 function makeQDiv(cfg) {
   const bMax = Math.max(2, cfg.divB);
   const b = randInt(2, bMax);
@@ -396,7 +407,6 @@ function makeQDiv(cfg) {
   };
 }
 
-/* Explications fractions adaptées au niveau */
 function fracCompareExplain({ aN, aD, bN, bD }, picked, correct, gradeId) {
   const isMiddleSchool = ["6e", "5e", "4e", "3e"].includes(gradeId);
 
@@ -565,24 +575,6 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-/* ------------------------ Daily missions ------------------------ */
-function generateDailyMissions() {
-  const pool = [
-    { id: "right15", text: "Fais 15 bonnes réponses", type: "right", target: 15, reward: 80 },
-    { id: "right30", text: "Fais 30 bonnes réponses", type: "right", target: 30, reward: 150 },
-    { id: "streak5", text: "Atteins un combo de 5", type: "streak", target: 5, reward: 100 },
-    { id: "streak10", text: "Atteins un combo de 10", type: "streak", target: 10, reward: 190 },
-    { id: "q40", text: "Réponds à 40 questions", type: "questions", target: 40, reward: 120 },
-    { id: "q80", text: "Réponds à 80 questions", type: "questions", target: 80, reward: 220 },
-  ];
-  return shuffle(pool)
-    .slice(0, 3)
-    .map((m) => ({ ...m, progress: 0, claimed: false }));
-}
-
-// ✅ (optionnel) clé renommée
-const LS_KEY = "math-adventure-v1";
-
 /* ------------------------ Achievements (Badges) ------------------------ */
 const ACHIEVEMENTS = [
   { id: "streak5", icon: "🔥", title: "Combo 5", desc: "Atteins un combo de 5.", reward: 50, type: "streak", target: 5 },
@@ -609,7 +601,7 @@ function formatDateFR(iso) {
   }
 }
 
-/* ------------------------ (3) Coach helpers ------------------------ */
+/* ------------------------ (Coach helpers) ------------------------ */
 function modeHint(modeId) {
   switch (modeId) {
     case "div":
@@ -627,7 +619,6 @@ function modeHint(modeId) {
       return "Astuce addition : vérifie vite avec l’opération inverse (−) si tu doutes.";
   }
 }
-
 function buildCoachSummary(perfByMode) {
   const rows = Object.entries(perfByMode || {})
     .map(([mId, v]) => {
@@ -639,11 +630,7 @@ function buildCoachSummary(perfByMode) {
     .filter((r) => r.total > 0);
 
   if (!rows.length) {
-    return {
-      title: "Coach",
-      lines: ["Joue encore un peu et je te fais un bilan 👍"],
-      hint: null,
-    };
+    return { title: "Coach", lines: ["Joue encore un peu et je te fais un bilan 👍"], hint: null };
   }
 
   const eligible = rows.filter((r) => r.total >= 3);
@@ -654,14 +641,62 @@ function buildCoachSummary(perfByMode) {
 
   const lines = [];
   lines.push(`Top : ${modeName(best.mId)} — ${best.acc}% (${best.right}/${best.total})`);
+  if (worst.mId !== best.mId) lines.push(`À bosser : ${modeName(worst.mId)} — ${worst.acc}% (${worst.right}/${worst.total})`);
 
-  if (worst.mId === best.mId) {
-    lines.push(`Continue sur ${modeName(best.mId)} : garde ce rythme 💪`);
-    return { title: "Coach (bilan 10)", lines, hint: null };
+  return { title: "Coach (bilan 10)", lines, hint: worst.mId !== best.mId ? modeHint(worst.mId) : null };
+}
+
+/* ------------------------ Login / Users storage ------------------------ */
+const USERS_KEY = "math-adventure-users-v1";
+function normalizePseudo(p) {
+  return String(p || "").trim().toLowerCase();
+}
+function userKey(pseudo) {
+  return `math-adventure-user:${normalizePseudo(pseudo)}`;
+}
+function getUsersIndex() {
+  return safeLSGet(USERS_KEY, { users: {} });
+}
+function setUsersIndex(next) {
+  safeLSSet(USERS_KEY, next);
+}
+function safeName(pseudo) {
+  // affichage joli: garde ce que l'utilisateur tape, mais pour clé on normalise
+  return String(pseudo || "").trim();
+}
+
+/* ------------------------ Login Streak Rewards (7 jours) ------------------------ */
+function rewardRoll(streakDay, ownedAvatars) {
+  // streakDay 1..7
+  const baseCoins = 30 + (streakDay - 1) * 18;
+  const coinReward = randInt(baseCoins, baseCoins + 45);
+
+  // chance avatar augmente avec le jour
+  const avatarChance = clamp(0.18 + (streakDay - 1) * 0.07, 0.18, 0.62);
+  const roll = Math.random();
+
+  if (roll < avatarChance) {
+    // pool : surtout communs, un peu rares, très peu epique
+    const commons = AVATARS.filter((a) => a.rarity === "Commun");
+    const rares = AVATARS.filter((a) => a.rarity === "Rare");
+    const epics = AVATARS.filter((a) => a.rarity === "Épique");
+
+    const tierRoll = Math.random();
+    let pool = commons;
+    if (streakDay >= 4 && tierRoll < 0.18) pool = rares;
+    if (streakDay === 7 && tierRoll < 0.08) pool = epics;
+
+    const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
+    if (notOwned.length) {
+      const picked = notOwned[randInt(0, notOwned.length - 1)];
+      return { kind: "avatar", avatarId: picked.id, label: `Avatar : ${picked.emoji} ${picked.name}` };
+    }
+    // si tout déjà possédé -> coins
+    return { kind: "coins", coins: coinReward + 40, label: `Coins : +${coinReward + 40}` };
   }
 
-  lines.push(`À bosser : ${modeName(worst.mId)} — ${worst.acc}% (${worst.right}/${worst.total})`);
-  return { title: "Coach (bilan 10)", lines, hint: modeHint(worst.mId) };
+  // sinon coins
+  return { kind: "coins", coins: coinReward, label: `Coins : +${coinReward}` };
 }
 
 /* ------------------------ App ------------------------ */
@@ -669,51 +704,81 @@ export default function App() {
   const qHistoryRef = useRef([]);
   const autoTimerRef = useRef(null);
   const badgeTimerRef = useRef(null);
-
   const levelTimerRef = useRef(null);
   const coachTimerRef = useRef(null);
 
   const levelRef = useRef(1);
   const xpRef = useRef(0);
 
+  /* ------------------------ Auth state ------------------------ */
+  const [authUser, setAuthUser] = useState(() => safeLSGet("math-adventure-auth", null)); // { pseudoDisplay, pseudoKey }
+  const [authMode, setAuthMode] = useState("login"); // login/register
+  const [authPseudo, setAuthPseudo] = useState("");
+  const [authPass, setAuthPass] = useState("");
+  const [authMsg, setAuthMsg] = useState("");
+
+  const isLoggedIn = !!authUser?.pseudoKey;
+
+  /* ------------------------ Load per-user save ------------------------ */
   const initial = useMemo(() => {
-    const saved = safeLSGet(LS_KEY, null);
+    if (!isLoggedIn) {
+      // valeurs par défaut tant qu'on est pas connecté
+      return {
+        skinId: "neon-night",
+        gradeId: "CE1",
+        diffId: "moyen",
+        modeId: "add",
+        coins: 120,
+        avatarId: "owl",
+        ownedSkins: ["neon-night"],
+        ownedAvatars: ["owl"],
+        level: 1,
+        xp: 0,
+        records: {},
+        bestStreak: 0,
+        totalRight: 0,
+        totalWrong: 0,
+        totalQuestions: 0,
+        audioOn: true,
+        vibrateOn: true,
+        autoNextOn: false,
+        autoNextMs: 1800,
+        reduceMotion: false,
+        achievements: {},
+        // login streak
+        lastLoginDayKey: null,
+        loginStreak: 0,
+      };
+    }
+
+    const saved = safeLSGet(userKey(authUser.pseudoKey), null);
     return {
       skinId: saved?.skinId ?? "neon-night",
       gradeId: saved?.gradeId ?? "CE1",
       diffId: saved?.diffId ?? "moyen",
       modeId: saved?.modeId ?? "add",
-
       coins: saved?.coins ?? 120,
       avatarId: saved?.avatarId ?? "owl",
       ownedSkins: saved?.ownedSkins ?? ["neon-night"],
       ownedAvatars: saved?.ownedAvatars ?? ["owl"],
-
       level: saved?.level ?? 1,
       xp: saved?.xp ?? 0,
-
       records: saved?.records ?? {},
       bestStreak: saved?.bestStreak ?? 0,
       totalRight: saved?.totalRight ?? 0,
       totalWrong: saved?.totalWrong ?? 0,
       totalQuestions: saved?.totalQuestions ?? 0,
-
       audioOn: saved?.audioOn ?? true,
       vibrateOn: saved?.vibrateOn ?? true,
       autoNextOn: saved?.autoNextOn ?? false,
       autoNextMs: saved?.autoNextMs ?? 1800,
       reduceMotion: saved?.reduceMotion ?? false,
-
-      dayKey: saved?.dayKey ?? null,
-      dailyGiftClaimed: saved?.dailyGiftClaimed ?? false,
-      dailyMissions: saved?.dailyMissions ?? null,
-      dailyStats: saved?.dailyStats ?? { right: 0, questions: 0, bestStreak: 0 },
-
       achievements: saved?.achievements ?? {},
-
-      bestLeagueRank: saved?.bestLeagueRank ?? 0,
+      lastLoginDayKey: saved?.lastLoginDayKey ?? null,
+      loginStreak: saved?.loginStreak ?? 0,
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, authUser?.pseudoKey]);
 
   const [skinId, setSkinId] = useState(initial.skinId);
   const [gradeId, setGradeId] = useState(initial.gradeId);
@@ -740,18 +805,16 @@ export default function App() {
   const [autoNextMs, setAutoNextMs] = useState(initial.autoNextMs);
   const [reduceMotion, setReduceMotion] = useState(initial.reduceMotion);
 
-  const [dayKey, setDayKey] = useState(initial.dayKey);
-  const [dailyGiftClaimed, setDailyGiftClaimed] = useState(initial.dailyGiftClaimed);
-  const [dailyMissions, setDailyMissions] = useState(initial.dailyMissions);
-  const [dailyStats, setDailyStats] = useState(initial.dailyStats);
-
   const [achievements, setAchievements] = useState(initial.achievements);
   const [badgePop, setBadgePop] = useState(null);
 
   const [levelPop, setLevelPop] = useState(null);
   const [coachPop, setCoachPop] = useState(null);
 
-  const [bestLeagueRank, setBestLeagueRank] = useState(initial.bestLeagueRank);
+  // login streak per user
+  const [lastLoginDayKey, setLastLoginDayKey] = useState(initial.lastLoginDayKey);
+  const [loginStreak, setLoginStreak] = useState(initial.loginStreak);
+  const [loginRewardPop, setLoginRewardPop] = useState(null);
 
   // Session
   const [score, setScore] = useState(0);
@@ -776,9 +839,8 @@ export default function App() {
   const [shopTab, setShopTab] = useState("skins");
   const [profileTab, setProfileTab] = useState("stats");
 
-  // (#4) historique des 10 dernières réponses (session)
+  // historique réponses
   const [lastAnswers, setLastAnswers] = useState([]);
-  // (#3) stats par mode sur la session (pour coach)
   const [sessionAnswered, setSessionAnswered] = useState(0);
   const [sessionPerf, setSessionPerf] = useState(() => {
     const o = {};
@@ -811,38 +873,10 @@ export default function App() {
     document.body.classList.toggle("anim-skin", on);
   }, [skin.animated, reduceMotion]);
 
-  function resetDailyFor(today) {
-    setDayKey(today);
-    setDailyGiftClaimed(false);
-    setDailyMissions(generateDailyMissions());
-    setDailyStats({ right: 0, questions: 0, bestStreak: 0 });
-  }
-
+  /* ------------------------ Save per-user ------------------------ */
   useEffect(() => {
-    const today = parisDayKey();
-    if (dayKey !== today) {
-      resetDailyFor(today);
-    } else {
-      if (!dailyMissions) setDailyMissions(generateDailyMissions());
-    }
-
-    const t = setInterval(() => {
-      const nowKey = parisDayKey();
-      setDayKey((prev) => {
-        if (prev !== nowKey) {
-          resetDailyFor(nowKey);
-          return nowKey;
-        }
-        return prev;
-      });
-    }, 60_000);
-
-    return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    safeLSSet(LS_KEY, {
+    if (!isLoggedIn) return;
+    safeLSSet(userKey(authUser.pseudoKey), {
       skinId,
       gradeId,
       diffId,
@@ -863,14 +897,13 @@ export default function App() {
       autoNextOn,
       autoNextMs,
       reduceMotion,
-      dayKey,
-      dailyGiftClaimed,
-      dailyMissions,
-      dailyStats,
       achievements,
-      bestLeagueRank,
+      lastLoginDayKey,
+      loginStreak,
     });
   }, [
+    isLoggedIn,
+    authUser?.pseudoKey,
     skinId,
     gradeId,
     diffId,
@@ -891,12 +924,9 @@ export default function App() {
     autoNextOn,
     autoNextMs,
     reduceMotion,
-    dayKey,
-    dailyGiftClaimed,
-    dailyMissions,
-    dailyStats,
     achievements,
-    bestLeagueRank,
+    lastLoginDayKey,
+    loginStreak,
   ]);
 
   useEffect(() => {
@@ -923,13 +953,11 @@ export default function App() {
     if (badgeTimerRef.current) clearTimeout(badgeTimerRef.current);
     badgeTimerRef.current = setTimeout(() => setBadgePop(null), 2600);
   }
-
   function showLevelPopup(payload) {
     setLevelPop(payload);
     if (levelTimerRef.current) clearTimeout(levelTimerRef.current);
     levelTimerRef.current = setTimeout(() => setLevelPop(null), 2800);
   }
-
   function showCoachPopup(payload) {
     setCoachPop(payload);
     if (coachTimerRef.current) clearTimeout(coachTimerRef.current);
@@ -974,43 +1002,6 @@ export default function App() {
         gainedCoins: coinsGained,
       });
     }
-  }
-
-  function updateDailyMissions(nextDailyStats) {
-    setDailyMissions((prev) => {
-      const missions = prev ?? generateDailyMissions();
-      return missions.map((m) => {
-        let progress = m.progress;
-        if (m.type === "right") progress = nextDailyStats.right;
-        if (m.type === "questions") progress = nextDailyStats.questions;
-        if (m.type === "streak") progress = nextDailyStats.bestStreak;
-        return { ...m, progress };
-      });
-    });
-  }
-
-  function claimMission(missionId) {
-    setDailyMissions((prev) => {
-      const missions = prev ?? [];
-      const idx = missions.findIndex((m) => m.id === missionId);
-      if (idx < 0) return missions;
-
-      const m = missions[idx];
-      const done = m.progress >= m.target;
-      if (!done || m.claimed) return missions;
-
-      awardCoins(m.reward);
-      const next = [...missions];
-      next[idx] = { ...m, claimed: true };
-      return next;
-    });
-  }
-
-  function claimDailyGift() {
-    if (dailyGiftClaimed) return;
-    const gift = randInt(40, 90);
-    awardCoins(gift);
-    setDailyGiftClaimed(true);
   }
 
   function getBestScoreFor(mId, gId, dId) {
@@ -1136,22 +1127,18 @@ export default function App() {
 
     setTotalQuestions((x) => x + 1);
 
-    setLastAnswers((prev) => {
-      const next = [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10);
-      return next;
-    });
+    setLastAnswers((prev) => [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10));
 
     setSessionPerf((prev) => {
       const base = prev ?? {};
       const cur = base[modeId] ?? { right: 0, total: 0 };
-      const updated = {
+      return {
         ...base,
         [modeId]: {
           right: cur.right + (isCorrect ? 1 : 0),
           total: cur.total + 1,
         },
       };
-      return updated;
     });
 
     setSessionAnswered((n) => {
@@ -1167,7 +1154,6 @@ export default function App() {
           },
         };
       })();
-
       maybeCoach(nextCount, nextPerf);
       return nextCount;
     });
@@ -1212,17 +1198,6 @@ export default function App() {
       setShowExplain(true);
     }
 
-    setDailyStats((ds) => {
-      const next = {
-        ...ds,
-        questions: ds.questions + 1,
-        right: ds.right + (isCorrect ? 1 : 0),
-        bestStreak: Math.max(ds.bestStreak, nextStreak),
-      };
-      updateDailyMissions(next);
-      return next;
-    });
-
     checkAchievements({
       streak: nextStreak,
       totalRight: nextTotalRight,
@@ -1254,7 +1229,6 @@ export default function App() {
     setOwnedSkins((list) => [...list, s.id]);
     setSkinId(s.id);
   }
-
   function buyAvatar(a) {
     if (ownedAvatars.includes(a.id)) return;
     if (!canBuy(a.price)) return;
@@ -1267,15 +1241,12 @@ export default function App() {
     if (!ownedSkins.includes(sid)) return;
     setSkinId(sid);
   }
-
   function equipAvatar(aid) {
     if (!ownedAvatars.includes(aid)) return;
     setAvatarId(aid);
   }
 
   const bestScore = getBestScoreFor(modeId, gradeId, diffId);
-  const modeLabel = MODES.find((m) => m.id === modeId)?.label ?? "Mode";
-  const diffLabel = DIFFS.find((d) => d.id === diffId)?.label ?? diffId;
 
   const accuracy = useMemo(() => {
     const total = totalRight + totalWrong;
@@ -1290,49 +1261,275 @@ export default function App() {
     return ACHIEVEMENTS.filter((a) => isUnlocked(a.id)).length;
   }, [achievements]);
 
-  const rating = useMemo(() => {
-    return computeRating({ score, accuracy, bestStreak, level });
-  }, [score, accuracy, bestStreak, level]);
-
-  const league = useMemo(() => leagueFromRating(rating), [rating]);
-  const bestLeague = useMemo(() => {
-    return {
-      ...LEAGUES[Math.max(0, Math.min(bestLeagueRank, LEAGUES.length - 1))],
-      rank: bestLeagueRank,
-    };
-  }, [bestLeagueRank]);
-
-  useEffect(() => {
-    if (league.rank > bestLeagueRank) {
-      const gained = league.rank - bestLeagueRank;
-      const reward = leagueReward(gained);
-      setBestLeagueRank(league.rank);
-      awardCoins(reward);
-      showBadgePopup({
-        icon: league.icon,
-        title: `Promotion : ${league.name} !`,
-        desc: `Score ligue: ${rating} • +${reward} coins`,
-        reward,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [league.rank]);
-
   const disableChoices = isLocked || showExplain;
 
-  // ✅ Fond dynamique maths (nombres + symboles)
+  // Fond dynamique maths
   const FLOATERS = useMemo(
-    () => [
-      "1","2","3","4","5","6","7","8","9","0",
-      "+","−","×","÷","=","<",">","∑","π","%",
-      "🧮","⭐"
-    ],
+    () => ["1","2","3","4","5","6","7","8","9","0","+","−","×","÷","=","<",">","∑","π","%","🧮","⭐"],
     []
   );
 
+  /* ------------------------ Login reward on login (once/day) ------------------------ */
+  function applyLoginRewardIfNeeded(userPseudoKey) {
+    const today = parisDayKey();
+    // charge l'état utilisateur (déjà chargé aussi dans state, mais on sécurise)
+    const saved = safeLSGet(userKey(userPseudoKey), null);
+
+    const ownedA = saved?.ownedAvatars ?? ["owl"];
+    const prevDay = saved?.lastLoginDayKey ?? null;
+    const prevStreak = saved?.loginStreak ?? 0;
+
+    // déjà connecté aujourd'hui -> rien
+    if (prevDay === today) return;
+
+    // calc streak
+    let nextStreak = 1;
+    if (prevDay && isYesterdayKey(prevDay, today)) nextStreak = clamp(prevStreak + 1, 1, 7);
+    else nextStreak = 1;
+
+    // reward
+    const reward = rewardRoll(nextStreak, ownedA);
+
+    // applique
+    let nextCoins = saved?.coins ?? 120;
+    let nextOwnedAv = [...(saved?.ownedAvatars ?? ["owl"])];
+    let rewardText = "";
+
+    if (reward.kind === "coins") {
+      nextCoins += reward.coins;
+      rewardText = `+${reward.coins} coins`;
+    } else {
+      if (!nextOwnedAv.includes(reward.avatarId)) nextOwnedAv.push(reward.avatarId);
+      rewardText = `NOUVEL AVATAR : ${AVATARS.find((a) => a.id === reward.avatarId)?.emoji ?? "✨"} ${
+        AVATARS.find((a) => a.id === reward.avatarId)?.name ?? "Avatar"
+      }`;
+    }
+
+    // si jour 7 atteint -> reset au lendemain (mais on garde à 7 aujourd'hui)
+    // (tu peux changer si tu veux faire une boucle)
+    const nextSaved = {
+      ...(saved ?? {}),
+      coins: nextCoins,
+      ownedAvatars: nextOwnedAv,
+      lastLoginDayKey: today,
+      loginStreak: nextStreak,
+    };
+    safeLSSet(userKey(userPseudoKey), nextSaved);
+
+    // sync states
+    setCoins(nextCoins);
+    setOwnedAvatars(nextOwnedAv);
+    setLastLoginDayKey(today);
+    setLoginStreak(nextStreak);
+
+    setLoginRewardPop({
+      day: nextStreak,
+      text: rewardText,
+      detail: reward.label,
+    });
+
+    // petit feedback
+    playBeep("ok", saved?.audioOn ?? true);
+    vibrate(18);
+  }
+
+  /* ------------------------ Auth actions ------------------------ */
+  async function doRegister() {
+    setAuthMsg("");
+    const pseudoDisplay = safeName(authPseudo);
+    const pseudoKey = normalizePseudo(authPseudo);
+    const pass = String(authPass || "");
+
+    if (pseudoKey.length < 3) return setAuthMsg("Pseudo trop court (min 3).");
+    if (pass.length < 4) return setAuthMsg("Mot de passe trop court (min 4).");
+    if (!crypto?.subtle) return setAuthMsg("Ton navigateur ne supporte pas crypto.subtle.");
+
+    const idx = getUsersIndex();
+    if (idx.users?.[pseudoKey]) return setAuthMsg("Pseudo déjà pris.");
+
+    const hash = await sha256Hex(pass);
+
+    // créer entrée
+    const nextIdx = {
+      ...idx,
+      users: {
+        ...(idx.users ?? {}),
+        [pseudoKey]: { pseudoDisplay, passHash: hash, createdAt: new Date().toISOString() },
+      },
+    };
+    setUsersIndex(nextIdx);
+
+    // init save user
+    safeLSSet(userKey(pseudoKey), {
+      skinId: "neon-night",
+      gradeId: "CE1",
+      diffId: "moyen",
+      modeId: "add",
+      coins: 120,
+      avatarId: "owl",
+      ownedSkins: ["neon-night"],
+      ownedAvatars: ["owl"],
+      level: 1,
+      xp: 0,
+      records: {},
+      bestStreak: 0,
+      totalRight: 0,
+      totalWrong: 0,
+      totalQuestions: 0,
+      audioOn: true,
+      vibrateOn: true,
+      autoNextOn: false,
+      autoNextMs: 1800,
+      reduceMotion: false,
+      achievements: {},
+      lastLoginDayKey: null,
+      loginStreak: 0,
+    });
+
+    // login direct
+    const au = { pseudoDisplay, pseudoKey };
+    safeLSSet("math-adventure-auth", au);
+    setAuthUser(au);
+
+    // recharge l'app (simple + safe)
+    window.location.reload();
+  }
+
+  async function doLogin() {
+    setAuthMsg("");
+    const pseudoDisplay = safeName(authPseudo);
+    const pseudoKey = normalizePseudo(authPseudo);
+    const pass = String(authPass || "");
+
+    if (pseudoKey.length < 3) return setAuthMsg("Pseudo invalide.");
+    if (pass.length < 1) return setAuthMsg("Mot de passe manquant.");
+    if (!crypto?.subtle) return setAuthMsg("Ton navigateur ne supporte pas crypto.subtle.");
+
+    const idx = getUsersIndex();
+    const user = idx.users?.[pseudoKey];
+    if (!user) return setAuthMsg("Utilisateur introuvable.");
+
+    const hash = await sha256Hex(pass);
+    if (hash !== user.passHash) return setAuthMsg("Mot de passe incorrect.");
+
+    const au = { pseudoDisplay: user.pseudoDisplay || pseudoDisplay, pseudoKey };
+    safeLSSet("math-adventure-auth", au);
+    setAuthUser(au);
+
+    window.location.reload();
+  }
+
+  function doLogout() {
+    safeLSSet("math-adventure-auth", null);
+    setAuthUser(null);
+    window.location.reload();
+  }
+
+  /* ------------------------ Apply login reward after login ------------------------ */
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    // on applique la récompense 1 fois quand on démarre l'app connecté
+    applyLoginRewardIfNeeded(authUser.pseudoKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, authUser?.pseudoKey]);
+
+  /* ------------------------ Login reward popup timer ------------------------ */
+  useEffect(() => {
+    if (!loginRewardPop) return;
+    const t = setTimeout(() => setLoginRewardPop(null), 3800);
+    return () => clearTimeout(t);
+  }, [loginRewardPop]);
+
+  /* ------------------------ No actions if not logged in ------------------------ */
+  if (!isLoggedIn) {
+    return (
+      <div className="shell">
+        <div className="mathBg" aria-hidden="true">
+          {FLOATERS.map((t, i) => (
+            <span
+              key={i}
+              style={{
+                left: `${(i * 37) % 100}%`,
+                top: `${(i * 19) % 100}%`,
+                fontSize: `${14 + (i % 8) * 6}px`,
+                animationDuration: `${10 + (i % 10) * 2.2}s`,
+                animationDelay: `${-(i % 10) * 1.1}s`,
+              }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+
+        <div className="topbar">
+          <div className="brand">
+            <div className="logo smooth" />
+            <div>
+              <div className="h1">Math Adventure</div>
+              <div className="sub">Connecte-toi pour accéder à ton profil</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid" style={{ gridTemplateColumns: "1fr" }}>
+          <div className="card smooth">
+            <div className="cardTitle">
+              <span>{authMode === "login" ? "Connexion" : "Inscription"}</span>
+              <span className="pill">pseudo + mot de passe</span>
+            </div>
+
+            <div style={{ marginTop: 12, display: "grid", gap: 10, maxWidth: 520 }}>
+              <input
+                className="input smooth"
+                placeholder="Pseudo"
+                value={authPseudo}
+                onChange={(e) => setAuthPseudo(e.target.value)}
+              />
+              <input
+                className="input smooth"
+                placeholder="Mot de passe"
+                type="password"
+                value={authPass}
+                onChange={(e) => setAuthPass(e.target.value)}
+              />
+
+              {authMsg && <div className="authMsg">{authMsg}</div>}
+
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {authMode === "login" ? (
+                  <button className="btn btnPrimary smooth hover-lift press" onClick={doLogin}>
+                    Se connecter
+                  </button>
+                ) : (
+                  <button className="btn btnPrimary smooth hover-lift press" onClick={doRegister}>
+                    Créer le compte
+                  </button>
+                )}
+
+                <button
+                  className="btn smooth hover-lift press"
+                  onClick={() => {
+                    setAuthMsg("");
+                    setAuthMode((m) => (m === "login" ? "register" : "login"));
+                  }}
+                >
+                  {authMode === "login" ? "Créer un compte" : "J'ai déjà un compte"}
+                </button>
+              </div>
+
+              <div className="small">
+                Note : c’est un stockage local (front). Pour une vraie sécurité multi-utilisateurs, il faut un serveur.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ------------------------ Main app render ------------------------ */
   return (
     <div className="shell">
-      {/* ✅ Fond flottant maths */}
       <div className="mathBg" aria-hidden="true">
         {FLOATERS.map((t, i) => (
           <span
@@ -1350,7 +1547,30 @@ export default function App() {
         ))}
       </div>
 
-      {/* (#5) LEVEL UP popup */}
+      {/* Login reward popup */}
+      {loginRewardPop && (
+        <div className="levelPop" role="status" aria-live="polite">
+          <div className="levelPopInner smooth">
+            <div className="levelBadge" aria-hidden="true">
+              🎁
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className="levelPopTitle">Connexion quotidienne</div>
+              <div className="levelPopSub">
+                Jour <b>{loginRewardPop.day}</b>/7 • <span className="levelCoins">{loginRewardPop.text}</span>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                {loginRewardPop.detail}
+              </div>
+            </div>
+            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setLoginRewardPop(null)}>
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Level popup */}
       {levelPop && (
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
@@ -1377,7 +1597,7 @@ export default function App() {
         </div>
       )}
 
-      {/* (#3) Coach popup */}
+      {/* Coach popup */}
       {coachPop && (
         <div className="coachPop" role="status" aria-live="polite">
           <div className="coachPopInner smooth">
@@ -1422,17 +1642,17 @@ export default function App() {
         </div>
       )}
 
-      {/* TOPBAR HUD */}
+      {/* TOPBAR */}
       <div className="topbar">
         <div className="brand">
           <div className="logo smooth" />
           <div>
-            {/* ✅ Titre changé */}
             <div className="h1">
               Math Adventure <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
             </div>
-
-            {/* ✅ Sous-titre supprimé */}
+            <div className="sub">
+              Connecté : <b>{authUser.pseudoDisplay}</b> • Streak login : <b>{loginStreak}/7</b>
+            </div>
           </div>
         </div>
 
@@ -1465,9 +1685,6 @@ export default function App() {
             <span className="pill">
               Badges: {unlockedCount}/{ACHIEVEMENTS.length}
             </span>
-            <span className="pill">
-              Ligue: {league.icon} {league.name} • {rating}
-            </span>
           </div>
 
           <div className="hudRight">
@@ -1479,6 +1696,9 @@ export default function App() {
             </button>
             <button className="btn btnPrimary smooth hover-lift press" onClick={() => setShowShop(true)}>
               Boutique
+            </button>
+            <button className="btn smooth hover-lift press" onClick={doLogout} title="Se déconnecter">
+              Déconnexion
             </button>
           </div>
         </div>
@@ -1503,7 +1723,7 @@ export default function App() {
 
           <div className="cardTitle">
             <span>Choisis la bonne réponse</span>
-            <span className="pill">XP + coins • explication puis Suivant</span>
+            <span className="pill">explication puis Suivant</span>
           </div>
 
           <div className="filters" style={{ marginTop: 10 }}>
@@ -1536,18 +1756,13 @@ export default function App() {
             </button>
           </div>
 
-          {/* XP bar */}
           <div className="barWrap" aria-label="xp">
             <div className="bar" style={{ width: `${xpPct}%` }} />
           </div>
 
-          {/* (#4) mini historique */}
           <div className="miniHistoryWrap" aria-label="historique des 10 dernières réponses">
             <div className="miniHistoryLabel">
-              10 dernières :{" "}
-              <span className="miniHistoryCount">
-                {sessionAnswered}/10 {sessionAnswered >= 10 ? `(x${Math.floor(sessionAnswered / 10)})` : ""}
-              </span>
+              10 dernières : <span className="miniHistoryCount">{sessionAnswered}/10</span>
             </div>
             <div className="miniHistory">
               {[...Array(10)].map((_, i) => {
@@ -1558,7 +1773,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* HERO QUESTION */}
           <div className="heroQuestion" data-status={status}>
             <div className="heroTop">
               <div className="qPrompt">{q.prompt}</div>
@@ -1615,12 +1829,7 @@ export default function App() {
                 );
               })}
 
-              <button
-                className="btn btnPrimary smooth hover-lift press"
-                onClick={goNext}
-                disabled={!showExplain}
-                title={autoNextOn ? "Auto-suivant activé aussi" : "Passe à la question suivante"}
-              >
+              <button className="btn btnPrimary smooth hover-lift press" onClick={goNext} disabled={!showExplain}>
                 Suivant
               </button>
             </div>
@@ -1634,10 +1843,6 @@ export default function App() {
                   </div>
                   <div className="sub" style={{ marginTop: 8 }}>
                     {explain}
-                  </div>
-                  <div className="small" style={{ marginTop: 8 }}>
-                    Tu peux lire tranquillement, puis appuyer sur <b>Suivant</b>
-                    {autoNextOn ? ` (auto dans ${Math.round(autoNextMs / 1000)}s).` : "."}
                   </div>
                 </div>
                 <span className="pill">Combo: {streak}</span>
@@ -1670,58 +1875,25 @@ export default function App() {
               <div className="statValue">{accuracy}%</div>
             </div>
             <div className="statBox smooth">
-              <div className="statLabel">Ligue</div>
+              <div className="statLabel">Connexion (7 jours)</div>
               <div className="statValue" style={{ fontSize: 18 }}>
-                {league.icon} {league.name}
+                🔥 {loginStreak}/7
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Score ligue : <b>{rating}</b>
+                Dernière connexion : <b>{lastLoginDayKey ?? "—"}</b>
               </div>
             </div>
           </div>
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div>
-              <strong>Quotidien — {dayKey || parisDayKey()}</strong>
-              <div className="sub" style={{ marginTop: 6 }}>
-                Cadeau quotidien : {dailyGiftClaimed ? <b>déjà récupéré</b> : <b>disponible</b>}
-              </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button className="btn btnPrimary smooth hover-lift press" onClick={claimDailyGift} disabled={dailyGiftClaimed}>
-                  🎁 Récupérer le cadeau
-                </button>
-              </div>
-
-              <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                {(dailyMissions ?? []).map((m) => {
-                  const done = m.progress >= m.target;
-                  return (
-                    <div key={m.id} className="shopCard">
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                        <div>
-                          <div style={{ fontWeight: 1100 }}>{m.text}</div>
-                          <div className="small">
-                            Progression : <b>{Math.min(m.progress, m.target)}/{m.target}</b>
-                          </div>
-                        </div>
-                        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                          <span className="price">
-                            <span className="coinDot" /> {m.reward}
-                          </span>
-                          <button
-                            className={`btn smooth hover-lift press ${done && !m.claimed ? "btnPrimary" : ""}`}
-                            disabled={!done || m.claimed}
-                            onClick={() => claimMission(m.id)}
-                          >
-                            {m.claimed ? "✅ Pris" : done ? "Réclamer" : "En cours"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <strong>Récompense quotidienne</strong>
+              <div className="sub" style={{ marginTop: 8 }}>
+                Connecte-toi 7 jours d’affilée pour maximiser les récompenses.  
+                Récompense donnée automatiquement au 1er lancement du jour.
               </div>
             </div>
+            <span className="pill">🎁 aléatoire</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -1731,11 +1903,12 @@ export default function App() {
             <button
               className="btn smooth hover-lift press"
               onClick={() => {
-                localStorage.removeItem(LS_KEY);
+                // reset uniquement pour CET utilisateur
+                localStorage.removeItem(userKey(authUser.pseudoKey));
                 window.location.reload();
               }}
             >
-              Reset complet
+              Reset profil
             </button>
           </div>
         </div>
@@ -1770,14 +1943,14 @@ export default function App() {
                   return (
                     <div key={s.id} className="shopCard smooth hover-lift">
                       <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                        <div>
-                          <div style={{ fontWeight: 1100 }}>
+                      <div className="shopRow">
+                        <div className="shopLeft">
+                          <div className="shopTitle">
                             {s.name} {s.animated ? "✨" : ""}
                           </div>
                           <div className="small">{s.desc}</div>
                         </div>
-                        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                        <div className="shopRight">
                           <span className="price">
                             <span className="coinDot" /> {s.price}
                           </span>
@@ -1792,7 +1965,7 @@ export default function App() {
                           )}
                         </div>
                       </div>
-                      {!owned && !canBuy(s.price) && <div className="small" style={{ marginTop: 10 }}>Pas assez de coins : missions + cadeau 👀</div>}
+                      {!owned && !canBuy(s.price) && <div className="small" style={{ marginTop: 10 }}>Pas assez de coins 👀</div>}
                     </div>
                   );
                 })}
@@ -1813,28 +1986,26 @@ export default function App() {
                   const isExclusive = a.rarity === "Exclusif";
 
                   return (
-                    <div
-                      key={a.id}
-                      className={`shopCard smooth hover-lift ${isExclusive ? "premium" : ""}`}
-                      style={{ position: "relative" }}
-                    >
-                      {isExclusive && <div className="ribbon">Exclusif</div>}
+                    <div key={a.id} className={`shopCard smooth hover-lift ${isExclusive ? "premium" : ""}`}>
+                      <div className="shopRibbonWrap">
+                        {isExclusive && <div className="ribbon">Exclusif</div>}
+                      </div>
 
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                        <div>
+                      <div className="shopRow">
+                        <div className="shopLeft">
                           <div className="avatarBig">{a.emoji}</div>
-                          <div style={{ fontWeight: 1100 }}>{a.name}</div>
-
+                          <div className="shopTitle">{a.name}</div>
                           <div style={{ marginTop: 6, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                             <span className="rarity">{a.rarity}</span>
                             <span className="small">Cosmétique</span>
                           </div>
                         </div>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-end" }}>
+                        <div className="shopRight">
                           <span className="price">
                             <span className="coinDot" /> {a.price}
                           </span>
+
                           {owned ? (
                             <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipAvatar(a.id)}>
                               {equipped ? "Équipé" : "Équiper"}
@@ -1879,16 +2050,13 @@ export default function App() {
                 <div>
                   <strong>Global</strong>
                   <div className="sub" style={{ marginTop: 8 }}>
-                    Niveau : <b>{level}</b> • Coins : <b>{coins}</b>
+                    Joueur : <b>{authUser.pseudoDisplay}</b>
+                    <br />
+                    Niveau : <b>{level}</b> • Coins : <b>{coins}</b> • Streak login : <b>{loginStreak}/7</b>
                     <br />
                     Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b>
                     <br />
                     Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b>
-                    <br />
-                    Meilleure ligue :{" "}
-                    <b>
-                      {bestLeague.icon} {bestLeague.name}
-                    </b>
                   </div>
                 </div>
               </div>
