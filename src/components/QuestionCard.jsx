@@ -37,6 +37,11 @@ export default function QuestionCard({
   methodSteps,
   showMethod,
   setShowMethod,
+  rushOn,
+  rushTimeLeft,
+  bossActive,
+  bossTimeLeft,
+  bossRemaining,
 }) {
   return (
     <div className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""}`}>
@@ -55,7 +60,7 @@ export default function QuestionCard({
       </div>
 
       <div className="cardTitle">
-        <span>Choisis la bonne réponse</span>
+        <span>Choisis la bonne reponse</span>
         <span className="pill">explication puis Suivant</span>
       </div>
 
@@ -91,9 +96,9 @@ export default function QuestionCard({
         <div className="bar" style={{ width: `${xpPct}%` }} />
       </div>
 
-      <div className="miniHistoryWrap" aria-label="historique des 10 dernières réponses">
+      <div className="miniHistoryWrap" aria-label="historique des 10 dernieres reponses">
         <div className="miniHistoryLabel">
-          10 dernières : <span className="miniHistoryCount">{sessionAnswered}/10</span>
+          10 dernieres : <span className="miniHistoryCount">{sessionAnswered}/10</span>
         </div>
         <div className="miniHistory">
           {[...Array(10)].map((_, i) => {
@@ -112,8 +117,18 @@ export default function QuestionCard({
               <span className="metaIcon">🎯</span> Combo <b>{streak}</b>
             </span>
             <span className="metaPill">
-              <span className="metaIcon">📊</span> Précision <b>{accuracy}%</b>
+              <span className="metaIcon">📊</span> Precision <b>{accuracy}%</b>
             </span>
+            {rushOn && (
+              <span className="metaPill">
+                <span className="metaIcon">⚡</span> Rush <b>{rushTimeLeft}s</b>
+              </span>
+            )}
+            {bossActive && (
+              <span className="metaPill">
+                <span className="metaIcon">⚔️</span> Boss <b>{bossRemaining}</b> • <b>{bossTimeLeft}s</b>
+              </span>
+            )}
           </div>
         </div>
 
@@ -209,9 +224,9 @@ export default function QuestionCard({
         {showExplain && (
           <div className={`toast ${status === "ok" ? "ok" : "bad"}`}>
             <div>
-              {status === "ok" ? <strong>✅ Bien joué !</strong> : <strong>❌ Oups…</strong>}
+              {status === "ok" ? <strong>✅ Bien joue !</strong> : <strong>❌ Oups...</strong>}
               <div className="sub" style={{ marginTop: 4 }}>
-                Bonne réponse : <b>{String(q.correct)}</b>
+                Bonne reponse : <b>{String(q.correct)}</b>
               </div>
               <div className="sub" style={{ marginTop: 8 }}>
                 {explain}

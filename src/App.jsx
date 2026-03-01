@@ -75,6 +75,74 @@ function rewardRoll(streakDay, ownedAvatars) {
   return { kind: "coins", coins: coinReward, label: `Coins : +${coinReward}` };
 }
 
+function leagueTierFromPoints(points) {
+  if (points >= 520) return { id: "master", label: "Maitre", icon: "👑" };
+  if (points >= 390) return { id: "diamond", label: "Diamant", icon: "💎" };
+  if (points >= 270) return { id: "gold", label: "Or", icon: "🥇" };
+  if (points >= 160) return { id: "silver", label: "Argent", icon: "🥈" };
+  return { id: "bronze", label: "Bronze", icon: "🥉" };
+}
+
+function freshSeasonState(now = Date.now()) {
+  const tier = leagueTierFromPoints(0);
+  return {
+    seasonStartTs: now,
+    points: 0,
+    tierId: tier.id,
+    games: 0,
+    right: 0,
+    scoreSum: 0,
+    bestStreak: 0,
+  };
+}
+
+function ensureSeasonState(saved, now = Date.now()) {
+  const monthMs = 30 * 24 * 3600 * 1000;
+  const base = { ...freshSeasonState(now), ...(saved ?? {}) };
+  if (now - (base.seasonStartTs ?? now) >= monthMs) return freshSeasonState(now);
+  return base;
+}
+
+function updateLeagueAfterAnswer(prevLeague, { isCorrect, scoreAdd, nextStreak }) {
+  const base = ensureSeasonState(prevLeague);
+  const games = (base.games ?? 0) + 1;
+  const right = (base.right ?? 0) + (isCorrect ? 1 : 0);
+  const scoreSum = (base.scoreSum ?? 0) + Math.max(0, scoreAdd);
+  const bestStreak = Math.max(base.bestStreak ?? 0, nextStreak ?? 0);
+  const acc = games ? (right / games) * 100 : 0;
+  const avgScore = games ? scoreSum / games : 0;
+  const points = Math.round(acc * 0.55 + avgScore * 1.35 + bestStreak * 2.4);
+  const tier = leagueTierFromPoints(points);
+  return { ...base, games, right, scoreSum, bestStreak, points, tierId: tier.id };
+}
+
+function buildRushLeaderboard(prev, entry) {
+  const list = [...(prev ?? []), entry].sort((a, b) => b.score - a.score || String(b.date).localeCompare(String(a.date)));
+  return list.slice(0, 10);
+}
+
+function rollChestReward({ ownedAvatars, ownedSkins }) {
+  const r = Math.random();
+  if (r < 0.12) {
+    const rare = AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Epique" || a.rarity === "Épique" || a.rarity === "Exclusif");
+    const notOwned = rare.filter((a) => !ownedAvatars.includes(a.id));
+    if (notOwned.length) {
+      const pick = notOwned[randInt(0, notOwned.length - 1)];
+      return { kind: "avatar", avatarId: pick.id, text: `Avatar ${pick.emoji} ${pick.name}` };
+    }
+  }
+  if (r < 0.2) {
+    const notOwnedSkins = SKINS.filter((s) => !ownedSkins.includes(s.id) && s.price > 0);
+    if (notOwnedSkins.length) {
+      const pick = notOwnedSkins[randInt(0, notOwnedSkins.length - 1)];
+      return { kind: "skin", skinId: pick.id, text: `Skin ${pick.name}` };
+    }
+  }
+  if (r < 0.42) return { kind: "xpBoost", minutes: 30, text: "XP x2 pendant 30 min" };
+  const coins = randInt(45, 160);
+  return { kind: "coins", coins, text: `+${coins} coins` };
+}
+
 /* ------------------------ App ------------------------ */
 export default function App() {
   const qHistoryRef = useRef([]);
@@ -83,6 +151,7 @@ export default function App() {
   const badgeTimerRef = useRef(null);
   const levelTimerRef = useRef(null);
   const coachTimerRef = useRef(null);
+  const rushWasOnRef = useRef(false);
 
   const levelRef = useRef(1);
   const xpRef = useRef(0);
@@ -140,6 +209,12 @@ export default function App() {
         lastLoginDayKey: null,
         loginStreak: 0,
         activityMap: {},
+        rushBestScore: 0,
+        rushLeaderboard: [],
+        chestProgress: 0,
+        chestPending: 0,
+        xpBoostUntilTs: 0,
+        league: freshSeasonState(),
         challengeProgress: createChallengeProgress(null),
       };
     }
@@ -172,6 +247,12 @@ export default function App() {
       lastLoginDayKey: saved?.lastLoginDayKey ?? null,
       loginStreak: saved?.loginStreak ?? 0,
       activityMap: saved?.activityMap ?? {},
+      rushBestScore: saved?.rushBestScore ?? 0,
+      rushLeaderboard: saved?.rushLeaderboard ?? [],
+      chestProgress: saved?.chestProgress ?? 0,
+      chestPending: saved?.chestPending ?? 0,
+      xpBoostUntilTs: saved?.xpBoostUntilTs ?? 0,
+      league: ensureSeasonState(saved?.league),
       challengeProgress: createChallengeProgress(saved?.challengeProgress),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -213,6 +294,12 @@ export default function App() {
   const [lastLoginDayKey, setLastLoginDayKey] = useState(initial.lastLoginDayKey);
   const [loginStreak, setLoginStreak] = useState(initial.loginStreak);
   const [activityMap, setActivityMap] = useState(initial.activityMap);
+  const [rushBestScore, setRushBestScore] = useState(initial.rushBestScore);
+  const [rushLeaderboard, setRushLeaderboard] = useState(initial.rushLeaderboard);
+  const [chestProgress, setChestProgress] = useState(initial.chestProgress);
+  const [chestPending, setChestPending] = useState(initial.chestPending);
+  const [xpBoostUntilTs, setXpBoostUntilTs] = useState(initial.xpBoostUntilTs);
+  const [league, setLeague] = useState(initial.league);
   const [challengeProgress, setChallengeProgress] = useState(initial.challengeProgress);
   const [loginRewardPop, setLoginRewardPop] = useState(null);
 
@@ -230,6 +317,13 @@ export default function App() {
   const [hintLevel, setHintLevel] = useState(0);
   const [hintMsg, setHintMsg] = useState("");
   const [adaptiveAction, setAdaptiveAction] = useState(null);
+  const [rushOn, setRushOn] = useState(false);
+  const [rushTimeLeft, setRushTimeLeft] = useState(60);
+  const [rushScore, setRushScore] = useState(0);
+  const [rushCombo, setRushCombo] = useState(0);
+  const [bossActive, setBossActive] = useState(false);
+  const [bossRemaining, setBossRemaining] = useState(0);
+  const [bossTimeLeft, setBossTimeLeft] = useState(0);
 
   const [isLocked, setIsLocked] = useState(false);
 
@@ -314,6 +408,12 @@ export default function App() {
       lastLoginDayKey,
       loginStreak,
       activityMap,
+      rushBestScore,
+      rushLeaderboard,
+      chestProgress,
+      chestPending,
+      xpBoostUntilTs,
+      league,
       challengeProgress,
     });
   }, [
@@ -345,6 +445,12 @@ export default function App() {
     lastLoginDayKey,
     loginStreak,
     activityMap,
+    rushBestScore,
+    rushLeaderboard,
+    chestProgress,
+    chestPending,
+    xpBoostUntilTs,
+    league,
     challengeProgress,
   ]);
 
@@ -361,6 +467,64 @@ export default function App() {
       return createChallengeProgress(prev);
     });
   }, [questionIndex]);
+
+  useEffect(() => {
+    setLeague((prev) => ensureSeasonState(prev));
+  }, [questionIndex]);
+
+  useEffect(() => {
+    if (!rushOn) return undefined;
+    const id = setInterval(() => {
+      setRushTimeLeft((t) => {
+        if (t <= 1) {
+          setRushOn(false);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [rushOn]);
+
+  useEffect(() => {
+    if (rushOn) {
+      rushWasOnRef.current = true;
+      return;
+    }
+    if (rushWasOnRef.current) {
+      rushWasOnRef.current = false;
+      if (rushScore > 0) endRush(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rushOn]);
+
+  useEffect(() => {
+    if (!bossActive || showExplain) return undefined;
+    const id = setInterval(() => {
+      setBossTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(id);
+          submit("__TIME__");
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bossActive, showExplain, q]);
+
+  useEffect(() => {
+    if (bossActive && bossRemaining <= 0) {
+      setBossActive(false);
+      setBossTimeLeft(0);
+      showCoachPopup({
+        title: "Boss termine",
+        lines: ["Tu as termine le boss (3 questions).", "XP bonus x3 applique pendant le boss."],
+        hint: "Le prochain boss arrive dans 10 questions.",
+      });
+    }
+  }, [bossActive, bossRemaining]);
 
   function vibrate(ms) {
     if (!vibrateOn) return;
@@ -397,7 +561,8 @@ export default function App() {
   }
 
   function awardXp(amount) {
-    const add = Math.max(0, amount);
+    const boosted = Date.now() < (xpBoostUntilTs ?? 0) ? 2 : 1;
+    const add = Math.round(Math.max(0, amount) * boosted);
     const startLevel = levelRef.current;
 
     let lvl = levelRef.current;
@@ -456,8 +621,8 @@ export default function App() {
     setTimeout(() => setFx("none"), 750);
   }
 
-  function pushHistory(qNew) {
-    const sig = questionSignature(qNew, modeId, gradeId, diffId);
+  function pushHistory(qNew, effectiveDiff = diffId) {
+    const sig = questionSignature(qNew, modeId, gradeId, effectiveDiff);
     const arr = qHistoryRef.current ?? [];
     const next = [sig, ...arr];
     qHistoryRef.current = next.slice(0, 25);
@@ -465,8 +630,9 @@ export default function App() {
 
   function newQuestion(resetPick = false) {
     clearAutoTimer();
-    const qNew = makeQuestion(modeId, gradeId, diffId, qHistoryRef);
-    pushHistory(qNew);
+    const liveDiff = bossActive ? "difficile" : diffId;
+    const qNew = makeQuestion(modeId, gradeId, liveDiff, qHistoryRef);
+    pushHistory(qNew, liveDiff);
 
     setQ(qNew);
     setStatus("idle");
@@ -483,6 +649,13 @@ export default function App() {
 
   function resetSession() {
     clearAutoTimer();
+    setRushOn(false);
+    setRushTimeLeft(60);
+    setRushScore(0);
+    setRushCombo(0);
+    setBossActive(false);
+    setBossRemaining(0);
+    setBossTimeLeft(0);
     setScore(0);
     setStreak(0);
     setQuestionIndex(1);
@@ -500,6 +673,64 @@ export default function App() {
     setCoachPop(null);
   }
 
+  function startRush() {
+    setRushOn(true);
+    setRushTimeLeft(60);
+    setRushScore(0);
+    setRushCombo(0);
+    setScore(0);
+    setStreak(0);
+    setQuestionIndex(1);
+    setBossActive(false);
+    setBossRemaining(0);
+    setBossTimeLeft(0);
+    setShowExplain(false);
+    setIsLocked(false);
+    newQuestion(true);
+  }
+
+  function endRush(force = false) {
+    if (!rushOn && !force) return;
+    setRushOn(false);
+    setRushTimeLeft((t) => (force ? t : Math.max(0, t)));
+    setRushBestScore((prev) => Math.max(prev ?? 0, rushScore));
+    const entry = {
+      pseudo: authUser?.pseudoDisplay ?? "Joueur",
+      score: rushScore,
+      date: new Date().toISOString(),
+    };
+    setRushLeaderboard((prev) => buildRushLeaderboard(prev, entry));
+    showCoachPopup({
+      title: "Rush termine",
+      lines: [`Score rush: ${rushScore}`, `Meilleur: ${Math.max(rushBestScore, rushScore)}`],
+      hint: "Tu peux relancer un rush quand tu veux.",
+    });
+  }
+
+  function openChest() {
+    if (chestPending <= 0) return;
+    const reward = rollChestReward({ ownedAvatars, ownedSkins });
+    setChestPending((n) => Math.max(0, n - 1));
+
+    if (reward.kind === "coins") awardCoins(reward.coins);
+    if (reward.kind === "avatar") {
+      setOwnedAvatars((prev) => (prev.includes(reward.avatarId) ? prev : [...prev, reward.avatarId]));
+    }
+    if (reward.kind === "skin") {
+      setOwnedSkins((prev) => (prev.includes(reward.skinId) ? prev : [...prev, reward.skinId]));
+    }
+    if (reward.kind === "xpBoost") {
+      setXpBoostUntilTs(Date.now() + reward.minutes * 60 * 1000);
+    }
+
+    showBadgePopup({
+      icon: "🎁",
+      title: "Coffre ouvert",
+      desc: reward.text,
+      reward: 0,
+    });
+  }
+
 
   function checkAchievements(snapshot) {
     for (const a of ACHIEVEMENTS) {
@@ -509,6 +740,7 @@ export default function App() {
       if (a.type === "right" && snapshot.totalRight >= a.target) unlockAchievement(a);
       if (a.type === "questions" && snapshot.totalQuestions >= a.target) unlockAchievement(a);
       if (a.type === "accuracy" && snapshot.totalAnswers >= 50 && snapshot.accuracy >= a.target) unlockAchievement(a);
+      if (a.type === "rush" && (snapshot.rushBest ?? 0) >= a.target) unlockAchievement(a);
     }
   }
 
@@ -583,13 +815,17 @@ export default function App() {
 
     setPicked(choice);
     const isCorrect = choice === q.correct;
+    const isRushNow = rushOn && rushTimeLeft > 0;
+    const isBossNow = bossActive;
+    const fastMode = isRushNow || isBossNow;
 
     const nextTotalQuestions = totalQuestions + 1;
     const nextTotalRight = totalRight + (isCorrect ? 1 : 0);
     const nextTotalWrong = totalWrong + (isCorrect ? 0 : 1);
     const nextStreak = isCorrect ? streak + 1 : 0;
-
-    const nextScoreAdd = isCorrect ? 10 + Math.min(18, streak * 2) : 0;
+    const baseScoreAdd = isCorrect ? 10 + Math.min(18, streak * 2) : 0;
+    const rushMult = isRushNow ? 1 + Math.floor((isCorrect ? rushCombo + 1 : 0) / 5) * 0.2 : 1;
+    const nextScoreAdd = Math.round(baseScoreAdd * rushMult);
 
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
     const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
@@ -606,6 +842,19 @@ export default function App() {
     })();
 
     setTotalQuestions((x) => x + 1);
+
+    if (!bossActive && nextTotalQuestions > 0 && nextTotalQuestions % 10 === 0) {
+      setBossActive(true);
+      setBossRemaining(3);
+      setBossTimeLeft(10);
+      playBeep("level", audioOn);
+      vibrate(35);
+      showCoachPopup({
+        title: "Boss Fight",
+        lines: ["3 questions difficiles", "Temps court", "XP x3"],
+        hint: "Reste focus jusqu'au bout.",
+      });
+    }
 
     setLastAnswers((prev) => [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10));
 
@@ -642,6 +891,31 @@ export default function App() {
       return next;
     });
 
+    setLeague((prev) => updateLeagueAfterAnswer(prev, { isCorrect, scoreAdd: nextScoreAdd, nextStreak }));
+
+    if (isCorrect) {
+      setChestProgress((p) => {
+        const next = (p ?? 0) + 1;
+        if (next >= 15) {
+          setChestPending((v) => v + 1);
+          showBadgePopup({ icon: "🎁", title: "Coffre gagne", desc: "15 bonnes reponses atteintes. Ouvre ton coffre.", reward: 0 });
+          return next - 15;
+        }
+        return next;
+      });
+    }
+
+    if (isRushNow) {
+      if (isCorrect) {
+        setRushTimeLeft((t) => Math.min(120, t + 1));
+        setRushCombo((c) => c + 1);
+        setRushScore((s) => s + nextScoreAdd);
+      } else {
+        setRushTimeLeft((t) => Math.max(0, t - 2));
+        setRushCombo(0);
+      }
+    }
+
     if (isCorrect) {
       setStatus("ok");
       playBeep("ok", audioOn);
@@ -659,11 +933,15 @@ export default function App() {
         return ns;
       });
 
-      awardXp(10 + Math.min(8, streak));
+      awardXp((10 + Math.min(8, streak)) * (isBossNow ? 3 : 1));
 
-      setExplain(q.explain(choice));
-      setShowExplain(true);
-      setShowMethod(false);
+      if (!fastMode) {
+        setExplain(q.explain(choice));
+        setShowExplain(true);
+        setShowMethod(false);
+      } else {
+        setShowExplain(false);
+      }
 
       updateRecordIfNeeded(score + nextScoreAdd);
     } else {
@@ -679,11 +957,20 @@ export default function App() {
       setTotalWrong((x) => x + 1);
       setStreak(0);
 
-      awardXp(4);
+      awardXp(4 * (isBossNow ? 3 : 1));
 
-      setExplain(q.explain(choice));
-      setShowExplain(true);
-      setShowMethod(false);
+      if (!fastMode) {
+        setExplain(q.explain(choice));
+        setShowExplain(true);
+        setShowMethod(false);
+      } else {
+        setShowExplain(false);
+      }
+    }
+
+    if (isBossNow) {
+      setBossRemaining((n) => Math.max(0, n - 1));
+      setBossTimeLeft(10);
     }
 
     checkAchievements({
@@ -692,7 +979,16 @@ export default function App() {
       totalQuestions: nextTotalQuestions,
       totalAnswers: nextTotalAnswers,
       accuracy: nextAccuracy,
+      rushBest: Math.max(rushBestScore, rushScore + (isCorrect ? nextScoreAdd : 0)),
     });
+
+    if (fastMode) {
+      setTimeout(() => {
+        setQuestionIndex((i) => i + 1);
+        newQuestion(true);
+      }, 180);
+      return;
+    }
 
     if (autoNextOn) {
       autoTimerRef.current = setTimeout(() => {
@@ -702,7 +998,8 @@ export default function App() {
   }
 
   function goNext() {
-    setQuestionIndex((i) => i + 1);
+    const nextIndex = questionIndex + 1;
+    setQuestionIndex(nextIndex);
     if (adaptiveAction) {
       let changed = false;
       if (adaptiveAction.nextDiffId && adaptiveAction.nextDiffId !== diffId) {
@@ -800,6 +1097,15 @@ export default function App() {
     if (!total) return 0;
     return Math.round((totalRight / total) * 100);
   }, [totalRight, totalWrong]);
+  const leagueTier = useMemo(() => leagueTierFromPoints(league?.points ?? 0), [league?.points]);
+  const seasonDaysLeft = useMemo(() => {
+    const now = Date.now();
+    const start = league?.seasonStartTs ?? now;
+    const left = Math.ceil((30 * 24 * 3600 * 1000 - (now - start)) / (24 * 3600 * 1000));
+    return Math.max(0, left);
+  }, [league?.seasonStartTs, questionIndex]);
+  const xpBoostActive = Date.now() < (xpBoostUntilTs ?? 0);
+  const xpBoostMinutesLeft = xpBoostActive ? Math.max(1, Math.ceil((xpBoostUntilTs - Date.now()) / 60000)) : 0;
 
   const activity7 = useMemo(() => {
     const base = new Date();
@@ -949,6 +1255,12 @@ export default function App() {
       lastLoginDayKey: null,
       loginStreak: 0,
       activityMap: {},
+      rushBestScore: 0,
+      rushLeaderboard: [],
+      chestProgress: 0,
+      chestPending: 0,
+      xpBoostUntilTs: 0,
+      league: freshSeasonState(),
       challengeProgress: createChallengeProgress(null),
     });
 
@@ -1392,6 +1704,11 @@ export default function App() {
           methodSteps={methodSteps}
           showMethod={showMethod}
           setShowMethod={setShowMethod}
+          rushOn={rushOn}
+          rushTimeLeft={rushTimeLeft}
+          bossActive={bossActive}
+          bossTimeLeft={bossTimeLeft}
+          bossRemaining={bossRemaining}
         />
         <div className="card smooth">
           <div className="cardTitle">
@@ -1424,6 +1741,76 @@ export default function App() {
                 Dernière connexion : <b>{lastLoginDayKey ?? "—"}</b>
               </div>
             </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Rush 60s</strong>
+              <div className="small" style={{ marginTop: 6 }}>
+                Temps: <b>{rushTimeLeft}s</b> • Score: <b>{rushScore}</b> • Combo: <b>{rushCombo}</b> • Record: <b>{rushBestScore}</b>
+              </div>
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {!rushOn ? (
+                  <button className="btn btnPrimary smooth hover-lift press" onClick={startRush}>
+                    Lancer Rush
+                  </button>
+                ) : (
+                  <button className="btn smooth hover-lift press" onClick={() => setRushOn(false)}>
+                    Stop Rush
+                  </button>
+                )}
+              </div>
+              {!!rushLeaderboard?.length && (
+                <div className="small" style={{ marginTop: 10 }}>
+                  Local top:{" "}
+                  {rushLeaderboard
+                    .slice(0, 3)
+                    .map((r, idx) => `${idx + 1}. ${r.pseudo} ${r.score}`)
+                    .join(" • ")}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Ligue saisonniere</strong>
+              <div className="small" style={{ marginTop: 6 }}>
+                {leagueTier.icon} <b>{leagueTier.label}</b> • Points: <b>{league?.points ?? 0}</b> • Fin de saison: <b>{seasonDaysLeft}j</b>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> • Score moyen:{" "}
+                <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> • Best streak: <b>{league?.bestStreak ?? 0}</b>
+              </div>
+            </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Coffres</strong>
+              <div className="small" style={{ marginTop: 6 }}>
+                Progression: <b>{chestProgress}/15</b> bonnes réponses • Coffres prêts: <b>{chestPending}</b>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Bonus XP x2: <b>{xpBoostActive ? `actif (${xpBoostMinutesLeft} min)` : "inactif"}</b>
+              </div>
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button className="btn btnPrimary smooth hover-lift press" onClick={openChest} disabled={chestPending <= 0}>
+                  Ouvrir coffre
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Boss Fight</strong>
+              <div className="small" style={{ marginTop: 6 }}>
+                Etat: <b>{bossActive ? "ACTIF" : "attente"}</b>
+                {bossActive ? ` • Questions restantes: ${bossRemaining} • Temps: ${bossTimeLeft}s` : ` • Prochain boss toutes les 10 questions`}
+              </div>
+            </div>
+            <span className="pill">XP x3</span>
           </div>
 
           <div className="toast" style={{ marginTop: 12 }}>
