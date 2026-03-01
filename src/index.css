@@ -1076,6 +1076,21 @@ body.reduce-motion .choice:hover::after{ animation:none !important; opacity:0; }
     radial-gradient(420px 180px at 50% 0%, rgba(245,158,11,.26), transparent 70%),
     linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
 }
+.chestPopInner.reward-coins{
+  box-shadow: 0 24px 90px rgba(245,158,11,.18), 0 24px 90px rgba(0,0,0,.62);
+}
+.chestPopInner.reward-avatar{
+  box-shadow: 0 24px 90px rgba(59,130,246,.18), 0 24px 90px rgba(0,0,0,.62);
+}
+.chestPopInner.reward-skin{
+  box-shadow: 0 24px 90px rgba(168,85,247,.18), 0 24px 90px rgba(0,0,0,.62);
+}
+.chestPopInner.reward-effect{
+  box-shadow: 0 24px 90px rgba(245,158,11,.22), 0 24px 90px rgba(0,0,0,.62);
+}
+.chestPopInner.reward-xpBoost{
+  box-shadow: 0 24px 90px rgba(34,211,238,.18), 0 24px 90px rgba(0,0,0,.62);
+}
 .chestBurst{
   position:absolute;
   inset:-20%;
@@ -1097,8 +1112,129 @@ body.reduce-motion .choice:hover::after{ animation:none !important; opacity:0; }
   font-size: 42px;
   line-height: 1;
 }
+.chestIconBig.chestRolling{
+  width: auto;
+  min-height: 86px;
+  padding: 0 14px;
+  gap: 10px;
+}
+.chestIconBig.chestRolling span{
+  display:inline-block;
+  animation: chestRoll 700ms var(--ease-out) infinite;
+}
+.chestIconBig.chestRolling span:nth-child(2){ animation-delay: 70ms; }
+.chestIconBig.chestRolling span:nth-child(3){ animation-delay: 140ms; }
+.chestIconBig.chestRolling span:nth-child(4){ animation-delay: 210ms; }
+.chestIconBig.chestRolling span:nth-child(5){ animation-delay: 280ms; }
+.chestIconBig.chestRolling span:nth-child(6){ animation-delay: 350ms; }
 .chestPopTitle{ font-size: 21px; font-weight: 1200; }
 .chestPopSub{ margin-top: 8px; color: rgba(234,240,255,.90); }
+.chestRewardsList{
+  margin-top: 12px;
+  display:grid;
+  gap: 8px;
+}
+.chestRewardRow{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.18);
+  padding: 10px 12px;
+  text-align:left;
+  transition: transform 280ms var(--ease-out), box-shadow 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+.chestRewardRow.reward-coins{
+  background: rgba(245,158,11,.10);
+}
+.chestRewardRow.reward-avatar{
+  background: rgba(59,130,246,.08);
+}
+.chestRewardRow.reward-skin{
+  background: rgba(168,85,247,.08);
+}
+.chestRewardRow.reward-effect{
+  background: rgba(245,158,11,.10);
+}
+.chestRewardRow.reward-xpBoost{
+  background: rgba(34,211,238,.08);
+}
+.chestRewardRow.is-card{
+  transform-style: preserve-3d;
+  animation: lootFlip 480ms var(--ease-out) 1;
+}
+.chestRewardRow.tone-rare{
+  border-color: rgba(59,130,246,.28);
+}
+.chestRewardRow.tone-epic{
+  border-color: rgba(168,85,247,.28);
+}
+.chestRewardRow.tone-legendary{
+  border-color: rgba(245,158,11,.32);
+}
+.chestRewardIcon{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(255,255,255,.08);
+  font-size: 18px;
+  flex: 0 0 auto;
+}
+.chestRewardPreview{
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  font-size: 22px;
+  flex: 0 0 auto;
+  overflow:hidden;
+}
+.chestRewardPreview.preview-effect{
+  font-size: 12px;
+  font-weight: 1200;
+  letter-spacing: .4px;
+}
+.chestRewardText{
+  font-weight: 1000;
+  color: rgba(234,240,255,.92);
+}
+.chestRewardMeta{
+  margin-top: 6px;
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chestRarity{
+  display:inline-flex;
+  align-items:center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  font-size: 11px;
+  font-weight: 1200;
+  text-transform: uppercase;
+}
+.chestEquipBtn{
+  min-height: 34px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+@keyframes lootFlip{
+  0%{ transform: perspective(900px) rotateY(86deg) scale(.96); opacity:.2; }
+  65%{ transform: perspective(900px) rotateY(-10deg) scale(1.02); opacity:1; }
+  100%{ transform: perspective(900px) rotateY(0deg) scale(1); opacity:1; }
+}
 @keyframes chestIn{
   0%{ transform: translateY(12px) scale(.98); opacity:0; }
   100%{ transform: translateY(0) scale(1); opacity:1; }
@@ -1108,8 +1244,18 @@ body.reduce-motion .choice:hover::after{ animation:none !important; opacity:0; }
   20%{ opacity:.85; }
   100%{ opacity:0; transform:scale(1.05); }
 }
+@keyframes chestRoll{
+  0%,100%{ transform: translateY(0) scale(1); opacity:.8; }
+  50%{ transform: translateY(-4px) scale(1.08); opacity:1; }
+}
 body.reduce-motion .chestPopInner,
 body.reduce-motion .chestBurst{
+  animation:none !important;
+}
+body.reduce-motion .chestIconBig.chestRolling span{
+  animation:none !important;
+}
+body.reduce-motion .chestRewardRow.is-card{
   animation:none !important;
 }
 

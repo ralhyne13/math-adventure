@@ -140,10 +140,10 @@ const CHEST_TYPES = {
 };
 
 const ANSWER_EFFECTS = [
-  { id: "default", label: "Classique", desc: "Effet de base." },
-  { id: "gold-burst", label: "Explosion doree", desc: "Explosion doree sur bonne reponse." },
-  { id: "electric-aura", label: "Aura electrique", desc: "Aura bleue electrique." },
-  { id: "prism-particles", label: "Particules spec", desc: "Particules multicolores." },
+  { id: "default", label: "Classique", desc: "Effet de base.", dustCost: 0 },
+  { id: "gold-burst", label: "Explosion doree", desc: "Explosion doree sur bonne reponse.", dustCost: 120 },
+  { id: "electric-aura", label: "Aura electrique", desc: "Aura bleue electrique.", dustCost: 180 },
+  { id: "prism-particles", label: "Particules spec", desc: "Particules multicolores.", dustCost: 260 },
 ];
 
 function chestTypeFromRoll() {
@@ -282,6 +282,56 @@ function rushComboMultiplier(combo) {
   return 1;
 }
 
+function rewardVisualMeta(reward, chestType) {
+  if (reward.kind === "dust") {
+    return { icon: "🧩", label: `${reward.dust} dust cosmetique`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
+  }
+  if (reward.kind === "coins") {
+    return { icon: "🪙", label: `${reward.coins} coins`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
+  }
+  if (reward.kind === "avatar") {
+    const avatar = AVATARS.find((a) => a.id === reward.avatarId);
+    return {
+      icon: avatar?.emoji ?? "🧑",
+      label: reward.text,
+      tone: "rare",
+      rarity: avatar?.rarity ?? "Rare",
+      preview: { type: "emoji", value: avatar?.emoji ?? "🧑" },
+    };
+  }
+  if (reward.kind === "skin") {
+    const skin = SKINS.find((s) => s.id === reward.skinId);
+    return {
+      icon: "🎨",
+      label: reward.text,
+      tone: "epic",
+      rarity: skin?.price > 170 ? "Legendaire" : "Epique",
+      preview: { type: "skin", accent: skin?.vars?.["--accent"], accent2: skin?.vars?.["--accent2"] },
+    };
+  }
+  if (reward.kind === "xpBoost") {
+    return { icon: "⚡", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
+  }
+  if (reward.kind === "effect") {
+    const fx = ANSWER_EFFECTS.find((e) => e.id === reward.effectId);
+    return {
+      icon: "💥",
+      label: reward.text,
+      tone: "legendary",
+      rarity: "Legendaire",
+      preview: { type: "effect", value: fx?.label ?? "Effet" },
+    };
+  }
+  return { icon: "🎁", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
+}
+
+function dustForDuplicate(kind) {
+  if (kind === "skin") return 140;
+  if (kind === "effect") return 120;
+  if (kind === "avatar") return 90;
+  return 50;
+}
+
 const ARENA_BOSSES = [
   { id: "hydra", name: "Hydre des Tables", emoji: "🐉" },
   { id: "golem", name: "Golem du Calcul", emoji: "🪨" },
@@ -312,6 +362,7 @@ export default function App() {
   const levelTimerRef = useRef(null);
   const coachTimerRef = useRef(null);
   const chestTimerRef = useRef(null);
+  const chestRevealTimerRef = useRef(null);
   const rushWasOnRef = useRef(false);
   const study5WasOnRef = useRef(false);
   const study5StartTsRef = useRef(0);
@@ -358,6 +409,7 @@ export default function App() {
         avatarId: "owl",
         ownedSkins: ["neon-night"],
         ownedAvatars: ["owl"],
+        cosmeticDust: 0,
         level: 1,
         xp: 0,
         records: {},
@@ -409,6 +461,7 @@ export default function App() {
       avatarId: saved?.avatarId ?? "owl",
       ownedSkins: saved?.ownedSkins ?? ["neon-night"],
       ownedAvatars: saved?.ownedAvatars ?? ["owl"],
+      cosmeticDust: saved?.cosmeticDust ?? 0,
       level: saved?.level ?? 1,
       xp: saved?.xp ?? 0,
       records: saved?.records ?? {},
@@ -463,6 +516,7 @@ export default function App() {
   const [avatarId, setAvatarId] = useState(initial.avatarId);
   const [ownedSkins, setOwnedSkins] = useState(initial.ownedSkins);
   const [ownedAvatars, setOwnedAvatars] = useState(initial.ownedAvatars);
+  const [cosmeticDust, setCosmeticDust] = useState(initial.cosmeticDust);
 
   const [level, setLevel] = useState(initial.level);
   const [xp, setXp] = useState(initial.xp);
@@ -636,6 +690,7 @@ export default function App() {
       avatarId,
       ownedSkins,
       ownedAvatars,
+      cosmeticDust,
       level,
       xp,
       records,
@@ -696,6 +751,7 @@ export default function App() {
     avatarId,
     ownedSkins,
     ownedAvatars,
+    cosmeticDust,
     level,
     xp,
     records,
@@ -937,11 +993,49 @@ export default function App() {
   function showChestPopup(payload) {
     setChestPop(payload);
     if (chestTimerRef.current) clearTimeout(chestTimerRef.current);
+    if (payload?.phase === "rolling") return;
     chestTimerRef.current = setTimeout(() => setChestPop(null), 5200);
+  }
+
+  function equipChestReward(item) {
+    const reward = item?.reward;
+    if (!reward) return;
+    if (reward.kind === "skin" && ownedSkins.includes(reward.skinId)) {
+      setSkinId(reward.skinId);
+      setChestPop(null);
+    }
+    if (reward.kind === "effect" && ownedEffects.includes(reward.effectId)) {
+      setAnswerEffectId(reward.effectId);
+      setChestPop(null);
+    }
+  }
+
+  function unlockEffectWithDust(effectId) {
+    const fx = ANSWER_EFFECTS.find((e) => e.id === effectId);
+    if (!fx || fx.id === "default") return;
+    if (ownedEffects.includes(effectId)) {
+      setAnswerEffectId(effectId);
+      return;
+    }
+    const cost = fx.dustCost ?? 0;
+    if (cosmeticDust < cost) return;
+    setCosmeticDust((v) => Math.max(0, v - cost));
+    setOwnedEffects((prev) => (prev.includes(effectId) ? prev : [...prev, effectId]));
+    setAnswerEffectId(effectId);
+    showBadgePopup({
+      icon: "🧩",
+      title: "Effet debloque",
+      desc: `${fx.label} • -${cost} dust`,
+      reward: 0,
+    });
   }
 
   function awardCoins(amount) {
     setCoins((c) => c + Math.max(0, amount));
+  }
+
+  function awardDust(amount) {
+    setCosmeticDust((v) => v + Math.max(0, amount));
   }
 
   function awardXp(amount) {
@@ -1243,56 +1337,128 @@ export default function App() {
     });
   }
 
-  function openChest() {
+  function openChestBatch(count = 1) {
+    const openCount = clamp(Number(count) || 1, 1, Math.max(1, chestPending));
     if (chestPending <= 0) return;
-    const nextType = chestQueue?.[0] ?? chestTypeFromRoll();
-    const reward = rollChestRewardByType({
-      chestType: nextType,
-      ownedAvatars,
-      ownedSkins,
-      ownedEffects,
-    });
-    setChestPending((n) => Math.max(0, n - 1));
-    setChestQueue((prev) => (Array.isArray(prev) && prev.length ? prev.slice(1) : prev));
 
-    if (reward.kind === "coins") awardCoins(reward.coins);
-    if (reward.kind === "avatar") {
-      setOwnedAvatars((prev) => (prev.includes(reward.avatarId) ? prev : [...prev, reward.avatarId]));
-    }
-    if (reward.kind === "skin") {
-      setOwnedSkins((prev) => (prev.includes(reward.skinId) ? prev : [...prev, reward.skinId]));
-    }
-    if (reward.kind === "xpBoost") {
-      setXpBoostUntilTs(Date.now() + reward.minutes * 60 * 1000);
-    }
-    if (reward.kind === "effect") {
-      setOwnedEffects((prev) => (prev.includes(reward.effectId) ? prev : [...prev, reward.effectId]));
-      setAnswerEffectId(reward.effectId);
+    const availableTypes = Array.isArray(chestQueue) ? [...chestQueue] : [];
+    const opened = [];
+    const tempOwnedAvatars = new Set(ownedAvatars);
+    const tempOwnedSkins = new Set(ownedSkins);
+    const tempOwnedEffects = new Set(ownedEffects);
+
+    for (let i = 0; i < openCount; i++) {
+      const chestType = availableTypes.shift() ?? chestTypeFromRoll();
+      const reward = rollChestRewardByType({
+        chestType,
+        ownedAvatars: [...tempOwnedAvatars],
+        ownedSkins: [...tempOwnedSkins],
+        ownedEffects: [...tempOwnedEffects],
+      });
+      let finalReward = reward;
+
+      if (reward.kind === "avatar") {
+        if (tempOwnedAvatars.has(reward.avatarId)) {
+          const dust = dustForDuplicate("avatar");
+          finalReward = { kind: "dust", dust, text: `Doublon avatar converti en ${dust} dust` };
+        } else {
+          tempOwnedAvatars.add(reward.avatarId);
+        }
+      }
+      if (reward.kind === "skin") {
+        if (tempOwnedSkins.has(reward.skinId)) {
+          const dust = dustForDuplicate("skin");
+          finalReward = { kind: "dust", dust, text: `Doublon skin converti en ${dust} dust` };
+        } else {
+          tempOwnedSkins.add(reward.skinId);
+        }
+      }
+      if (reward.kind === "effect") {
+        if (tempOwnedEffects.has(reward.effectId)) {
+          const dust = dustForDuplicate("effect");
+          finalReward = { kind: "dust", dust, text: `Doublon effet converti en ${dust} dust` };
+        } else {
+          tempOwnedEffects.add(reward.effectId);
+        }
+      }
+
+      opened.push({
+        chestType,
+        reward: finalReward,
+        visual: rewardVisualMeta(finalReward, chestType),
+      });
     }
 
+    setChestPending((n) => Math.max(0, n - openCount));
+    setChestQueue(availableTypes);
+
+    for (const item of opened) {
+      const reward = item.reward;
+      if (reward.kind === "dust") awardDust(reward.dust);
+      if (reward.kind === "coins") awardCoins(reward.coins);
+      if (reward.kind === "avatar") {
+        setOwnedAvatars((prev) => (prev.includes(reward.avatarId) ? prev : [...prev, reward.avatarId]));
+      }
+      if (reward.kind === "skin") {
+        setOwnedSkins((prev) => (prev.includes(reward.skinId) ? prev : [...prev, reward.skinId]));
+      }
+      if (reward.kind === "xpBoost") {
+        setXpBoostUntilTs((prev) => Math.max(prev, Date.now()) + reward.minutes * 60 * 1000);
+      }
+      if (reward.kind === "effect") {
+        setOwnedEffects((prev) => (prev.includes(reward.effectId) ? prev : [...prev, reward.effectId]));
+        setAnswerEffectId(reward.effectId);
+      }
+    }
+
+    const headline = openCount === 1 ? `${CHEST_TYPES[opened[0]?.chestType]?.label ?? "Coffre"} ouvert` : `${openCount} coffres ouverts`;
     showBadgePopup({
-      icon: CHEST_TYPES[nextType]?.icon ?? "🎁",
-      title: `${CHEST_TYPES[nextType]?.label ?? "Coffre"} ouvert`,
-      desc: reward.text,
+      icon: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.icon ?? "🎁" : "🎁",
+      title: headline,
+      desc: openCount === 1 ? opened[0]?.reward?.text : `${openCount} recompenses revelees`,
       reward: 0,
     });
+
     playBeep("chest", audioOn);
     vibrate(24);
+
+    if (chestRevealTimerRef.current) clearTimeout(chestRevealTimerRef.current);
     showChestPopup({
-      chestType: nextType,
-      chestLabel: CHEST_TYPES[nextType]?.label ?? "Coffre",
-      chestIcon: CHEST_TYPES[nextType]?.icon ?? "🎁",
-      rewardText: reward.text,
-      rewardKind: reward.kind,
+      phase: "rolling",
+      openCount,
+      reel: ["common", "rare", "epic", "legendary", "rare", "epic"],
     });
+    chestRevealTimerRef.current = setTimeout(() => {
+      showChestPopup({
+        phase: "reveal",
+        openCount,
+        chestType: opened[0]?.chestType ?? "common",
+        chestLabel: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.label ?? "Coffre" : `${openCount} coffres`,
+        chestIcon: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.icon ?? "🎁" : "🎁",
+        leadRewardKind: opened[0]?.reward?.kind ?? "coins",
+        rewards: opened,
+      });
+    }, reduceMotion ? 0 : 950);
+
     if (cloudEnabled) {
       cloudLogEvent({
         pseudoKey: authUser?.pseudoKey,
         event: "chest_opened",
-        payload: { chestType: nextType, rewardKind: reward.kind, rewardText: reward.text },
+        payload: {
+          count: openCount,
+          chests: opened.map((item) => ({
+            chestType: item.chestType,
+            rewardKind: item.reward.kind,
+            rewardText: item.reward.text,
+          })),
+        },
         accessToken: authUser?.accessToken,
       });
     }
+  }
+
+  function openChest() {
+    openChestBatch(1);
   }
 
   function watchAdDoubleReward() {
@@ -2016,6 +2182,7 @@ export default function App() {
       avatarId: "owl",
       ownedSkins: ["neon-night"],
       ownedAvatars: ["owl"],
+      cosmeticDust: 0,
       level: 1,
       xp: 0,
       records: {},
@@ -2538,16 +2705,67 @@ export default function App() {
 
       {chestPop && (
         <div className="chestPop" role="status" aria-live="polite" onMouseDown={() => setChestPop(null)}>
-          <div className={`chestPopInner smooth chest-${chestPop.chestType}`} onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            className={`chestPopInner smooth chest-${chestPop.chestType} reward-${chestPop.leadRewardKind ?? "coins"}`}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div className="chestBurst" aria-hidden="true" />
-            <div className="chestIconBig" aria-hidden="true">
-              {chestPop.chestIcon}
-            </div>
-            <div className="chestPopTitle">{chestPop.chestLabel}</div>
-            <div className="chestPopSub">Tu as obtenu: <b>{chestPop.rewardText}</b></div>
-            <div className="small" style={{ marginTop: 6 }}>
-              Type de recompense: {chestPop.rewardKind}
-            </div>
+            {chestPop.phase === "rolling" ? (
+              <>
+                <div className="chestIconBig chestRolling" aria-hidden="true">
+                  {chestPop.reel?.map((t, i) => (
+                    <span key={`${t}-${i}`}>{CHEST_TYPES[t]?.icon ?? "🎁"}</span>
+                  ))}
+                </div>
+                <div className="chestPopTitle">Ouverture...</div>
+                <div className="chestPopSub">Le coffre tourne avant la revelation.</div>
+              </>
+            ) : (
+              <>
+                <div className="chestIconBig" aria-hidden="true">
+                  {chestPop.chestIcon}
+                </div>
+                <div className="chestPopTitle">{chestPop.chestLabel}</div>
+                <div className="chestRewardsList">
+                  {(chestPop.rewards ?? []).map((item, idx) => (
+                    <div
+                      key={`${item.chestType}-${item.reward.kind}-${idx}`}
+                      className={`chestRewardRow tone-${item.visual.tone} reward-${item.reward.kind} ${
+                        item.reward.kind === "skin" || item.reward.kind === "avatar" || item.reward.kind === "effect" ? "is-card" : ""
+                      }`}
+                    >
+                      <span
+                        className={`chestRewardPreview preview-${item.visual.preview?.type ?? "gift"}`}
+                        aria-hidden="true"
+                        style={
+                          item.visual.preview?.type === "skin"
+                            ? { background: `linear-gradient(135deg, ${item.visual.preview?.accent || "#5b7cfa"}, ${item.visual.preview?.accent2 || "#f59e0b"})` }
+                            : undefined
+                        }
+                      >
+                        {item.visual.preview?.type === "emoji" ? item.visual.preview?.value : null}
+                        {item.visual.preview?.type === "effect" ? "FX" : null}
+                        {item.visual.preview?.type === "coin" ? "🪙" : null}
+                        {item.visual.preview?.type === "dust" ? "🧩" : null}
+                        {item.visual.preview?.type === "bolt" ? "⚡" : null}
+                        {item.visual.preview?.type === "gift" ? item.visual.icon : null}
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <div className="chestRewardText">{item.visual.label}</div>
+                        <div className="chestRewardMeta">
+                          <span className={`chestRarity tone-${item.visual.tone}`}>{item.visual.rarity}</span>
+                          {(item.reward.kind === "skin" || item.reward.kind === "effect") && (
+                            <button className="btn smooth press chestEquipBtn" onClick={() => equipChestReward(item)}>
+                              Equiper maintenant
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
             <div style={{ marginTop: 12 }}>
               <button className="btn btnPrimary smooth hover-lift press" onClick={() => setChestPop(null)}>
                 Super
@@ -2854,6 +3072,12 @@ export default function App() {
                 <button className="btn btnPrimary smooth hover-lift press" onClick={openChest} disabled={chestPending <= 0}>
                   Ouvrir coffre
                 </button>
+                <button className="btn smooth hover-lift press" onClick={() => openChestBatch(3)} disabled={chestPending < 3}>
+                  Ouvrir x3
+                </button>
+                <button className="btn smooth hover-lift press" onClick={() => openChestBatch(chestPending)} disabled={chestPending < 5}>
+                  Ouvrir tout
+                </button>
                 {!isPremium && (
                   <button className="btn smooth hover-lift press" onClick={watchAdChestBoost}>
                     Pub optionnelle: +5 coffre
@@ -3083,6 +3307,7 @@ export default function App() {
         profileTab={profileTab}
         setProfileTab={setProfileTab}
         coins={coins}
+        cosmeticDust={cosmeticDust}
         authUser={authUser}
         level={level}
         loginStreak={loginStreak}
@@ -3099,6 +3324,16 @@ export default function App() {
         ACHIEVEMENTS={ACHIEVEMENTS}
         isUnlocked={isUnlocked}
         achievements={achievements}
+        SKINS={SKINS}
+        AVATARS={AVATARS}
+        answerEffects={ANSWER_EFFECTS}
+        ownedSkins={ownedSkins}
+        ownedAvatars={ownedAvatars}
+        ownedEffects={ownedEffects}
+        skinId={skinId}
+        avatarId={avatarId}
+        answerEffectId={answerEffectId}
+        unlockEffectWithDust={unlockEffectWithDust}
       />
       <Settings
         show={showSettings}
