@@ -546,6 +546,129 @@ function makeQuestion(modeId, gradeId, diffId, historyRef) {
   return makeQuestionCore(modeId, gradeId, diffId);
 }
 
+const DIFF_ORDER = ["facile", "moyen", "difficile"];
+
+function stepDiff(diffId, dir) {
+  const idx = DIFF_ORDER.indexOf(diffId);
+  if (idx < 0) return diffId;
+  if (dir > 0) return DIFF_ORDER[Math.min(DIFF_ORDER.length - 1, idx + 1)];
+  if (dir < 0) return DIFF_ORDER[Math.max(0, idx - 1)];
+  return diffId;
+}
+
+function buildHints(question, gradeId) {
+  if (!question?.row) return [];
+  const r = question.row;
+  const mid = ["6e", "5e", "4e", "3e"].includes(gradeId);
+
+  if (r.kind === "op") {
+    if (r.op === "+") return ["Additionne les unites puis les dizaines.", `Calcule ${r.a} + ${r.b} par morceaux.`, `Resultat attendu : ${question.correct}.`];
+    if (r.op === "−") return ["Soustrais en partant des unites.", `Pense a l'operation inverse : ${question.correct} + ${r.b} = ${r.a}.`, `Resultat attendu : ${question.correct}.`];
+    if (r.op === "×") return ["Decoupe la multiplication (ex: x10 puis x2).", `Tu peux faire ${r.a} × ${r.b}.`, `Resultat attendu : ${question.correct}.`];
+    if (r.op === "÷") {
+      return [
+        "Transforme la division en equation.",
+        `On cherche x tel que ${r.b} × x = ${r.a}.`,
+        `Donc x = ${question.correct}.`,
+      ];
+    }
+  }
+
+  if (r.kind === "fracCmp") {
+    if (mid) {
+      const left = r.aN * r.bD;
+      const right = r.bN * r.aD;
+      return [
+        "Utilise le produit en croix.",
+        `Compare ${r.aN}×${r.bD} et ${r.bN}×${r.aD}.`,
+        `Tu obtiens ${left} et ${right}, donc le signe est "${question.correct}".`,
+      ];
+    }
+    const common = lcm(r.aD, r.bD);
+    const aEq = r.aN * (common / r.aD);
+    const bEq = r.bN * (common / r.bD);
+    return [
+      "Mets les fractions au meme denominateur.",
+      `Denominateur commun = ${common}.`,
+      `Compare ${aEq}/${common} et ${bEq}/${common} -> "${question.correct}".`,
+    ];
+  }
+
+  if (r.kind === "fracEq") {
+    return [
+      "Verifie si on peut multiplier numerateur et denominateur par le meme nombre.",
+      "Sinon, utilise le produit en croix.",
+      `Conclusion : "${question.correct}".`,
+    ];
+  }
+
+  return [];
+}
+
+function buildMethodSteps(question, gradeId) {
+  if (!question?.row) return [];
+  const r = question.row;
+  const mid = ["6e", "5e", "4e", "3e"].includes(gradeId);
+
+  if (r.kind === "op") {
+    if (r.op === "+") return [`Etape 1 : on pose ${r.a} + ${r.b}.`, "Etape 2 : on additionne.", `Etape 3 : resultat = ${question.correct}.`];
+    if (r.op === "−") return [`Etape 1 : on pose ${r.a} − ${r.b}.`, "Etape 2 : on soustrait.", `Etape 3 : resultat = ${question.correct}.`];
+    if (r.op === "×") return [`Etape 1 : on pose ${r.a} × ${r.b}.`, "Etape 2 : on calcule le produit.", `Etape 3 : resultat = ${question.correct}.`];
+    if (r.op === "÷") {
+      return [
+        `Etape 1 : division ${r.a} ÷ ${r.b}.`,
+        `Etape 2 : on cherche x tel que ${r.b} × x = ${r.a}.`,
+        `Etape 3 : x = ${question.correct}.`,
+      ];
+    }
+  }
+
+  if (r.kind === "fracCmp") {
+    if (mid) {
+      const left = r.aN * r.bD;
+      const right = r.bN * r.aD;
+      return [
+        `Etape 1 : produit en croix (${r.aN}×${r.bD}) et (${r.bN}×${r.aD}).`,
+        `Etape 2 : on obtient ${left} et ${right}.`,
+        `Etape 3 : ${left > right ? ">" : left < right ? "<" : "="} donc reponse "${question.correct}".`,
+      ];
+    }
+    const common = lcm(r.aD, r.bD);
+    const aEq = r.aN * (common / r.aD);
+    const bEq = r.bN * (common / r.bD);
+    return [
+      `Etape 1 : denominateur commun = ${common}.`,
+      `Etape 2 : ${r.aN}/${r.aD} = ${aEq}/${common} et ${r.bN}/${r.bD} = ${bEq}/${common}.`,
+      `Etape 3 : on compare ${aEq} et ${bEq}, donc "${question.correct}".`,
+    ];
+  }
+
+  if (r.kind === "fracEq") {
+    const left = r.aN * r.bD;
+    const right = r.bN * r.aD;
+    return [
+      `Etape 1 : teste ${r.aN}×${r.bD} et ${r.bN}×${r.aD}.`,
+      `Etape 2 : on obtient ${left} et ${right}.`,
+      `Etape 3 : ${left === right ? "egaux" : "differents"}, reponse "${question.correct}".`,
+    ];
+  }
+
+  return [];
+}
+
+function weakestMode(perfByMode) {
+  const rows = Object.entries(perfByMode ?? {})
+    .map(([mId, v]) => {
+      const total = v?.total ?? 0;
+      const right = v?.right ?? 0;
+      const acc = total ? right / total : 0;
+      return { mId, total, acc };
+    })
+    .filter((r) => r.total >= 3);
+  if (!rows.length) return null;
+  return rows.sort((a, b) => a.acc - b.acc || b.total - a.total)[0]?.mId ?? null;
+}
+
 /* ------------------------ UI components ------------------------ */
 function Fraction({ n, d }) {
   return (
@@ -693,6 +816,7 @@ function rewardRoll(streakDay, ownedAvatars) {
 /* ------------------------ App ------------------------ */
 export default function App() {
   const qHistoryRef = useRef([]);
+  const adaptiveRollRef = useRef([]);
   const autoTimerRef = useRef(null);
   const badgeTimerRef = useRef(null);
   const levelTimerRef = useRef(null);
@@ -747,6 +871,7 @@ export default function App() {
         vibrateOn: true,
         autoNextOn: false,
         autoNextMs: 1800,
+        adaptiveOn: true,
         reduceMotion: false,
         achievements: {},
         lastLoginDayKey: null,
@@ -775,6 +900,7 @@ export default function App() {
       vibrateOn: saved?.vibrateOn ?? true,
       autoNextOn: saved?.autoNextOn ?? false,
       autoNextMs: saved?.autoNextMs ?? 1800,
+      adaptiveOn: saved?.adaptiveOn ?? true,
       reduceMotion: saved?.reduceMotion ?? false,
       achievements: saved?.achievements ?? {},
       lastLoginDayKey: saved?.lastLoginDayKey ?? null,
@@ -806,6 +932,7 @@ export default function App() {
   const [vibrateOn, setVibrateOn] = useState(initial.vibrateOn);
   const [autoNextOn, setAutoNextOn] = useState(initial.autoNextOn);
   const [autoNextMs, setAutoNextMs] = useState(initial.autoNextMs);
+  const [adaptiveOn, setAdaptiveOn] = useState(initial.adaptiveOn);
   const [reduceMotion, setReduceMotion] = useState(initial.reduceMotion);
 
   const [achievements, setAchievements] = useState(initial.achievements);
@@ -828,6 +955,10 @@ export default function App() {
   const [status, setStatus] = useState("idle");
   const [explain, setExplain] = useState("");
   const [showExplain, setShowExplain] = useState(false);
+  const [showMethod, setShowMethod] = useState(false);
+  const [hintLevel, setHintLevel] = useState(0);
+  const [hintMsg, setHintMsg] = useState("");
+  const [adaptiveAction, setAdaptiveAction] = useState(null);
 
   const [isLocked, setIsLocked] = useState(false);
 
@@ -898,6 +1029,7 @@ export default function App() {
       vibrateOn,
       autoNextOn,
       autoNextMs,
+      adaptiveOn,
       reduceMotion,
       achievements,
       lastLoginDayKey,
@@ -925,6 +1057,7 @@ export default function App() {
     vibrateOn,
     autoNextOn,
     autoNextMs,
+    adaptiveOn,
     reduceMotion,
     achievements,
     lastLoginDayKey,
@@ -1046,6 +1179,9 @@ export default function App() {
     setStatus("idle");
     setExplain("");
     setShowExplain(false);
+    setShowMethod(false);
+    setHintLevel(0);
+    setHintMsg("");
     setFx("none");
     setSpark(false);
     setIsLocked(false);
@@ -1061,6 +1197,8 @@ export default function App() {
 
     setLastAnswers([]);
     setSessionAnswered(0);
+    adaptiveRollRef.current = [];
+    setAdaptiveAction(null);
     setSessionPerf(() => {
       const o = {};
       for (const m of MODES) o[m.id] = { right: 0, total: 0 };
@@ -1107,6 +1245,63 @@ export default function App() {
     }
   }
 
+  function getHintCost(nextLevel) {
+    if (diffId === "facile" && nextLevel === 1) return 0;
+    return 1;
+  }
+
+  function useHint() {
+    if (!canAskHint) return;
+    const nextLevel = hintLevel + 1;
+    const cost = getHintCost(nextLevel);
+    if (cost > 0 && coins < cost) {
+      setHintMsg("Pas assez de coins pour un indice.");
+      return;
+    }
+
+    if (cost > 0) setCoins((c) => Math.max(0, c - cost));
+    setHintLevel(nextLevel);
+    setHintMsg(cost > 0 ? `Indice debloque (-${cost} coin).` : "Premier indice gratuit en facile.");
+  }
+
+  function computeAdaptiveAction(roll20, perfByMode) {
+    if (!adaptiveOn || roll20.length < 20) return null;
+
+    const right = roll20.reduce((sum, ok) => sum + (ok ? 1 : 0), 0);
+    const acc20 = Math.round((right / roll20.length) * 100);
+
+    if (acc20 > 85) {
+      const nextDiff = stepDiff(diffId, +1);
+      if (nextDiff !== diffId) {
+        return {
+          kind: "up",
+          nextDiffId: nextDiff,
+          lines: [`Precision sur 20 questions: ${acc20}%. On monte en difficulte (${nextDiff}).`],
+          hint: "Tu progresses tres bien, on augmente le challenge.",
+        };
+      }
+      return null;
+    }
+
+    if (acc20 < 55) {
+      const nextDiff = stepDiff(diffId, -1);
+      const weakMode = weakestMode(perfByMode);
+      return {
+        kind: "down",
+        nextDiffId: nextDiff !== diffId ? nextDiff : null,
+        suggestedModeId: weakMode && weakMode !== modeId ? weakMode : null,
+        lines: [
+          `Precision sur 20 questions: ${acc20}%.`,
+          nextDiff !== diffId ? `On baisse la difficulte (${nextDiff}) pour consolider.` : "On garde la difficulte actuelle.",
+          weakMode ? `Entrainement cible conseille: ${modeName(weakMode)}.` : "Continue sur ce mode pour consolider.",
+        ],
+        hint: weakMode ? modeHint(weakMode) : modeHint(modeId),
+      };
+    }
+
+    return null;
+  }
+
   function submit(choice) {
     if (isLocked || showExplain) return;
     setIsLocked(true);
@@ -1124,13 +1319,8 @@ export default function App() {
 
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
     const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
-
-    setTotalQuestions((x) => x + 1);
-
-    setLastAnswers((prev) => [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10));
-
-    setSessionPerf((prev) => {
-      const base = prev ?? {};
+    const nextSessionPerf = (() => {
+      const base = sessionPerf ?? {};
       const cur = base[modeId] ?? { right: 0, total: 0 };
       return {
         ...base,
@@ -1139,24 +1329,23 @@ export default function App() {
           total: cur.total + 1,
         },
       };
-    });
+    })();
+
+    setTotalQuestions((x) => x + 1);
+
+    setLastAnswers((prev) => [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10));
+
+    setSessionPerf(nextSessionPerf);
 
     setSessionAnswered((n) => {
       const nextCount = n + 1;
-      const nextPerf = (() => {
-        const base = sessionPerf ?? {};
-        const cur = base[modeId] ?? { right: 0, total: 0 };
-        return {
-          ...base,
-          [modeId]: {
-            right: cur.right + (isCorrect ? 1 : 0),
-            total: cur.total + 1,
-          },
-        };
-      })();
-      maybeCoach(nextCount, nextPerf);
+      maybeCoach(nextCount, nextSessionPerf);
       return nextCount;
     });
+
+    const nextRoll = [...(adaptiveRollRef.current ?? []), isCorrect].slice(-20);
+    adaptiveRollRef.current = nextRoll;
+    setAdaptiveAction(computeAdaptiveAction(nextRoll, nextSessionPerf));
 
     if (isCorrect) {
       setStatus("ok");
@@ -1179,6 +1368,7 @@ export default function App() {
 
       setExplain(q.explain(choice));
       setShowExplain(true);
+      setShowMethod(false);
 
       updateRecordIfNeeded(score + nextScoreAdd);
     } else {
@@ -1196,6 +1386,7 @@ export default function App() {
 
       setExplain(q.explain(choice));
       setShowExplain(true);
+      setShowMethod(false);
     }
 
     checkAchievements({
@@ -1215,6 +1406,20 @@ export default function App() {
 
   function goNext() {
     setQuestionIndex((i) => i + 1);
+    if (adaptiveAction) {
+      let changed = false;
+      if (adaptiveAction.nextDiffId && adaptiveAction.nextDiffId !== diffId) {
+        setDiffId(adaptiveAction.nextDiffId);
+        changed = true;
+      }
+      if (adaptiveAction.suggestedModeId && adaptiveAction.suggestedModeId !== modeId) {
+        setModeId(adaptiveAction.suggestedModeId);
+        changed = true;
+      }
+      showCoachPopup({ title: "Mode adaptatif", lines: adaptiveAction.lines, hint: adaptiveAction.hint });
+      setAdaptiveAction(null);
+      if (changed) return;
+    }
     newQuestion(true);
   }
 
@@ -1260,6 +1465,10 @@ export default function App() {
   const unlockedCount = useMemo(() => ACHIEVEMENTS.filter((a) => isUnlocked(a.id)).length, [achievements]);
 
   const disableChoices = isLocked || showExplain;
+  const hintList = useMemo(() => buildHints(q, gradeId), [q, gradeId]);
+  const methodSteps = useMemo(() => buildMethodSteps(q, gradeId), [q, gradeId]);
+  const visibleHints = hintList.slice(0, hintLevel);
+  const canAskHint = !disableChoices && hintLevel < hintList.length;
 
   const FLOATERS = useMemo(
     () => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", "−", "×", "÷", "=", "<", ">", "∑", "π", "%", "🧮", "⭐"],
@@ -1369,6 +1578,7 @@ export default function App() {
       vibrateOn: true,
       autoNextOn: false,
       autoNextMs: 1800,
+      adaptiveOn: true,
       reduceMotion: false,
       achievements: {},
       lastLoginDayKey: null,
@@ -1870,6 +2080,7 @@ export default function App() {
             <button className="btn smooth hover-lift press" onClick={resetSession}>
               Reset session
             </button>
+            <span className="pill">Adaptatif: {adaptiveOn ? "ON" : "OFF"}</span>
           </div>
 
           <div className="barWrap" aria-label="xp">
@@ -1928,6 +2139,26 @@ export default function App() {
               )}
             </div>
 
+            <div className="learningRow">
+              <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
+                Indice {hintLevel + 1}/{hintList.length}
+                {canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} coin`})`}
+              </button>
+              <span className="small">Les indices aident, mais coutent des coins (sauf le 1er en facile).</span>
+            </div>
+            {hintMsg && !visibleHints.length && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
+
+            {!!visibleHints.length && (
+              <div className="hintBox">
+                {visibleHints.map((h, i) => (
+                  <div key={i} className="small">
+                    <b>Indice {i + 1}.</b> {h}
+                  </div>
+                ))}
+                {hintMsg && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
+              </div>
+            )}
+
             <div className="controls">
               {q.choices.map((c) => {
                 const isPressed = picked === c;
@@ -1960,6 +2191,22 @@ export default function App() {
                   <div className="sub" style={{ marginTop: 8 }}>
                     {explain}
                   </div>
+                  {status === "bad" && methodSteps.length > 0 && (
+                    <div style={{ marginTop: 10 }}>
+                      <button className="btn smooth hover-lift press" onClick={() => setShowMethod((v) => !v)}>
+                        {showMethod ? "Masquer la methode" : "Voir la methode"}
+                      </button>
+                    </div>
+                  )}
+                  {status === "bad" && showMethod && methodSteps.length > 0 && (
+                    <div className="methodBox">
+                      {methodSteps.map((s, i) => (
+                        <div key={i} className="small">
+                          {s}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <span className="pill">Combo: {streak}</span>
               </div>
@@ -2295,6 +2542,19 @@ export default function App() {
 
             <div className="small" style={{ marginTop: 8 }}>
               Skins animés : {skin.animated ? <b>disponible</b> : <b>skin statique</b>} (désactivé si “réduire” activé)
+            </div>
+          </div>
+
+          <div className="shopCard" style={{ marginTop: 12 }}>
+            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Apprentissage adaptatif</div>
+
+            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+              <span>Activer le mode adaptatif</span>
+              <input type="checkbox" checked={adaptiveOn} onChange={(e) => setAdaptiveOn(e.target.checked)} />
+            </label>
+
+            <div className="small" style={{ marginTop: 8 }}>
+              Sur une fenetre de 20 reponses : plus de 85% =&gt; difficulte +1, moins de 55% =&gt; difficulte -1 + entrainement cible.
             </div>
           </div>
 

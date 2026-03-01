@@ -506,6 +506,34 @@ body.reduce-motion .barWrap::after{ animation:none !important; opacity:0; }
 }
 @media (max-width: 520px){ .controls{ grid-template-columns: 1fr; } }
 
+.learningRow{
+  margin-top: 12px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hintBox{
+  margin-top: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.16);
+  padding: 10px 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.methodBox{
+  margin-top: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.16);
+  padding: 10px 12px;
+  display:grid;
+  gap: 6px;
+}
+
 .choice{
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,.12);
