@@ -1,3 +1,4 @@
+// App.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 
@@ -189,13 +190,19 @@ const SKINS = [
   },
 ];
 
+// ✅ Boutique premium + raretés + exclusifs
 const AVATARS = [
-  { id: "owl", name: "Hibou", emoji: "🦉", price: 0 },
-  { id: "robot", name: "Robot", emoji: "🤖", price: 120 },
-  { id: "fox", name: "Renard", emoji: "🦊", price: 140 },
-  { id: "astro", name: "Astronaute", emoji: "🧑‍🚀", price: 200 },
-  { id: "dragon", name: "Dragon", emoji: "🐉", price: 260 },
-  { id: "ninja", name: "Ninja", emoji: "🥷", price: 220 },
+  { id: "owl", name: "Hibou", emoji: "🦉", price: 0, rarity: "Commun" },
+  { id: "robot", name: "Robot", emoji: "🤖", price: 120, rarity: "Rare" },
+  { id: "fox", name: "Renard", emoji: "🦊", price: 140, rarity: "Rare" },
+  { id: "astro", name: "Astronaute", emoji: "🧑‍🚀", price: 200, rarity: "Épique" },
+  { id: "ninja", name: "Ninja", emoji: "🥷", price: 220, rarity: "Épique" },
+  { id: "dragon", name: "Dragon", emoji: "🐉", price: 260, rarity: "Épique" },
+
+  { id: "king", name: "Roi des Maths", emoji: "👑", price: 420, rarity: "Exclusif" },
+  { id: "wizard", name: "Magicien ∑", emoji: "🧙‍♂️", price: 520, rarity: "Exclusif" },
+  { id: "genius", name: "Génie π", emoji: "🧠", price: 650, rarity: "Exclusif" },
+  { id: "mecha", name: "Mecha Calcul", emoji: "🦾", price: 780, rarity: "Exclusif" },
 ];
 
 /* ------------------------ Grades + difficulté + modes ------------------------ */
@@ -573,7 +580,8 @@ function generateDailyMissions() {
     .map((m) => ({ ...m, progress: 0, claimed: false }));
 }
 
-const LS_KEY = "math-duel-v5";
+// ✅ (optionnel) clé renommée
+const LS_KEY = "math-adventure-v1";
 
 /* ------------------------ Achievements (Badges) ------------------------ */
 const ACHIEVEMENTS = [
@@ -1312,8 +1320,36 @@ export default function App() {
 
   const disableChoices = isLocked || showExplain;
 
+  // ✅ Fond dynamique maths (nombres + symboles)
+  const FLOATERS = useMemo(
+    () => [
+      "1","2","3","4","5","6","7","8","9","0",
+      "+","−","×","÷","=","<",">","∑","π","%",
+      "🧮","⭐"
+    ],
+    []
+  );
+
   return (
     <div className="shell">
+      {/* ✅ Fond flottant maths */}
+      <div className="mathBg" aria-hidden="true">
+        {FLOATERS.map((t, i) => (
+          <span
+            key={i}
+            style={{
+              left: `${(i * 37) % 100}%`,
+              top: `${(i * 19) % 100}%`,
+              fontSize: `${14 + (i % 8) * 6}px`,
+              animationDuration: `${10 + (i % 10) * 2.2}s`,
+              animationDelay: `${-(i % 10) * 1.1}s`,
+            }}
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+
       {/* (#5) LEVEL UP popup */}
       {levelPop && (
         <div className="levelPop" role="status" aria-live="polite">
@@ -1391,15 +1427,12 @@ export default function App() {
         <div className="brand">
           <div className="logo smooth" />
           <div>
+            {/* ✅ Titre changé */}
             <div className="h1">
-              Math Duel <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
+              Math Adventure <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
             </div>
-            <div className="sub">
-              Illimité • {modeLabel} • {gradeId} • {diffLabel} • Ligue:{" "}
-              <b>
-                {league.icon} {league.name}
-              </b>
-            </div>
+
+            {/* ✅ Sous-titre supprimé */}
           </div>
         </div>
 
@@ -1568,8 +1601,7 @@ export default function App() {
             <div className="controls">
               {q.choices.map((c) => {
                 const isPressed = picked === c;
-                const stateCls =
-                  showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";
+                const stateCls = showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";
                 return (
                   <button
                     key={String(c)}
@@ -1778,14 +1810,27 @@ export default function App() {
                 {AVATARS.map((a) => {
                   const owned = ownedAvatars.includes(a.id);
                   const equipped = avatarId === a.id;
+                  const isExclusive = a.rarity === "Exclusif";
+
                   return (
-                    <div key={a.id} className="shopCard smooth hover-lift">
+                    <div
+                      key={a.id}
+                      className={`shopCard smooth hover-lift ${isExclusive ? "premium" : ""}`}
+                      style={{ position: "relative" }}
+                    >
+                      {isExclusive && <div className="ribbon">Exclusif</div>}
+
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                         <div>
                           <div className="avatarBig">{a.emoji}</div>
                           <div style={{ fontWeight: 1100 }}>{a.name}</div>
-                          <div className="small">Cosmétique</div>
+
+                          <div style={{ marginTop: 6, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                            <span className="rarity">{a.rarity}</span>
+                            <span className="small">Cosmétique</span>
+                          </div>
                         </div>
+
                         <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-end" }}>
                           <span className="price">
                             <span className="coinDot" /> {a.price}
@@ -1801,6 +1846,7 @@ export default function App() {
                           )}
                         </div>
                       </div>
+
                       {!owned && !canBuy(a.price) && <div className="small" style={{ marginTop: 10 }}>Continue à jouer pour gagner des coins 💰</div>}
                     </div>
                   );
@@ -1839,7 +1885,10 @@ export default function App() {
                     <br />
                     Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b>
                     <br />
-                    Meilleure ligue : <b>{bestLeague.icon} {bestLeague.name}</b>
+                    Meilleure ligue :{" "}
+                    <b>
+                      {bestLeague.icon} {bestLeague.name}
+                    </b>
                   </div>
                 </div>
               </div>
@@ -1854,14 +1903,18 @@ export default function App() {
                     <div style={{ fontWeight: 1100, marginBottom: 6 }}>{g.label}</div>
                     {DIFFS.map((d) => (
                       <div key={d.id} style={{ marginBottom: 10 }}>
-                        <div className="small" style={{ marginBottom: 6 }}>• {d.label}</div>
+                        <div className="small" style={{ marginBottom: 6 }}>
+                          • {d.label}
+                        </div>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
                           {MODES.map((m) => {
                             const v = records?.[g.id]?.[d.id]?.[m.id]?.bestScore ?? 0;
                             return (
                               <div key={m.id} className="statBox" style={{ padding: 10 }}>
                                 <div className="statLabel">{m.label}</div>
-                                <div className="statValue" style={{ fontSize: 18 }}>{v}</div>
+                                <div className="statValue" style={{ fontSize: 18 }}>
+                                  {v}
+                                </div>
                               </div>
                             );
                           })}
