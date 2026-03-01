@@ -167,6 +167,10 @@ function worldIdFromGrade(gradeId) {
   return WORLDS.find((w) => w.gradeId === gradeId)?.id ?? "ce1";
 }
 
+function isCollegeGrade(gradeId) {
+  return ["6e", "5e", "4e", "3e"].includes(gradeId);
+}
+
 function makeEmptyStudy5Summary() {
   return null;
 }
@@ -275,6 +279,7 @@ export default function App() {
         rushTodayCount: 0,
         league: freshSeasonState(),
         challengeProgress: createChallengeProgress(null),
+        collegeArena: { dayKey: parisDayKey(), hardRight: 0, claimed: false },
         study5LastSummary: makeEmptyStudy5Summary(),
       };
     }
@@ -321,6 +326,11 @@ export default function App() {
       rushTodayCount: saved?.rushTodayCount ?? 0,
       league: ensureSeasonState(saved?.league),
       challengeProgress: createChallengeProgress(saved?.challengeProgress),
+      collegeArena: {
+        dayKey: saved?.collegeArena?.dayKey ?? parisDayKey(),
+        hardRight: saved?.collegeArena?.hardRight ?? 0,
+        claimed: !!saved?.collegeArena?.claimed,
+      },
       study5LastSummary: saved?.study5LastSummary ?? makeEmptyStudy5Summary(),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -375,6 +385,7 @@ export default function App() {
   const [rushTodayCount, setRushTodayCount] = useState(initial.rushTodayCount);
   const [league, setLeague] = useState(initial.league);
   const [challengeProgress, setChallengeProgress] = useState(initial.challengeProgress);
+  const [collegeArena, setCollegeArena] = useState(initial.collegeArena);
   const [study5LastSummary, setStudy5LastSummary] = useState(initial.study5LastSummary);
   const [loginRewardPop, setLoginRewardPop] = useState(null);
   const [installPromptEvent, setInstallPromptEvent] = useState(null);
@@ -525,6 +536,7 @@ export default function App() {
       rushTodayCount,
       league,
       challengeProgress,
+      collegeArena,
       study5LastSummary,
       updatedAt: new Date().toISOString(),
     };
@@ -579,6 +591,7 @@ export default function App() {
     rushTodayCount,
     league,
     challengeProgress,
+    collegeArena,
     study5LastSummary,
   ]);
 
@@ -654,6 +667,13 @@ export default function App() {
       setRushTodayCount(0);
     }
   }, [questionIndex, rushDayKey]);
+
+  useEffect(() => {
+    const today = parisDayKey();
+    if ((collegeArena?.dayKey ?? today) !== today) {
+      setCollegeArena({ dayKey: today, hardRight: 0, claimed: false });
+    }
+  }, [questionIndex, collegeArena?.dayKey]);
 
   useEffect(() => {
     if (!rushOn) return undefined;
@@ -1318,6 +1338,13 @@ export default function App() {
         weeklyStats: applyAnswerToChallengeStats(base.weeklyStats, modeId, isCorrect),
       };
     });
+    if (isCorrect && diffId === "difficile" && isCollegeGrade(gradeId)) {
+      setCollegeArena((prev) => {
+        const today = parisDayKey();
+        const base = prev?.dayKey === today ? prev : { dayKey: today, hardRight: 0, claimed: false };
+        return { ...base, hardRight: (base.hardRight ?? 0) + 1 };
+      });
+    }
     setActivityMap((prev) => {
       const today = parisDayKey();
       const next = {
@@ -1589,6 +1616,21 @@ export default function App() {
     });
   }
 
+  function claimCollegeArenaReward() {
+    const today = parisDayKey();
+    const arena = collegeArena?.dayKey === today ? collegeArena : { dayKey: today, hardRight: 0, claimed: false };
+    if (arena.claimed || arena.hardRight < 12 || !isCollegeGrade(gradeId)) return;
+    awardCoins(90);
+    awardXp(120);
+    setCollegeArena({ ...arena, claimed: true });
+    showBadgePopup({
+      icon: "🏆",
+      title: "Defi college complete",
+      desc: "12 bonnes reponses en difficile • +90 coins • +120 XP",
+      reward: 90,
+    });
+  }
+
   const accuracy = useMemo(() => {
     const total = totalRight + totalWrong;
     if (!total) return 0;
@@ -1596,6 +1638,15 @@ export default function App() {
   }, [totalRight, totalWrong]);
   const isPremium = premiumPlan === "monthly" || premiumPlan === "lifetime";
   const premiumLabel = premiumPlan === "lifetime" ? "Lifetime" : premiumPlan === "monthly" ? "Mensuel" : "Gratuit";
+  const isCollegeNow = isCollegeGrade(gradeId);
+  const collegeArenaToday = useMemo(() => {
+    const today = parisDayKey();
+    if (collegeArena?.dayKey === today) return collegeArena;
+    return { dayKey: today, hardRight: 0, claimed: false };
+  }, [collegeArena]);
+  const collegeArenaTarget = 12;
+  const collegeArenaDone = collegeArenaToday.hardRight >= collegeArenaTarget;
+  const collegeArenaPct = Math.round((Math.min(collegeArenaToday.hardRight, collegeArenaTarget) / collegeArenaTarget) * 100);
   const leagueTier = useMemo(() => leagueTierFromPoints(league?.points ?? 0), [league?.points]);
   const seasonDaysLeft = useMemo(() => {
     const now = Date.now();
@@ -1605,6 +1656,31 @@ export default function App() {
   }, [league?.seasonStartTs, questionIndex]);
   const xpBoostActive = Date.now() < (xpBoostUntilTs ?? 0);
   const xpBoostMinutesLeft = xpBoostActive ? Math.max(1, Math.ceil((xpBoostUntilTs - Date.now()) / 60000)) : 0;
+  const localCompetition = useMemo(() => {
+    const idx = getUsersIndex();
+    const keys = Object.keys(idx?.users ?? {});
+    const rows = keys
+      .map((pseudoKey) => {
+        const save = safeLSGet(userKey(pseudoKey), null);
+        if (!save) return null;
+        const right = save?.totalRight ?? 0;
+        const wrong = save?.totalWrong ?? 0;
+        const total = right + wrong;
+        const accuracyRow = total ? Math.round((right / total) * 100) : 0;
+        return {
+          pseudoKey,
+          pseudoDisplay: idx?.users?.[pseudoKey]?.pseudoDisplay ?? pseudoKey,
+          points: save?.league?.points ?? 0,
+          accuracy: accuracyRow,
+          bestStreak: save?.bestStreak ?? 0,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.points - a.points || b.accuracy - a.accuracy || b.bestStreak - a.bestStreak)
+      .slice(0, 20);
+    const myRank = rows.findIndex((r) => r.pseudoKey === authUser?.pseudoKey) + 1;
+    return { rows, myRank };
+  }, [authUser?.pseudoKey, questionIndex, totalRight, totalWrong, bestStreak, league?.points]);
 
   const activityDays = useMemo(() => {
     const base = new Date();
@@ -1769,6 +1845,7 @@ export default function App() {
       rushTodayCount: 0,
       league: freshSeasonState(),
       challengeProgress: createChallengeProgress(null),
+      collegeArena: { dayKey: parisDayKey(), hardRight: 0, claimed: false },
       study5LastSummary: makeEmptyStudy5Summary(),
       updatedAt: new Date().toISOString(),
     };
@@ -2367,6 +2444,50 @@ export default function App() {
               )}
             </div>
           </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Classement local</strong>
+              <div className="small" style={{ marginTop: 6 }}>
+                Ton rang: <b>{localCompetition.myRank || "-"}</b> / <b>{localCompetition.rows.length}</b>
+              </div>
+              {!!localCompetition.rows.length && (
+                <div className="small" style={{ marginTop: 8 }}>
+                  {localCompetition.rows.slice(0, 5).map((r, idx) => `${idx + 1}. ${r.pseudoDisplay} (${r.points} pts, ${r.accuracy}%)`).join(" • ")}
+                </div>
+              )}
+            </div>
+            <span className="pill">Competition</span>
+          </div>
+
+          {isCollegeNow && (
+            <div className="toast" style={{ marginTop: 12 }}>
+              <div style={{ width: "100%" }}>
+                <strong>Defi college du jour</strong>
+                <div className="small" style={{ marginTop: 6 }}>
+                  Objectif: <b>{collegeArenaTarget}</b> bonnes reponses en difficulte <b>difficile</b>.
+                </div>
+                <div className="small" style={{ marginTop: 6 }}>
+                  Progression: <b>{Math.min(collegeArenaToday.hardRight, collegeArenaTarget)}</b> / <b>{collegeArenaTarget}</b>
+                </div>
+                <div className="barWrap" style={{ marginTop: 8 }}>
+                  <div className="bar" style={{ width: `${collegeArenaPct}%` }} />
+                </div>
+                <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <span className="pill">+90 coins</span>
+                  <span className="pill">+120 XP</span>
+                  <button
+                    className="btn btnPrimary smooth hover-lift press"
+                    disabled={!collegeArenaDone || !!collegeArenaToday.claimed}
+                    onClick={claimCollegeArenaReward}
+                  >
+                    {collegeArenaToday.claimed ? "Recompense recue" : "Recuperer"}
+                  </button>
+                </div>
+              </div>
+              <span className="pill">Defis</span>
+            </div>
+          )}
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
