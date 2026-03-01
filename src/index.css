@@ -1054,3 +1054,71 @@ body.anim-skin::before{
   100%{ transform: translate3d(16px,-10px,0) scale(1.02); }
 }
 body.reduce-motion.anim-skin::before{ animation:none !important; }
+
+/* landing */
+.landingWrap{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 14px;
+}
+.landingHero{
+  text-align: left;
+  padding: 20px;
+}
+.landingBadge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.20);
+  font-size: 12px;
+  font-weight: 1100;
+  color: rgba(234,240,255,.90);
+}
+.landingTitle{
+  margin: 12px 0 0;
+  font-size: clamp(28px, 4.8vw, 46px);
+  line-height: 1.05;
+  font-weight: 1200;
+  letter-spacing: .2px;
+}
+.landingLead{
+  margin: 12px 0 0;
+  color: var(--muted);
+  max-width: 68ch;
+}
+.landingCtas{
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.landingStats{
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.landingBeta{
+  padding: 16px;
+}
+.landingForm{
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+  max-width: 640px;
+}
+.landingTextarea{
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+.landingFormActions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}

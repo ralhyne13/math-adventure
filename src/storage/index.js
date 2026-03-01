@@ -186,6 +186,20 @@ export async function cloudLogEvent({ pseudoKey, event, payload, accessToken }) 
   });
 }
 
+export async function cloudPushBetaParent({ parentName, email, childAge, notes }) {
+  if (!isCloudEnabled()) return null;
+  return supabaseRequest("beta_parents", {
+    method: "POST",
+    body: {
+      parent_name: parentName,
+      email,
+      child_age: childAge,
+      notes: notes ?? "",
+      created_at: new Date().toISOString(),
+    },
+  });
+}
+
 export function parisDayKey(date = new Date()) {
   return date.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" });
 }
