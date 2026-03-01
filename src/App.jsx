@@ -35,189 +35,15 @@ import {
   modeHint,
   buildCoachSummary,
 } from "./questions";
-import Fraction from "./components/Fraction";
-import Modal from "./components/Modal";
-
-/* ------------------------ Password hashing (SHA-256) ------------------------ */
-async function sha256Hex(text) {
-  const enc = new TextEncoder().encode(text);
-  const buf = await crypto.subtle.digest("SHA-256", enc);
-  const bytes = new Uint8Array(buf);
-  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-/* ------------------------ Skins + Avatars ------------------------ */
-const SKINS = [
-  {
-    id: "neon-night",
-    name: "Neon Night",
-    price: 0,
-    desc: "Violet + vert, premium",
-    animated: true,
-    vars: {
-      "--bg1": "#0b1020",
-      "--bg2": "#0b1228",
-      "--accent": "#7c3aed",
-      "--accent2": "#22c55e",
-      "--text": "#eaf0ff",
-      "--muted": "rgba(234,240,255,.72)",
-    },
-  },
-  {
-    id: "ocean-glass",
-    name: "Ocean Glass",
-    price: 120,
-    desc: "Bleu + cyan, calme",
-    animated: true,
-    vars: {
-      "--bg1": "#071523",
-      "--bg2": "#071a2b",
-      "--accent": "#3b82f6",
-      "--accent2": "#22d3ee",
-      "--text": "#eaf6ff",
-      "--muted": "rgba(234,246,255,.70)",
-    },
-  },
-  {
-    id: "sunset-luxe",
-    name: "Sunset Luxe",
-    price: 180,
-    desc: "Rose + ambre, punchy",
-    animated: true,
-    vars: {
-      "--bg1": "#1a0b1d",
-      "--bg2": "#140a16",
-      "--accent": "#ec4899",
-      "--accent2": "#f59e0b",
-      "--text": "#fff0fb",
-      "--muted": "rgba(255,240,251,.70)",
-    },
-  },
-  {
-    id: "mint-minimal",
-    name: "Mint Minimal",
-    price: 150,
-    desc: "Menthe, ultra clean",
-    animated: false,
-    vars: {
-      "--bg1": "#071a16",
-      "--bg2": "#04110f",
-      "--accent": "#10b981",
-      "--accent2": "#a7f3d0",
-      "--text": "#eafff9",
-      "--muted": "rgba(234,255,249,.70)",
-    },
-  },
-  {
-    id: "mono-premium",
-    name: "Mono Premium",
-    price: 220,
-    desc: "Noir + argent, sobre",
-    animated: false,
-    vars: {
-      "--bg1": "#090b10",
-      "--bg2": "#06070b",
-      "--accent": "#a3a3a3",
-      "--accent2": "#ffffff",
-      "--text": "#f5f7ff",
-      "--muted": "rgba(245,247,255,.68)",
-    },
-  },
-  {
-    id: "candy-play",
-    name: "Candy Play",
-    price: 160,
-    desc: "Ludique, coloré",
-    animated: true,
-    vars: {
-      "--bg1": "#0a0f25",
-      "--bg2": "#070b1a",
-      "--accent": "#a855f7",
-      "--accent2": "#60a5fa",
-      "--text": "#eef2ff",
-      "--muted": "rgba(238,242,255,.72)",
-    },
-  },
-];
-
-const AVATARS = [
-  // COMMUNS
-  { id: "owl", name: "Hibou", emoji: "🦉", price: 0, rarity: "Commun" },
-  { id: "cat", name: "Chat", emoji: "🐱", price: 20, rarity: "Commun" },
-  { id: "dog", name: "Chien", emoji: "🐶", price: 20, rarity: "Commun" },
-  { id: "panda", name: "Panda", emoji: "🐼", price: 30, rarity: "Commun" },
-  { id: "koala", name: "Koala", emoji: "🐨", price: 30, rarity: "Commun" },
-  { id: "tiger", name: "Tigre", emoji: "🐯", price: 35, rarity: "Commun" },
-  { id: "penguin", name: "Pingouin", emoji: "🐧", price: 35, rarity: "Commun" },
-  { id: "frog", name: "Grenouille", emoji: "🐸", price: 25, rarity: "Commun" },
-  { id: "unicorn", name: "Licorne", emoji: "🦄", price: 60, rarity: "Commun" },
-  { id: "star", name: "Étoile", emoji: "⭐", price: 25, rarity: "Commun" },
-  { id: "rocket", name: "Fusée", emoji: "🚀", price: 40, rarity: "Commun" },
-  { id: "dice", name: "Dé", emoji: "🎲", price: 25, rarity: "Commun" },
-  { id: "math", name: "Math", emoji: "🧮", price: 35, rarity: "Commun" },
-
-  // RARES
-  { id: "robot", name: "Robot", emoji: "🤖", price: 120, rarity: "Rare" },
-  { id: "fox", name: "Renard", emoji: "🦊", price: 140, rarity: "Rare" },
-  { id: "pirate", name: "Pirate", emoji: "🏴‍☠️", price: 140, rarity: "Rare" },
-
-  // ÉPIQUES
-  { id: "astro", name: "Astronaute", emoji: "🧑‍🚀", price: 200, rarity: "Épique" },
-  { id: "ninja", name: "Ninja", emoji: "🥷", price: 220, rarity: "Épique" },
-  { id: "dragon", name: "Dragon", emoji: "🐉", price: 260, rarity: "Épique" },
-
-  // EXCLUSIFS
-  { id: "king", name: "Roi des Maths", emoji: "👑", price: 420, rarity: "Exclusif" },
-  { id: "wizard", name: "Magicien ∑", emoji: "🧙‍♂️", price: 520, rarity: "Exclusif" },
-  { id: "genius", name: "Génie π", emoji: "🧠", price: 650, rarity: "Exclusif" },
-  { id: "mecha", name: "Mecha Calcul", emoji: "🦾", price: 780, rarity: "Exclusif" },
-];
-
-/* ------------------------ XP / Level ------------------------ */
-function xpToNext(level) {
-  return 120 + level * 35;
-}
-function awardLevelCoins(levelGained) {
-  return 25 + levelGained * 5;
-}
-/* ------------------------ Achievements (Badges) ------------------------ */
-const ACHIEVEMENTS = [
-  { id: "streak5", icon: "🔥", title: "Combo 5", desc: "Atteins un combo de 5.", reward: 50, type: "streak", target: 5 },
-  { id: "streak10", icon: "🔥", title: "Combo 10", desc: "Atteins un combo de 10.", reward: 90, type: "streak", target: 10 },
-  { id: "streak20", icon: "🔥", title: "Combo 20", desc: "Atteins un combo de 20.", reward: 160, type: "streak", target: 20 },
-
-  { id: "right50", icon: "✅", title: "50 bonnes", desc: "Totalise 50 bonnes réponses.", reward: 80, type: "right", target: 50 },
-  { id: "right100", icon: "✅", title: "100 bonnes", desc: "Totalise 100 bonnes réponses.", reward: 140, type: "right", target: 100 },
-  { id: "right300", icon: "✅", title: "300 bonnes", desc: "Totalise 300 bonnes réponses.", reward: 260, type: "right", target: 300 },
-
-  { id: "q100", icon: "🎯", title: "100 questions", desc: "Réponds à 100 questions.", reward: 90, type: "questions", target: 100 },
-  { id: "q500", icon: "🎯", title: "500 questions", desc: "Réponds à 500 questions.", reward: 220, type: "questions", target: 500 },
-  { id: "q1000", icon: "🎯", title: "1000 questions", desc: "Réponds à 1000 questions.", reward: 400, type: "questions", target: 1000 },
-
-  { id: "acc90_50", icon: "🎖️", title: "Précision 90%", desc: "Atteins 90% de précision sur au moins 50 réponses.", reward: 200, type: "accuracy", target: 90 },
-];
-
-function formatDateFR(iso) {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString("fr-FR");
-  } catch {
-    return "";
-  }
-}
-
-function dayKeyStamp(dayKey) {
-  const [dd, mm, yyyy] = String(dayKey).split("/").map((x) => parseInt(x, 10));
-  if (!dd || !mm || !yyyy) return 0;
-  return new Date(yyyy, mm - 1, dd, 12, 0, 0).getTime();
-}
-
-function rankForProfile(level) {
-  if (level >= 18) return { icon: "👑", label: "Roi des Maths" };
-  if (level >= 12) return { icon: "🧠", label: "Génie des fractions" };
-  if (level >= 6) return { icon: "📐", label: "Stratège" };
-  return { icon: "🧮", label: "Apprenti" };
-}
+import { SKINS, AVATARS, ACHIEVEMENTS } from "./config/gameData";
+import TopBar from "./components/TopBar";
+import QuestionCard from "./components/QuestionCard";
+import Shop from "./components/Shop";
+import Profile from "./components/Profile";
+import Settings from "./components/Settings";
+import { sha256Hex } from "./hooks/useAuth";
+import useAchievements from "./hooks/useAchievements";
+import useGameLogic, { awardLevelCoins, dayKeyStamp, xpToNext } from "./hooks/useGameLogic";
 
 /* ------------------------ Coach helpers ------------------------ */
 /* ------------------------ Login Streak Rewards (7 jours) ------------------------ */
@@ -428,6 +254,13 @@ export default function App() {
 
   const avatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
   const skin = SKINS.find((s) => s.id === skinId) ?? SKINS[0];
+  const { profileRank, xpNeed } = useGameLogic(level);
+  const { isUnlocked, unlockAchievement } = useAchievements({
+    achievements,
+    setAchievements,
+    awardCoins,
+    showBadgePopup,
+  });
 
   useEffect(() => {
     levelRef.current = level;
@@ -667,25 +500,6 @@ export default function App() {
     setCoachPop(null);
   }
 
-  function isUnlocked(achId) {
-    return !!achievements?.[achId]?.unlocked;
-  }
-
-  function unlockAchievement(a) {
-    if (isUnlocked(a.id)) return;
-    const iso = new Date().toISOString();
-    setAchievements((prev) => ({
-      ...(prev ?? {}),
-      [a.id]: { unlocked: true, date: iso },
-    }));
-    awardCoins(a.reward);
-    showBadgePopup({
-      icon: a.icon,
-      title: `Badge débloqué : ${a.title}`,
-      desc: `+${a.reward} coins • ${a.desc}`,
-      reward: a.reward,
-    });
-  }
 
   function checkAchievements(snapshot) {
     for (const a of ACHIEVEMENTS) {
@@ -986,7 +800,6 @@ export default function App() {
     if (!total) return 0;
     return Math.round((totalRight / total) * 100);
   }, [totalRight, totalWrong]);
-  const profileRank = useMemo(() => rankForProfile(level), [level]);
 
   const activity7 = useMemo(() => {
     const base = new Date();
@@ -1011,7 +824,6 @@ export default function App() {
     return st;
   }, [activity7]);
 
-  const xpNeed = xpToNext(level);
   const xpPct = Math.round((xp / xpNeed) * 100);
 
   const unlockedCount = useMemo(() => ACHIEVEMENTS.filter((a) => isUnlocked(a.id)).length, [achievements]);
@@ -1525,287 +1337,62 @@ export default function App() {
         </div>
       )}
 
-      <div className="topbar">
-        <div className="brand">
-          <div className="logo smooth" />
-          <div>
-            <div className="h1">
-              Math Adventure <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
-            </div>
-            <div className="sub">
-              Connecté : <b>{authUser.pseudoDisplay}</b> • Streak login : <b>{loginStreak}/7</b>
-            </div>
-            <div className="rankTag">
-              {profileRank.icon} {profileRank.label}
-            </div>
-          </div>
-        </div>
-
-        <div className="hud">
-          <div className="hudLeft">
-            <div className="coins chip coinChip smooth" title="Monnaie virtuelle">
-              <span className="coinDot" />
-              <span>{coins}</span>
-              <span className="chipLabel">coins</span>
-            </div>
-
-            <div className="chip smooth" title="Niveau">
-              <span className="chipIcon">⬆️</span>
-              <span>
-                Lv <b>{level}</b>
-              </span>
-            </div>
-
-            <div className="chip smooth" title="XP">
-              <span className="chipIcon">✨</span>
-              <span className="mono">
-                {xp}/{xpNeed}
-              </span>
-            </div>
-          </div>
-
-          <div className="hudPills" aria-label="informations">
-            <span className="pill">Q#{questionIndex}</span>
-            <span className="pill">Record: {bestScore}</span>
-            <span className="pill">
-              Badges: {unlockedCount}/{ACHIEVEMENTS.length}
-            </span>
-          </div>
-
-          <div className="hudRight">
-            <button className="btn smooth hover-lift press" onClick={() => setShowSettings(true)}>
-              Réglages
-            </button>
-            <button className="btn smooth hover-lift press" onClick={() => setShowProfile(true)}>
-              Profil
-            </button>
-            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setShowShop(true)}>
-              Boutique
-            </button>
-            <button className="btn smooth hover-lift press" onClick={doLogout} title="Se déconnecter">
-              Déconnexion
-            </button>
-          </div>
-        </div>
-      </div>
+      <TopBar
+        avatar={avatar}
+        authUser={authUser}
+        loginStreak={loginStreak}
+        profileRank={profileRank}
+        coins={coins}
+        level={level}
+        xp={`${xp}/${xpNeed}`}
+        questionIndex={questionIndex}
+        bestScore={bestScore}
+        unlockedCount={unlockedCount}
+        onOpenSettings={() => setShowSettings(true)}
+        onOpenProfile={() => setShowProfile(true)}
+        onOpenShop={() => setShowShop(true)}
+        onLogout={doLogout}
+      />
 
       <div className="grid">
-        <div className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""}`}>
-          <div className={`fx ${fx === "ok" ? "fxOk" : fx === "bad" ? "fxBad" : ""}`} />
-          <div className={`sparkles ${spark ? "on" : ""}`}>
-            {[...Array(10)].map((_, i) => (
-              <i
-                key={i}
-                style={{
-                  left: `${12 + i * 8}%`,
-                  top: `${62 - (i % 4) * 10}%`,
-                  animationDelay: `${i * 22}ms`,
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="cardTitle">
-            <span>Choisis la bonne réponse</span>
-            <span className="pill">explication puis Suivant</span>
-          </div>
-
-          <div className="filters" style={{ marginTop: 10 }}>
-            <select className="select smooth" value={modeId} onChange={(e) => setModeId(e.target.value)}>
-              {MODES.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.icon} {m.label}
-                </option>
-              ))}
-            </select>
-
-            <select className="select smooth" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
-              {GRADES.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
-
-            <select className="select smooth" value={diffId} onChange={(e) => setDiffId(e.target.value)}>
-              {DIFFS.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.label}
-                </option>
-              ))}
-            </select>
-
-            <button className="btn smooth hover-lift press" onClick={resetSession}>
-              Reset session
-            </button>
-            <span className="pill">Adaptatif: {adaptiveOn ? "ON" : "OFF"}</span>
-          </div>
-
-          <div className="barWrap" aria-label="xp">
-            <div className="bar" style={{ width: `${xpPct}%` }} />
-          </div>
-
-          <div className="miniHistoryWrap" aria-label="historique des 10 dernières réponses">
-            <div className="miniHistoryLabel">
-              10 dernières : <span className="miniHistoryCount">{sessionAnswered}/10</span>
-            </div>
-            <div className="miniHistory">
-              {[...Array(10)].map((_, i) => {
-                const item = lastAnswers[i];
-                const cls = item ? (item.ok ? "ok" : "bad") : "empty";
-                return <span key={i} className={`miniDot ${cls}`} />;
-              })}
-            </div>
-          </div>
-
-          <div className="heroQuestion" data-status={status}>
-            <div className="heroTop">
-              <div className="qPrompt">{q.prompt}</div>
-              <div className="heroMeta">
-                <span className="metaPill">
-                  <span className="metaIcon">🎯</span> Combo <b>{streak}</b>
-                </span>
-                <span className="metaPill">
-                  <span className="metaIcon">📊</span> Précision <b>{accuracy}%</b>
-                </span>
-              </div>
-            </div>
-
-            <div className="qRow">
-              {q.row.kind === "op" && (
-                <>
-                  <div className="bigOp">{q.row.a}</div>
-                  <div className="bigOp opSep">{q.row.op}</div>
-                  <div className="bigOp">{q.row.b}</div>
-                </>
-              )}
-
-              {q.row.kind === "fracCmp" && (
-                <>
-                  <Fraction n={q.row.aN} d={q.row.aD} />
-                  <div className="bigOp opSep">?</div>
-                  <Fraction n={q.row.bN} d={q.row.bD} />
-                </>
-              )}
-
-              {q.row.kind === "fracEq" && (
-                <>
-                  <Fraction n={q.row.aN} d={q.row.aD} />
-                  <div className="bigOp opSep">≡</div>
-                  <Fraction n={q.row.bN} d={q.row.bD} />
-                </>
-              )}
-
-              {q.row.kind === "fracOp" && (
-                <>
-                  <Fraction n={q.row.aN} d={q.row.aD} />
-                  <div className="bigOp opSep">{q.row.op}</div>
-                  <Fraction n={q.row.bN} d={q.row.bD} />
-                </>
-              )}
-
-              {q.row.kind === "fracSimp" && <Fraction n={q.row.n} d={q.row.d} />}
-
-              {q.row.kind === "fracVsNum" && (
-                <>
-                  <Fraction n={q.row.aN} d={q.row.aD} />
-                  <div className="bigOp opSep">?</div>
-                  <div className="bigOp">{q.row.numLabel}</div>
-                </>
-              )}
-
-              {q.row.kind === "storyFrac" && (
-                <>
-                  <Fraction n={q.row.aN} d={q.row.aD} />
-                  <div className="bigOp opSep">{q.row.op}</div>
-                  <Fraction n={q.row.bN} d={q.row.bD} />
-                </>
-              )}
-
-              {q.row.kind === "storyOp" && (
-                <>
-                  <div className="bigOp">{q.row.a}</div>
-                  <div className="bigOp opSep">{q.row.op}</div>
-                  <div className="bigOp">{q.row.b}</div>
-                </>
-              )}
-            </div>
-
-            <div className="learningRow">
-              <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
-                Indice {hintLevel + 1}/{hintList.length}
-                {canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} coin`})`}
-              </button>
-              <span className="small">Les indices aident, mais coutent des coins (sauf le 1er en facile).</span>
-            </div>
-            {hintMsg && !visibleHints.length && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
-
-            {!!visibleHints.length && (
-              <div className="hintBox">
-                {visibleHints.map((h, i) => (
-                  <div key={i} className="small">
-                    <b>Indice {i + 1}.</b> {h}
-                  </div>
-                ))}
-                {hintMsg && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
-              </div>
-            )}
-
-            <div className="controls">
-              {q.choices.map((c) => {
-                const isPressed = picked === c;
-                const stateCls = showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";
-                return (
-                  <button
-                    key={String(c)}
-                    className={`choice choiceCard smooth press ${stateCls}`}
-                    onClick={() => submit(c)}
-                    aria-pressed={isPressed}
-                    disabled={disableChoices}
-                  >
-                    <span className="choiceValue">{String(c)}</span>
-                  </button>
-                );
-              })}
-
-              <button className="btn btnPrimary smooth hover-lift press" onClick={goNext} disabled={!showExplain}>
-                Suivant
-              </button>
-            </div>
-
-            {showExplain && (
-              <div className={`toast ${status === "ok" ? "ok" : "bad"}`}>
-                <div>
-                  {status === "ok" ? <strong>✅ Bien joué !</strong> : <strong>❌ Oups…</strong>}
-                  <div className="sub" style={{ marginTop: 4 }}>
-                    Bonne réponse : <b>{String(q.correct)}</b>
-                  </div>
-                  <div className="sub" style={{ marginTop: 8 }}>
-                    {explain}
-                  </div>
-                  {status === "bad" && methodSteps.length > 0 && (
-                    <div style={{ marginTop: 10 }}>
-                      <button className="btn smooth hover-lift press" onClick={() => setShowMethod((v) => !v)}>
-                        {showMethod ? "Masquer la methode" : "Voir la methode"}
-                      </button>
-                    </div>
-                  )}
-                  {status === "bad" && showMethod && methodSteps.length > 0 && (
-                    <div className="methodBox">
-                      {methodSteps.map((s, i) => (
-                        <div key={i} className="small">
-                          {s}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <span className="pill">Combo: {streak}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
+        <QuestionCard
+          status={status}
+          fx={fx}
+          spark={spark}
+          modeId={modeId}
+          setModeId={setModeId}
+          gradeId={gradeId}
+          setGradeId={setGradeId}
+          diffId={diffId}
+          setDiffId={setDiffId}
+          GRADES={GRADES}
+          DIFFS={DIFFS}
+          MODES={MODES}
+          resetSession={resetSession}
+          adaptiveOn={adaptiveOn}
+          xpPct={xpPct}
+          sessionAnswered={sessionAnswered}
+          lastAnswers={lastAnswers}
+          q={q}
+          streak={streak}
+          accuracy={accuracy}
+          hintLevel={hintLevel}
+          hintList={hintList}
+          canAskHint={canAskHint}
+          getHintCost={getHintCost}
+          useHint={useHint}
+          hintMsg={hintMsg}
+          visibleHints={visibleHints}
+          picked={picked}
+          showExplain={showExplain}
+          submit={submit}
+          disableChoices={disableChoices}
+          goNext={goNext}
+          explain={explain}
+          methodSteps={methodSteps}
+          showMethod={showMethod}
+          setShowMethod={setShowMethod}
+        />
         <div className="card smooth">
           <div className="cardTitle">
             <span>Tableau de bord</span>
@@ -1940,342 +1527,76 @@ export default function App() {
         </div>
       </div>
 
-      {/* Boutique */}
-      {showShop && (
-        <Modal title="Boutique — Skins & Avatars" onClose={() => setShowShop(false)}>
-          <div className="tabs">
-            <button className={`btn smooth hover-lift press ${shopTab === "skins" ? "btnPrimary" : ""}`} onClick={() => setShopTab("skins")}>
-              🎨 Skins
-            </button>
-            <button className={`btn smooth hover-lift press ${shopTab === "avatars" ? "btnPrimary" : ""}`} onClick={() => setShopTab("avatars")}>
-              🧑‍🚀 Avatars
-            </button>
-            <div className="coins" style={{ marginLeft: "auto" }}>
-              <span className="coinDot" />
-              <span>{coins} coins</span>
-            </div>
-          </div>
-
-          {shopTab === "skins" && (
-            <>
-              <div className="small" style={{ marginBottom: 12 }}>
-                Achète des skins avec tes coins. Ensuite tu peux les équiper.
-              </div>
-
-              <div className="shopGrid">
-                {SKINS.map((s) => {
-                  const owned = ownedSkins.includes(s.id);
-                  const equipped = skinId === s.id;
-                  return (
-                    <div key={s.id} className="shopCard smooth hover-lift">
-                      <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
-                      <div className="shopRow">
-                        <div className="shopLeft">
-                          <div className="shopTitle">
-                            {s.name} {s.animated ? "✨" : ""}
-                          </div>
-                          <div className="small">{s.desc}</div>
-                        </div>
-                        <div className="shopRight">
-                          <span className="price">
-                            <span className="coinDot" /> {s.price}
-                          </span>
-                          {owned ? (
-                            <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipSkin(s.id)}>
-                              {equipped ? "Équipé" : "Équiper"}
-                            </button>
-                          ) : (
-                            <button className="btn btnPrimary smooth hover-lift press" disabled={!canBuy(s.price)} onClick={() => buySkin(s)}>
-                              Acheter
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      {!owned && !canBuy(s.price) && <div className="small" style={{ marginTop: 10 }}>Pas assez de coins 👀</div>}
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          {shopTab === "avatars" && (
-            <>
-              <div className="small" style={{ marginBottom: 12 }}>
-                Achète et équipe un avatar (affiché dans le header).
-              </div>
-
-              <div className="shopGrid">
-                {AVATARS.map((a) => {
-                  const owned = ownedAvatars.includes(a.id);
-                  const equipped = avatarId === a.id;
-                  const isExclusive = a.rarity === "Exclusif";
-
-                  return (
-                    <div key={a.id} className={`shopCard smooth hover-lift ${isExclusive ? "premium" : ""}`}>
-                      <div className="shopRibbonWrap">{isExclusive && <div className="ribbon">Exclusif</div>}</div>
-
-                      <div className="shopRow">
-                        <div className="shopLeft">
-                          <div className="avatarBig">{a.emoji}</div>
-                          <div className="shopTitle">{a.name}</div>
-                          <div style={{ marginTop: 6, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                            <span className="rarity">{a.rarity}</span>
-                            <span className="small">Cosmétique</span>
-                          </div>
-                        </div>
-
-                        <div className="shopRight">
-                          <span className="price">
-                            <span className="coinDot" /> {a.price}
-                          </span>
-
-                          {owned ? (
-                            <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipAvatar(a.id)}>
-                              {equipped ? "Équipé" : "Équiper"}
-                            </button>
-                          ) : (
-                            <button className="btn btnPrimary smooth hover-lift press" disabled={!canBuy(a.price)} onClick={() => buyAvatar(a)}>
-                              Acheter
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {!owned && !canBuy(a.price) && <div className="small" style={{ marginTop: 10 }}>Continue à jouer pour gagner des coins 💰</div>}
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </Modal>
-      )}
-
+      <Shop
+        show={showShop}
+        onClose={() => setShowShop(false)}
+        shopTab={shopTab}
+        setShopTab={setShopTab}
+        coins={coins}
+        SKINS={SKINS}
+        AVATARS={AVATARS}
+        ownedSkins={ownedSkins}
+        skinId={skinId}
+        canBuy={canBuy}
+        buySkin={buySkin}
+        equipSkin={equipSkin}
+        ownedAvatars={ownedAvatars}
+        avatarId={avatarId}
+        buyAvatar={buyAvatar}
+        equipAvatar={equipAvatar}
+      />
       {/* Profil */}
-      {showProfile && (
-        <Modal title="Profil — Stats & Badges" onClose={() => setShowProfile(false)}>
-          <div className="tabs">
-            <button className={`btn smooth hover-lift press ${profileTab === "stats" ? "btnPrimary" : ""}`} onClick={() => setProfileTab("stats")}>
-              📊 Stats
-            </button>
-            <button className={`btn smooth hover-lift press ${profileTab === "badges" ? "btnPrimary" : ""}`} onClick={() => setProfileTab("badges")}>
-              🏅 Badges
-            </button>
-            <div className="coins" style={{ marginLeft: "auto" }}>
-              <span className="coinDot" />
-              <span>{coins} coins</span>
-            </div>
-          </div>
-
-          {profileTab === "stats" && (
-            <>
-              <div className="toast" style={{ marginTop: 0 }}>
-                <div>
-                  <strong>Global</strong>
-                  <div className="sub" style={{ marginTop: 8 }}>
-                    Joueur : <b>{authUser.pseudoDisplay}</b>
-                    <br />
-                    Niveau : <b>{level}</b> • Coins : <b>{coins}</b> • Streak login : <b>{loginStreak}/7</b>
-                    <br />
-                    Bonnes : <b>{totalRight}</b> • Erreurs : <b>{totalWrong}</b> • Précision : <b>{accuracy}%</b>
-                    <br />
-                    Questions : <b>{totalQuestions}</b> • Meilleur combo : <b>{bestStreak}</b>
-                  </div>
-                </div>
-              </div>
-
-              <div className="small" style={{ marginTop: 12 }}>
-                Records par classe → difficulté → mode (best score session):
-              </div>
-
-              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                {GRADES.map((g) => (
-                  <div key={g.id} className="shopCard">
-                    <div style={{ fontWeight: 1100, marginBottom: 6 }}>{g.label}</div>
-                    {DIFFS.map((d) => (
-                      <div key={d.id} style={{ marginBottom: 10 }}>
-                        <div className="small" style={{ marginBottom: 6 }}>
-                          • {d.label}
-                        </div>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
-                          {MODES.map((m) => {
-                            const v = records?.[g.id]?.[d.id]?.[m.id]?.bestScore ?? 0;
-                            return (
-                              <div key={m.id} className="statBox" style={{ padding: 10 }}>
-                                <div className="statLabel">{m.label}</div>
-                                <div className="statValue" style={{ fontSize: 18 }}>
-                                  {v}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {profileTab === "badges" && (
-            <>
-              <div className="toast" style={{ marginTop: 0 }}>
-                <div>
-                  <strong>Badges</strong>
-                  <div className="sub" style={{ marginTop: 8 }}>
-                    Débloqués : <b>{unlockedCount}</b> / <b>{ACHIEVEMENTS.length}</b>
-                    <br />
-                    Astuce : vise les combos 🔥 et la précision 🎖️
-                  </div>
-                </div>
-                <span className="pill">+ coins</span>
-              </div>
-
-              <div className="badgeGrid">
-                {ACHIEVEMENTS.map((a) => {
-                  const unlocked = isUnlocked(a.id);
-                  const dateIso = achievements?.[a.id]?.date;
-                  return (
-                    <div key={a.id} className={`badgeCard smooth hover-lift ${unlocked ? "" : "badgeLocked"}`}>
-                      <div className="badgeIcon">{unlocked ? a.icon : "🔒"}</div>
-                      <div style={{ flex: 1 }}>
-                        <div className="badgeTitle">{unlocked ? a.title : "Badge verrouillé"}</div>
-                        <div className="badgeDesc">{unlocked ? a.desc : "Continue à jouer pour le débloquer."}</div>
-
-                        <div className="badgeMeta">
-                          <span className="badgeProgress">🎁 +{a.reward} coins</span>
-                          {unlocked && dateIso && <span className="badgeProgress">📅 {formatDateFR(dateIso)}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </Modal>
-      )}
-
-      {/* Réglages */}
-      {showSettings && (
-        <Modal title="Réglages" onClose={() => setShowSettings(false)}>
-          <div className="shopCard">
-            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Audio & vibrations</div>
-
-            <div style={{ display: "grid", gap: 10 }}>
-              <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-                <span>Sons</span>
-                <input type="checkbox" checked={audioOn} onChange={(e) => setAudioOn(e.target.checked)} />
-              </label>
-
-              <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-                <span>Vibrations (mobile)</span>
-                <input type="checkbox" checked={vibrateOn} onChange={(e) => setVibrateOn(e.target.checked)} />
-              </label>
-            </div>
-          </div>
-
-          <div className="shopCard" style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Rythme</div>
-
-            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-              <span>Auto-suivant après explication</span>
-              <input type="checkbox" checked={autoNextOn} onChange={(e) => setAutoNextOn(e.target.checked)} />
-            </label>
-
-            <div className="small" style={{ marginTop: 8 }}>Délai (ms) : {autoNextMs}</div>
-
-            <input
-              type="range"
-              min={600}
-              max={6000}
-              step={200}
-              value={autoNextMs}
-              onChange={(e) => setAutoNextMs(Number(e.target.value))}
-              style={{ width: "100%", marginTop: 8 }}
-            />
-          </div>
-
-          <div className="shopCard" style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Accessibilité</div>
-
-            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-              <span>Réduire les animations</span>
-              <input type="checkbox" checked={reduceMotion} onChange={(e) => setReduceMotion(e.target.checked)} />
-            </label>
-
-            <div className="small" style={{ marginTop: 8 }}>
-              Skins animés : {skin.animated ? <b>disponible</b> : <b>skin statique</b>} (désactivé si “réduire” activé)
-            </div>
-          </div>
-
-          <div className="shopCard" style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Apprentissage adaptatif</div>
-
-            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-              <span>Activer le mode adaptatif</span>
-              <input type="checkbox" checked={adaptiveOn} onChange={(e) => setAdaptiveOn(e.target.checked)} />
-            </label>
-
-            <div className="small" style={{ marginTop: 8 }}>
-              Sur une fenetre de 20 reponses : plus de 85% =&gt; difficulte +1, moins de 55% =&gt; difficulte -1 + entrainement cible.
-            </div>
-          </div>
-
-          <div className="shopCard" style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Jeunes joueurs</div>
-
-            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-              <span>Sans malus (pas de -1 coin en erreur)</span>
-              <input type="checkbox" checked={noPenaltyOnWrong} onChange={(e) => setNoPenaltyOnWrong(e.target.checked)} />
-            </label>
-
-            <div className="small" style={{ marginTop: 8 }}>
-              Recommande pour CP/CE1: l'erreur ne retire aucun coin.
-            </div>
-          </div>
-
-          {/* ✅ Sécurité : changement de mot de passe */}
-          <div className="shopCard" style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Sécurité</div>
-            <div className="small" style={{ marginBottom: 10 }}>
-              Changer ton mot de passe (stocké hashé en local).
-            </div>
-
-            <div style={{ display: "grid", gap: 10, maxWidth: 520 }}>
-              <input
-                className="input smooth"
-                placeholder="Mot de passe actuel"
-                type="password"
-                value={pwCurrent}
-                onChange={(e) => setPwCurrent(e.target.value)}
-              />
-              <input
-                className="input smooth"
-                placeholder="Nouveau mot de passe"
-                type="password"
-                value={pwChangeNew}
-                onChange={(e) => setPwChangeNew(e.target.value)}
-              />
-              <input
-                className="input smooth"
-                placeholder="Confirmer nouveau mot de passe"
-                type="password"
-                value={pwChangeNew2}
-                onChange={(e) => setPwChangeNew2(e.target.value)}
-              />
-
-              {pwChangeMsg && <div className={pwChangeMsg.startsWith("✅") ? "authMsg authMsgOk" : "authMsg"}>{pwChangeMsg}</div>}
-
-              <button className="btn btnPrimary smooth hover-lift press" onClick={changePasswordLoggedIn}>
-                Mettre à jour
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      <Profile
+        show={showProfile}
+        onClose={() => setShowProfile(false)}
+        profileTab={profileTab}
+        setProfileTab={setProfileTab}
+        coins={coins}
+        authUser={authUser}
+        level={level}
+        loginStreak={loginStreak}
+        totalRight={totalRight}
+        totalWrong={totalWrong}
+        accuracy={accuracy}
+        totalQuestions={totalQuestions}
+        bestStreak={bestStreak}
+        GRADES={GRADES}
+        DIFFS={DIFFS}
+        MODES={MODES}
+        records={records}
+        unlockedCount={unlockedCount}
+        ACHIEVEMENTS={ACHIEVEMENTS}
+        isUnlocked={isUnlocked}
+        achievements={achievements}
+      />
+      <Settings
+        show={showSettings}
+        onClose={() => setShowSettings(false)}
+        audioOn={audioOn}
+        setAudioOn={setAudioOn}
+        vibrateOn={vibrateOn}
+        setVibrateOn={setVibrateOn}
+        autoNextOn={autoNextOn}
+        setAutoNextOn={setAutoNextOn}
+        autoNextMs={autoNextMs}
+        setAutoNextMs={setAutoNextMs}
+        reduceMotion={reduceMotion}
+        setReduceMotion={setReduceMotion}
+        skinAnimated={skin.animated}
+        adaptiveOn={adaptiveOn}
+        setAdaptiveOn={setAdaptiveOn}
+        noPenaltyOnWrong={noPenaltyOnWrong}
+        setNoPenaltyOnWrong={setNoPenaltyOnWrong}
+        pwCurrent={pwCurrent}
+        setPwCurrent={setPwCurrent}
+        pwChangeNew={pwChangeNew}
+        setPwChangeNew={setPwChangeNew}
+        pwChangeNew2={pwChangeNew2}
+        setPwChangeNew2={setPwChangeNew2}
+        pwChangeMsg={pwChangeMsg}
+        changePasswordLoggedIn={changePasswordLoggedIn}
+      />
     </div>
   );
 }
+
