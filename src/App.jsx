@@ -22,6 +22,7 @@ import {
 } from "./storage";
 import {
   GRADES,
+  WORLDS,
   DIFFS,
   MODES,
   DAILY_CHALLENGES,
@@ -148,6 +149,23 @@ function rollChestReward({ ownedAvatars, ownedSkins }) {
   return { kind: "coins", coins, text: `+${coins} coins` };
 }
 
+const WORLD_LEVEL_MAX = 30;
+const WORLD_STEP_CORRECT = 3;
+
+function defaultWorldProgress() {
+  const out = {};
+  for (const w of WORLDS) out[w.id] = { level: 1, progress: 0, bossDone: false, badgeWon: false };
+  return out;
+}
+
+function normalizeWorldProgress(saved) {
+  return { ...defaultWorldProgress(), ...(saved ?? {}) };
+}
+
+function worldIdFromGrade(gradeId) {
+  return WORLDS.find((w) => w.gradeId === gradeId)?.id ?? "ce1";
+}
+
 /* ------------------------ App ------------------------ */
 export default function App() {
   const qHistoryRef = useRef([]);
@@ -191,6 +209,8 @@ export default function App() {
     if (!isLoggedIn) {
       return {
         skinId: "neon-night",
+        selectedWorldId: "ce1",
+        worldProgress: defaultWorldProgress(),
         gradeId: "CE1",
         diffId: "moyen",
         modeId: "add",
@@ -231,8 +251,11 @@ export default function App() {
     }
 
     const saved = safeLSGet(userKey(authUser.pseudoKey), null);
+    const selectedWorldId = saved?.selectedWorldId ?? worldIdFromGrade(saved?.gradeId ?? "CE1");
     return {
       skinId: saved?.skinId ?? "neon-night",
+      selectedWorldId,
+      worldProgress: normalizeWorldProgress(saved?.worldProgress),
       gradeId: saved?.gradeId ?? "CE1",
       diffId: saved?.diffId ?? "moyen",
       modeId: saved?.modeId ?? "add",
@@ -274,6 +297,8 @@ export default function App() {
   }, [isLoggedIn, authUser?.pseudoKey]);
 
   const [skinId, setSkinId] = useState(initial.skinId);
+  const [selectedWorldId, setSelectedWorldId] = useState(initial.selectedWorldId);
+  const [worldProgress, setWorldProgress] = useState(initial.worldProgress);
   const [gradeId, setGradeId] = useState(initial.gradeId);
   const [diffId, setDiffId] = useState(initial.diffId);
   const [modeId, setModeId] = useState(initial.modeId);
@@ -348,6 +373,8 @@ export default function App() {
   const [bossActive, setBossActive] = useState(false);
   const [bossRemaining, setBossRemaining] = useState(0);
   const [bossTimeLeft, setBossTimeLeft] = useState(0);
+  const [worldBossActive, setWorldBossActive] = useState(false);
+  const [worldBossRemaining, setWorldBossRemaining] = useState(0);
 
   const [isLocked, setIsLocked] = useState(false);
 
@@ -373,6 +400,11 @@ export default function App() {
 
   const avatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
   const skin = SKINS.find((s) => s.id === skinId) ?? SKINS[0];
+  const currentWorld = WORLDS.find((w) => w.id === selectedWorldId) ?? WORLDS[1];
+  const currentWorldState = worldProgress?.[currentWorld.id] ?? { level: 1, progress: 0, bossDone: false, badgeWon: false };
+  const worldLevel = clamp(currentWorldState.level ?? 1, 1, WORLD_LEVEL_MAX);
+  const worldBossDone = !!currentWorldState.bossDone;
+  const worldBossReady = worldLevel >= WORLD_LEVEL_MAX && !worldBossDone && !worldBossActive;
   const cloudEnabled = isCloudEnabled();
   const { profileRank, xpNeed } = useGameLogic(level);
   const { isUnlocked, unlockAchievement } = useAchievements({
@@ -404,11 +436,21 @@ export default function App() {
     document.body.classList.toggle("anim-skin", on);
   }, [skin.animated, reduceMotion]);
 
+  useEffect(() => {
+    const world = WORLDS.find((w) => w.id === selectedWorldId);
+    if (!world) return;
+    if (gradeId !== world.gradeId) setGradeId(world.gradeId);
+    setWorldBossActive(false);
+    setWorldBossRemaining(0);
+  }, [selectedWorldId, gradeId]);
+
   /* ------------------------ Save per-user ------------------------ */
   useEffect(() => {
     if (!isLoggedIn) return;
     const nextSave = {
       skinId,
+      selectedWorldId,
+      worldProgress,
       gradeId,
       diffId,
       modeId,
@@ -460,6 +502,8 @@ export default function App() {
     authUser?.pseudoDisplay,
     cloudEnabled,
     skinId,
+    selectedWorldId,
+    worldProgress,
     gradeId,
     diffId,
     modeId,
@@ -729,7 +773,7 @@ export default function App() {
 
   function newQuestion(resetPick = false) {
     clearAutoTimer();
-    const liveDiff = bossActive ? "difficile" : diffId;
+    const liveDiff = bossActive || worldBossActive ? "difficile" : diffId;
     const qNew = makeQuestion(modeId, gradeId, liveDiff, qHistoryRef);
     pushHistory(qNew, liveDiff);
 
@@ -756,6 +800,8 @@ export default function App() {
     setBossActive(false);
     setBossRemaining(0);
     setBossTimeLeft(0);
+    setWorldBossActive(false);
+    setWorldBossRemaining(0);
     setScore(0);
     setStreak(0);
     setQuestionIndex(1);
@@ -771,6 +817,20 @@ export default function App() {
       return o;
     });
     setCoachPop(null);
+  }
+
+  function startWorldBoss() {
+    if (!worldBossReady) return;
+    setWorldBossActive(true);
+    setWorldBossRemaining(3);
+    playBeep("level", audioOn);
+    vibrate(35);
+    showCoachPopup({
+      title: `${currentWorld.icon} Boss final`,
+      lines: [`${currentWorld.name}`, "3 questions difficiles pour valider le monde."],
+      hint: "Reussis les 3 pour debloquer le badge special.",
+    });
+    newQuestion(true);
   }
 
   function startRush() {
@@ -799,6 +859,8 @@ export default function App() {
     setBossActive(false);
     setBossRemaining(0);
     setBossTimeLeft(0);
+    setWorldBossActive(false);
+    setWorldBossRemaining(0);
     setShowExplain(false);
     setIsLocked(false);
     newQuestion(true);
@@ -1022,7 +1084,8 @@ export default function App() {
     const isCorrect = choice === q.correct;
     const isRushNow = rushOn && rushTimeLeft > 0;
     const isBossNow = bossActive;
-    const fastMode = isRushNow || isBossNow;
+    const isWorldBossNow = worldBossActive;
+    const fastMode = isRushNow || isBossNow || isWorldBossNow;
 
     const nextTotalQuestions = totalQuestions + 1;
     const nextTotalRight = totalRight + (isCorrect ? 1 : 0);
@@ -1048,7 +1111,7 @@ export default function App() {
 
     setTotalQuestions((x) => x + 1);
 
-    if (!bossActive && nextTotalQuestions > 0 && nextTotalQuestions % 10 === 0) {
+    if (!bossActive && !worldBossActive && nextTotalQuestions > 0 && nextTotalQuestions % 10 === 0) {
       setBossActive(true);
       setBossRemaining(3);
       setBossTimeLeft(10);
@@ -1098,6 +1161,58 @@ export default function App() {
 
     setLeague((prev) => updateLeagueAfterAnswer(prev, { isCorrect, scoreAdd: nextScoreAdd, nextStreak }));
 
+    if (isWorldBossNow) {
+      if (isCorrect) {
+        setWorldBossRemaining((n) => {
+          const next = Math.max(0, n - 1);
+          if (next === 0) {
+            setWorldBossActive(false);
+            setWorldProgress((prev) => {
+              const base = normalizeWorldProgress(prev);
+              base[currentWorld.id] = { ...base[currentWorld.id], bossDone: true, badgeWon: true };
+              return base;
+            });
+            awardCoins(180);
+            awardXp(220);
+            showBadgePopup({
+              icon: currentWorld.icon,
+              title: `Monde complete: ${currentWorld.name}`,
+              desc: `${currentWorld.badge} debloque • +180 coins • +220 XP`,
+              reward: 180,
+            });
+          }
+          return next;
+        });
+      } else {
+        setWorldBossActive(false);
+        setWorldBossRemaining(0);
+        showCoachPopup({
+          title: `Boss final rate`,
+          lines: [`${currentWorld.name}: essaie encore.`],
+          hint: "Reviens plus fort, le badge est proche.",
+        });
+      }
+    } else if (isCorrect && !worldBossDone) {
+      setWorldProgress((prev) => {
+        const base = normalizeWorldProgress(prev);
+        const cur = base[currentWorld.id] ?? { level: 1, progress: 0, bossDone: false, badgeWon: false };
+        if (cur.level >= WORLD_LEVEL_MAX) return base;
+        let nextLevel = cur.level;
+        let nextProgress = (cur.progress ?? 0) + 1;
+        if (nextProgress >= WORLD_STEP_CORRECT) {
+          nextLevel = Math.min(WORLD_LEVEL_MAX, nextLevel + 1);
+          nextProgress = 0;
+          showCoachPopup({
+            title: `${currentWorld.icon} ${currentWorld.name}`,
+            lines: [`Niveau ${nextLevel}/${WORLD_LEVEL_MAX}`],
+            hint: nextLevel >= WORLD_LEVEL_MAX ? "Boss final pret a lancer." : "Continue l'aventure.",
+          });
+        }
+        base[currentWorld.id] = { ...cur, level: nextLevel, progress: nextProgress };
+        return base;
+      });
+    }
+
     if (isCorrect) {
       setChestProgress((p) => {
         const next = (p ?? 0) + 1;
@@ -1140,7 +1255,7 @@ export default function App() {
         return ns;
       });
 
-      awardXp((10 + Math.min(8, streak)) * (isBossNow ? 3 : 1));
+      awardXp((10 + Math.min(8, streak)) * (isBossNow || isWorldBossNow ? 3 : 1));
 
       if (!fastMode) {
         setExplain(q.explain(choice));
@@ -1443,6 +1558,8 @@ export default function App() {
 
     const starterSave = {
       skinId: "neon-night",
+      selectedWorldId: "ce1",
+      worldProgress: defaultWorldProgress(),
       gradeId: "CE1",
       diffId: "moyen",
       modeId: "add",
@@ -1901,11 +2018,14 @@ export default function App() {
           spark={spark}
           modeId={modeId}
           setModeId={setModeId}
-          gradeId={gradeId}
-          setGradeId={setGradeId}
+          selectedWorldId={selectedWorldId}
+          setSelectedWorldId={setSelectedWorldId}
+          worlds={WORLDS}
+          worldLevel={worldLevel}
+          worldBossReady={worldBossReady}
+          worldBossDone={worldBossDone}
           diffId={diffId}
           setDiffId={setDiffId}
-          GRADES={GRADES}
           DIFFS={DIFFS}
           MODES={MODES}
           resetSession={resetSession}
@@ -1969,6 +2089,30 @@ export default function App() {
                 Derniere connexion : <b>{lastLoginDayKey ?? "-"}</b>
               </div>
             </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>
+                {currentWorld.icon} {currentWorld.name}
+              </strong>
+              <div className="small" style={{ marginTop: 6 }}>
+                Progression: <b>Niveau {worldLevel}/30</b>
+                {!worldBossDone && worldLevel < 30 ? ` • ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Pret" : "Verrouille"}</b>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Badge special: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non debloque"}</b>
+              </div>
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button className="btn btnPrimary smooth hover-lift press" onClick={startWorldBoss} disabled={!worldBossReady}>
+                  Lancer boss final
+                </button>
+              </div>
+            </div>
+            <span className="pill">{worldBossDone ? "Badge acquis" : "Aventure"}</span>
           </div>
 
           <div className="toast" style={{ marginTop: 12 }}>

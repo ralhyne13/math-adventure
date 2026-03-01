@@ -13,6 +13,14 @@ export const GRADES = [
   { id: "3e", label: "3e" },
 ];
 
+export const WORLDS = [
+  { id: "cp", gradeId: "CP", name: "Monde CP", icon: "🌳", badge: "Badge Foret" },
+  { id: "ce1", gradeId: "CE1", name: "Monde CE1", icon: "🏰", badge: "Badge Chateau" },
+  { id: "ce2", gradeId: "CE2", name: "Monde CE2", icon: "🏔", badge: "Badge Montagne" },
+  { id: "cm1", gradeId: "CM1", name: "Monde CM1", icon: "🌋", badge: "Badge Volcan" },
+  { id: "cm2", gradeId: "CM2", name: "Monde CM2", icon: "🚀", badge: "Badge Fusee" },
+];
+
 export const DIFFS = [
   { id: "facile", label: "Facile" },
   { id: "moyen", label: "Moyen" },

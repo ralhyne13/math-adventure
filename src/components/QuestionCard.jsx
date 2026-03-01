@@ -6,11 +6,14 @@ export default function QuestionCard({
   spark,
   modeId,
   setModeId,
-  gradeId,
-  setGradeId,
+  selectedWorldId,
+  setSelectedWorldId,
+  worlds,
+  worldLevel,
+  worldBossReady,
+  worldBossDone,
   diffId,
   setDiffId,
-  GRADES,
   DIFFS,
   MODES,
   resetSession,
@@ -72,10 +75,10 @@ export default function QuestionCard({
             </option>
           ))}
         </select>
-        <select className="select smooth" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
-          {GRADES.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.label}
+        <select className="select smooth" value={selectedWorldId} onChange={(e) => setSelectedWorldId(e.target.value)}>
+          {worlds.map((w) => (
+            <option key={w.id} value={w.id}>
+              {w.icon} {w.name}
             </option>
           ))}
         </select>
@@ -90,6 +93,8 @@ export default function QuestionCard({
           Reset session
         </button>
         <span className="pill">Adaptatif: {adaptiveOn ? "ON" : "OFF"}</span>
+        <span className="pill">Niveau monde: {worldLevel}/30</span>
+        {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final pret</span> : null}
       </div>
 
       <div className="barWrap" aria-label="xp">
