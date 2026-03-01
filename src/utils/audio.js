@@ -20,6 +20,16 @@ export function playBeep(kind = "ok", enabled = true) {
       g.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
       o.start(now);
       o.stop(now + 0.18);
+    } else if (kind === "chest") {
+      o.type = "triangle";
+      o.frequency.setValueAtTime(460, now);
+      o.frequency.exponentialRampToValueAtTime(690, now + 0.09);
+      o.frequency.exponentialRampToValueAtTime(980, now + 0.18);
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(0.24, now + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      o.start(now);
+      o.stop(now + 0.3);
     } else if (kind === "level") {
       o.type = "triangle";
       o.frequency.setValueAtTime(520, now);

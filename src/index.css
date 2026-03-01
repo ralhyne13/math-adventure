@@ -917,6 +917,21 @@ body.reduce-motion .choice:hover::after{ animation:none !important; opacity:0; }
     radial-gradient(420px 220px at 50% 40%, color-mix(in srgb, var(--danger) 14%, transparent), transparent 70%);
   animation: fxFlash 700ms var(--ease-out) 1;
 }
+.fx.effect-gold-burst.fxOk{
+  background:
+    radial-gradient(420px 220px at 50% 40%, rgba(251,191,36,.22), transparent 70%),
+    radial-gradient(360px 200px at 30% 70%, rgba(245,158,11,.20), transparent 70%);
+}
+.fx.effect-electric-aura.fxOk{
+  background:
+    radial-gradient(420px 220px at 50% 40%, rgba(56,189,248,.24), transparent 70%),
+    radial-gradient(360px 200px at 30% 70%, rgba(96,165,250,.20), transparent 70%);
+}
+.fx.effect-prism-particles.fxOk{
+  background:
+    radial-gradient(420px 220px at 50% 40%, rgba(236,72,153,.20), transparent 70%),
+    radial-gradient(360px 200px at 30% 70%, rgba(59,130,246,.20), transparent 70%);
+}
 @keyframes fxFlash{ 0%{opacity:0} 15%{opacity:1} 100%{opacity:0} }
 
 .sparkles{ position:absolute; inset:-20px; pointer-events:none; opacity:0; }
@@ -929,6 +944,18 @@ body.reduce-motion .choice:hover::after{ animation:none !important; opacity:0; }
   background: linear-gradient(135deg, rgba(255,255,255,.9), color-mix(in srgb, var(--good) 60%, rgba(255,255,255,.2)));
   box-shadow: 0 10px 24px rgba(0,0,0,.25);
   animation: pop 800ms var(--ease-out) 1;
+}
+.sparkles.effect-gold-burst i{
+  background: linear-gradient(135deg, #fde68a, #f59e0b);
+  box-shadow: 0 10px 24px rgba(245,158,11,.35);
+}
+.sparkles.effect-electric-aura i{
+  background: linear-gradient(135deg, #93c5fd, #22d3ee);
+  box-shadow: 0 10px 24px rgba(34,211,238,.32);
+}
+.sparkles.effect-prism-particles i{
+  background: linear-gradient(135deg, #f9a8d4, #a78bfa);
+  box-shadow: 0 10px 24px rgba(167,139,250,.32);
 }
 @keyframes pop{
   0%{ transform: translateY(10px) scale(.6); opacity:0; }
@@ -1008,6 +1035,83 @@ body.reduce-motion .choice:hover::after{ animation:none !important; opacity:0; }
 }
 .badgePopTitle{ font-weight: 1100; }
 .badgePopSub{ margin-top: 4px; font-size: 12px; color: var(--muted); }
+
+.chestPop{
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px;
+  background: rgba(0,0,0,.56);
+}
+.chestPopInner{
+  width: min(520px, 100%);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
+  box-shadow: 0 24px 90px rgba(0,0,0,.62);
+  padding: 18px 16px;
+  text-align:center;
+  position: relative;
+  overflow:hidden;
+  animation: chestIn 320ms var(--ease-out) 1;
+}
+.chestPopInner.chest-common{
+  background: linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
+}
+.chestPopInner.chest-rare{
+  background:
+    radial-gradient(420px 180px at 50% 0%, rgba(59,130,246,.18), transparent 70%),
+    linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
+}
+.chestPopInner.chest-epic{
+  background:
+    radial-gradient(420px 180px at 50% 0%, rgba(168,85,247,.20), transparent 70%),
+    linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
+}
+.chestPopInner.chest-legendary{
+  background:
+    radial-gradient(420px 180px at 50% 0%, rgba(245,158,11,.26), transparent 70%),
+    linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
+}
+.chestBurst{
+  position:absolute;
+  inset:-20%;
+  pointer-events:none;
+  background: radial-gradient(240px 140px at 50% 32%, rgba(255,255,255,.22), transparent 70%);
+  opacity:.7;
+  animation: chestBurst 640ms var(--ease-out) 1;
+}
+.chestIconBig{
+  width: 86px;
+  height: 86px;
+  margin: 4px auto 10px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.20);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 42px;
+  line-height: 1;
+}
+.chestPopTitle{ font-size: 21px; font-weight: 1200; }
+.chestPopSub{ margin-top: 8px; color: rgba(234,240,255,.90); }
+@keyframes chestIn{
+  0%{ transform: translateY(12px) scale(.98); opacity:0; }
+  100%{ transform: translateY(0) scale(1); opacity:1; }
+}
+@keyframes chestBurst{
+  0%{ opacity:0; transform:scale(.86); }
+  20%{ opacity:.85; }
+  100%{ opacity:0; transform:scale(1.05); }
+}
+body.reduce-motion .chestPopInner,
+body.reduce-motion .chestBurst{
+  animation:none !important;
+}
 
 /* popups */
 .levelPop{

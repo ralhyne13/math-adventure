@@ -53,11 +53,12 @@ export default function QuestionCard({
   bossProfile,
   bossHitFx,
   bossAttackFx,
+  answerEffectId,
 }) {
   return (
     <div className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${bossHitFx ? "bossHitFx" : ""}`}>
-      <div className={`fx ${fx === "ok" ? "fxOk" : fx === "bad" ? "fxBad" : ""}`} />
-      <div className={`sparkles ${spark ? "on" : ""}`}>
+      <div className={`fx effect-${answerEffectId} ${fx === "ok" ? "fxOk" : fx === "bad" ? "fxBad" : ""}`} />
+      <div className={`sparkles effect-${answerEffectId} ${spark ? "on" : ""}`}>
         {[...Array(10)].map((_, i) => (
           <i
             key={i}
