@@ -89,6 +89,54 @@ export const SKINS = [
       "--muted": "rgba(238,242,255,.72)",
     },
   },
+  {
+    id: "galaxy-animated",
+    name: "Galaxy Animated",
+    price: 1500,
+    desc: "Ultra premium cosmétique",
+    animated: true,
+    premiumOnly: true,
+    vars: {
+      "--bg1": "#070916",
+      "--bg2": "#090c24",
+      "--accent": "#60a5fa",
+      "--accent2": "#e879f9",
+      "--text": "#f2f6ff",
+      "--muted": "rgba(242,246,255,.72)",
+    },
+  },
+  {
+    id: "dark-gold",
+    name: "Dark Gold",
+    price: 1800,
+    desc: "Noir + or, style elite",
+    animated: true,
+    premiumOnly: true,
+    vars: {
+      "--bg1": "#0d0b09",
+      "--bg2": "#17120d",
+      "--accent": "#f59e0b",
+      "--accent2": "#fcd34d",
+      "--text": "#fff6de",
+      "--muted": "rgba(255,246,222,.72)",
+    },
+  },
+  {
+    id: "neon-cyber",
+    name: "Neon Cyber",
+    price: 1600,
+    desc: "Cyberpunk lumineux",
+    animated: true,
+    premiumOnly: true,
+    vars: {
+      "--bg1": "#041019",
+      "--bg2": "#031521",
+      "--accent": "#06b6d4",
+      "--accent2": "#22d3ee",
+      "--text": "#e6fdff",
+      "--muted": "rgba(230,253,255,.74)",
+    },
+  },
 ];
 
 export const AVATARS = [
@@ -115,6 +163,8 @@ export const AVATARS = [
   { id: "wizard", name: "Magicien", emoji: "🧙‍♂️", price: 520, rarity: "Exclusif" },
   { id: "genius", name: "Genie", emoji: "🧠", price: 650, rarity: "Exclusif" },
   { id: "mecha", name: "Mecha Calcul", emoji: "🦾", price: 780, rarity: "Exclusif" },
+  { id: "phoenix-legend", name: "Phoenix", emoji: "🔥", price: 1400, rarity: "Legendaire", premiumOnly: true },
+  { id: "void-master", name: "Void Master", emoji: "🌌", price: 1700, rarity: "Legendaire", premiumOnly: true },
 ];
 
 export const ACHIEVEMENTS = [
