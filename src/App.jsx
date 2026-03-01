@@ -206,6 +206,19 @@ function formatDateFR(iso) {
   }
 }
 
+function dayKeyStamp(dayKey) {
+  const [dd, mm, yyyy] = String(dayKey).split("/").map((x) => parseInt(x, 10));
+  if (!dd || !mm || !yyyy) return 0;
+  return new Date(yyyy, mm - 1, dd, 12, 0, 0).getTime();
+}
+
+function rankForProfile(level) {
+  if (level >= 18) return { icon: "👑", label: "Roi des Maths" };
+  if (level >= 12) return { icon: "🧠", label: "Génie des fractions" };
+  if (level >= 6) return { icon: "📐", label: "Stratège" };
+  return { icon: "🧮", label: "Apprenti" };
+}
+
 /* ------------------------ Coach helpers ------------------------ */
 /* ------------------------ Login Streak Rewards (7 jours) ------------------------ */
 function rewardRoll(streakDay, ownedAvatars) {
@@ -300,6 +313,7 @@ export default function App() {
         achievements: {},
         lastLoginDayKey: null,
         loginStreak: 0,
+        activityMap: {},
         challengeProgress: createChallengeProgress(null),
       };
     }
@@ -331,6 +345,7 @@ export default function App() {
       achievements: saved?.achievements ?? {},
       lastLoginDayKey: saved?.lastLoginDayKey ?? null,
       loginStreak: saved?.loginStreak ?? 0,
+      activityMap: saved?.activityMap ?? {},
       challengeProgress: createChallengeProgress(saved?.challengeProgress),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -371,6 +386,7 @@ export default function App() {
 
   const [lastLoginDayKey, setLastLoginDayKey] = useState(initial.lastLoginDayKey);
   const [loginStreak, setLoginStreak] = useState(initial.loginStreak);
+  const [activityMap, setActivityMap] = useState(initial.activityMap);
   const [challengeProgress, setChallengeProgress] = useState(initial.challengeProgress);
   const [loginRewardPop, setLoginRewardPop] = useState(null);
 
@@ -464,6 +480,7 @@ export default function App() {
       achievements,
       lastLoginDayKey,
       loginStreak,
+      activityMap,
       challengeProgress,
     });
   }, [
@@ -494,6 +511,7 @@ export default function App() {
     achievements,
     lastLoginDayKey,
     loginStreak,
+    activityMap,
     challengeProgress,
   ]);
 
@@ -797,6 +815,18 @@ export default function App() {
         weeklyStats: applyAnswerToChallengeStats(base.weeklyStats, modeId, isCorrect),
       };
     });
+    setActivityMap((prev) => {
+      const today = parisDayKey();
+      const next = {
+        ...(prev ?? {}),
+        [today]: (prev?.[today] ?? 0) + 1,
+      };
+      const keys = Object.keys(next);
+      if (keys.length <= 120) return next;
+      const oldest = keys.sort((a, b) => dayKeyStamp(a) - dayKeyStamp(b))[0];
+      if (oldest) delete next[oldest];
+      return next;
+    });
 
     if (isCorrect) {
       setStatus("ok");
@@ -956,6 +986,30 @@ export default function App() {
     if (!total) return 0;
     return Math.round((totalRight / total) * 100);
   }, [totalRight, totalWrong]);
+  const profileRank = useMemo(() => rankForProfile(level), [level]);
+
+  const activity7 = useMemo(() => {
+    const base = new Date();
+    const arr = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(base);
+      d.setDate(base.getDate() - i);
+      const key = parisDayKey(d);
+      const count = Number(activityMap?.[key] ?? 0);
+      const day = d.toLocaleDateString("fr-FR", { weekday: "short" }).slice(0, 2);
+      arr.push({ key, count, day });
+    }
+    return arr;
+  }, [activityMap]);
+  const playedDays7 = useMemo(() => activity7.filter((d) => d.count > 0).length, [activity7]);
+  const visualStreak7 = useMemo(() => {
+    let st = 0;
+    for (let i = activity7.length - 1; i >= 0; i--) {
+      if (activity7[i].count > 0) st += 1;
+      else break;
+    }
+    return st;
+  }, [activity7]);
 
   const xpNeed = xpToNext(level);
   const xpPct = Math.round((xp / xpNeed) * 100);
@@ -1082,6 +1136,7 @@ export default function App() {
       achievements: {},
       lastLoginDayKey: null,
       loginStreak: 0,
+      activityMap: {},
       challengeProgress: createChallengeProgress(null),
     });
 
@@ -1480,6 +1535,9 @@ export default function App() {
             <div className="sub">
               Connecté : <b>{authUser.pseudoDisplay}</b> • Streak login : <b>{loginStreak}/7</b>
             </div>
+            <div className="rankTag">
+              {profileRank.icon} {profileRank.label}
+            </div>
           </div>
         </div>
 
@@ -1777,6 +1835,26 @@ export default function App() {
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Dernière connexion : <b>{lastLoginDayKey ?? "—"}</b>
+              </div>
+            </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Activite 7 jours</strong>
+              <div className="heatmapGrid" style={{ marginTop: 10 }}>
+                {activity7.map((d) => {
+                  const lv = d.count === 0 ? 0 : d.count < 3 ? 1 : d.count < 7 ? 2 : d.count < 12 ? 3 : 4;
+                  return (
+                    <div key={d.key} className="heatCol" title={`${d.key} : ${d.count} question(s)`}>
+                      <span className={`heatCell lv${lv}`} />
+                      <span className="heatLbl">{d.day}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="small" style={{ marginTop: 8 }}>
+                Jours joues : <b>{playedDays7}/7</b> • Streak visuel : <b>{visualStreak7}</b>
               </div>
             </div>
           </div>
