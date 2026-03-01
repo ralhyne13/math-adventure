@@ -151,6 +151,7 @@ function rollChestReward({ ownedAvatars, ownedSkins }) {
 
 const WORLD_LEVEL_MAX = 30;
 const WORLD_STEP_CORRECT = 3;
+const STUDY5_DURATION = 5 * 60;
 
 function defaultWorldProgress() {
   const out = {};
@@ -164,6 +165,17 @@ function normalizeWorldProgress(saved) {
 
 function worldIdFromGrade(gradeId) {
   return WORLDS.find((w) => w.gradeId === gradeId)?.id ?? "ce1";
+}
+
+function makeEmptyStudy5Summary() {
+  return null;
+}
+
+function formatClock(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const mm = String(Math.floor(s / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
 }
 
 function evolvedOwlForLevel(level) {
@@ -189,6 +201,8 @@ export default function App() {
   const levelTimerRef = useRef(null);
   const coachTimerRef = useRef(null);
   const rushWasOnRef = useRef(false);
+  const study5WasOnRef = useRef(false);
+  const study5StartTsRef = useRef(0);
   const cloudHydrateRef = useRef(false);
   const cloudSaveTimerRef = useRef(null);
 
@@ -261,6 +275,7 @@ export default function App() {
         rushTodayCount: 0,
         league: freshSeasonState(),
         challengeProgress: createChallengeProgress(null),
+        study5LastSummary: makeEmptyStudy5Summary(),
       };
     }
 
@@ -306,6 +321,7 @@ export default function App() {
       rushTodayCount: saved?.rushTodayCount ?? 0,
       league: ensureSeasonState(saved?.league),
       challengeProgress: createChallengeProgress(saved?.challengeProgress),
+      study5LastSummary: saved?.study5LastSummary ?? makeEmptyStudy5Summary(),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, authUser?.pseudoKey]);
@@ -359,6 +375,7 @@ export default function App() {
   const [rushTodayCount, setRushTodayCount] = useState(initial.rushTodayCount);
   const [league, setLeague] = useState(initial.league);
   const [challengeProgress, setChallengeProgress] = useState(initial.challengeProgress);
+  const [study5LastSummary, setStudy5LastSummary] = useState(initial.study5LastSummary);
   const [loginRewardPop, setLoginRewardPop] = useState(null);
   const [installPromptEvent, setInstallPromptEvent] = useState(null);
   const [isInstalledPwa, setIsInstalledPwa] = useState(
@@ -383,6 +400,12 @@ export default function App() {
   const [rushTimeLeft, setRushTimeLeft] = useState(60);
   const [rushScore, setRushScore] = useState(0);
   const [rushCombo, setRushCombo] = useState(0);
+  const [study5On, setStudy5On] = useState(false);
+  const [study5TimeLeft, setStudy5TimeLeft] = useState(STUDY5_DURATION);
+  const [study5Answered, setStudy5Answered] = useState(0);
+  const [study5Right, setStudy5Right] = useState(0);
+  const [study5Wrong, setStudy5Wrong] = useState(0);
+  const [study5BestStreak, setStudy5BestStreak] = useState(0);
   const [adBoostNext, setAdBoostNext] = useState(false);
   const [bossActive, setBossActive] = useState(false);
   const [bossRemaining, setBossRemaining] = useState(0);
@@ -502,6 +525,7 @@ export default function App() {
       rushTodayCount,
       league,
       challengeProgress,
+      study5LastSummary,
       updatedAt: new Date().toISOString(),
     };
     safeLSSet(userKey(authUser.pseudoKey), nextSave);
@@ -555,6 +579,7 @@ export default function App() {
     rushTodayCount,
     league,
     challengeProgress,
+    study5LastSummary,
   ]);
 
   useEffect(() => {
@@ -655,6 +680,32 @@ export default function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rushOn]);
+
+  useEffect(() => {
+    if (!study5On) return undefined;
+    const id = setInterval(() => {
+      setStudy5TimeLeft((t) => {
+        if (t <= 1) {
+          setStudy5On(false);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [study5On]);
+
+  useEffect(() => {
+    if (study5On) {
+      study5WasOnRef.current = true;
+      return;
+    }
+    if (study5WasOnRef.current) {
+      study5WasOnRef.current = false;
+      endStudy5(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [study5On]);
 
   useEffect(() => {
     if (!bossActive || showExplain) return undefined;
@@ -807,6 +858,12 @@ export default function App() {
 
   function resetSession() {
     clearAutoTimer();
+    setStudy5On(false);
+    setStudy5TimeLeft(STUDY5_DURATION);
+    setStudy5Answered(0);
+    setStudy5Right(0);
+    setStudy5Wrong(0);
+    setStudy5BestStreak(0);
     setRushOn(false);
     setRushTimeLeft(60);
     setRushScore(0);
@@ -848,7 +905,97 @@ export default function App() {
     newQuestion(true);
   }
 
+  function startStudy5() {
+    if (rushOn) {
+      showCoachPopup({
+        title: "Defi 5 minutes",
+        lines: ["Arrete le mode Rush avant de lancer le defi 5 minutes."],
+        hint: "Un seul mode minuteur a la fois.",
+      });
+      return;
+    }
+    study5StartTsRef.current = Date.now();
+    setStudy5On(true);
+    setStudy5TimeLeft(STUDY5_DURATION);
+    setStudy5Answered(0);
+    setStudy5Right(0);
+    setStudy5Wrong(0);
+    setStudy5BestStreak(0);
+    setScore(0);
+    setStreak(0);
+    setQuestionIndex(1);
+    setBossActive(false);
+    setBossRemaining(0);
+    setBossTimeLeft(0);
+    setWorldBossActive(false);
+    setWorldBossRemaining(0);
+    newQuestion(true);
+    showCoachPopup({
+      title: "Defi 5 minutes lance",
+      lines: ["Objectif: faire 5 minutes de maths.", "Reponds au plus de questions possible."],
+      hint: "Un resume parent sera genere en fin de session.",
+    });
+  }
+
+  function endStudy5(force = false) {
+    if (!study5On && !force) return;
+    setStudy5On(false);
+    const startedAt = study5StartTsRef.current || Date.now();
+    const endedAt = Date.now();
+    const durationSec = Math.max(1, Math.round((endedAt - startedAt) / 1000));
+    const accuracy5 = study5Answered ? Math.round((study5Right / study5Answered) * 100) : 0;
+    const summary = {
+      startedAt: new Date(startedAt).toISOString(),
+      endedAt: new Date(endedAt).toISOString(),
+      durationSec,
+      answered: study5Answered,
+      right: study5Right,
+      wrong: study5Wrong,
+      accuracy: accuracy5,
+      bestStreak: study5BestStreak,
+      score,
+    };
+    setStudy5LastSummary(summary);
+    showCoachPopup({
+      title: "Defi 5 minutes termine",
+      lines: [`Questions: ${summary.answered}`, `Reussite: ${summary.accuracy}%`, `Meilleur combo: ${summary.bestStreak}`],
+      hint: "Tu peux partager ce resume au parent.",
+    });
+    if (cloudEnabled) {
+      cloudLogEvent({
+        pseudoKey: authUser?.pseudoKey,
+        event: "study5_end",
+        payload: summary,
+      });
+    }
+  }
+
+  function copyStudy5Summary() {
+    if (!study5LastSummary) return;
+    const t = study5LastSummary;
+    const text = [
+      "Resume parent - Defi 5 minutes",
+      `Date: ${new Date(t.endedAt).toLocaleString("fr-FR")}`,
+      `Duree: ${t.durationSec}s`,
+      `Questions: ${t.answered}`,
+      `Bonnes reponses: ${t.right}`,
+      `Erreurs: ${t.wrong}`,
+      `Precision: ${t.accuracy}%`,
+      `Meilleur combo: ${t.bestStreak}`,
+      `Score: ${t.score}`,
+    ].join("\n");
+    navigator.clipboard?.writeText(text).catch(() => {});
+  }
+
   function startRush() {
+    if (study5On) {
+      showCoachPopup({
+        title: "Rush indisponible",
+        lines: ["Termine le defi 5 minutes avant de lancer Rush."],
+        hint: "Un seul mode minuteur a la fois.",
+      });
+      return;
+    }
     const today = parisDayKey();
     const used = rushDayKey === today ? rushTodayCount : 0;
     if (!isPremium && used >= 3) {
@@ -1112,6 +1259,16 @@ export default function App() {
 
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
     const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
+
+    if (study5On) {
+      setStudy5Answered((n) => n + 1);
+      if (isCorrect) {
+        setStudy5Right((n) => n + 1);
+        setStudy5BestStreak((n) => Math.max(n, nextStreak));
+      } else {
+        setStudy5Wrong((n) => n + 1);
+      }
+    }
     const nextSessionPerf = (() => {
       const base = sessionPerf ?? {};
       const cur = base[modeId] ?? { right: 0, total: 0 };
@@ -1385,6 +1542,7 @@ export default function App() {
   }
 
   const bestScore = getBestScoreFor(modeId, gradeId, diffId);
+  const study5Accuracy = study5Answered ? Math.round((study5Right / study5Answered) * 100) : 0;
 
   const dailyChallenge = useMemo(
     () => challengeById(DAILY_CHALLENGES, challengeProgress?.dailyId, challengeProgress?.dayKey ?? parisDayKey()),
@@ -1611,6 +1769,7 @@ export default function App() {
       rushTodayCount: 0,
       league: freshSeasonState(),
       challengeProgress: createChallengeProgress(null),
+      study5LastSummary: makeEmptyStudy5Summary(),
       updatedAt: new Date().toISOString(),
     };
     safeLSSet(userKey(pseudoKey), starterSave);
@@ -2128,6 +2287,39 @@ export default function App() {
               </div>
             </div>
             <span className="pill">{worldBossDone ? "Badge acquis" : "Aventure"}</span>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Defi 5 minutes</strong>
+              <div className="small" style={{ marginTop: 6 }}>
+                Temps: <b>{formatClock(study5TimeLeft)}</b> • Questions: <b>{study5Answered}</b> • Precision: <b>{study5Accuracy}%</b>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Bonnes: <b>{study5Right}</b> • Erreurs: <b>{study5Wrong}</b> • Meilleur combo: <b>{study5BestStreak}</b>
+              </div>
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {!study5On ? (
+                  <button className="btn btnPrimary smooth hover-lift press" onClick={startStudy5}>
+                    Lancer Defi 5 min
+                  </button>
+                ) : (
+                  <button className="btn smooth hover-lift press" onClick={() => setStudy5On(false)}>
+                    Arreter Defi 5 min
+                  </button>
+                )}
+                <button className="btn smooth hover-lift press" onClick={copyStudy5Summary} disabled={!study5LastSummary}>
+                  Copier resume parent
+                </button>
+              </div>
+              {study5LastSummary && (
+                <div className="small" style={{ marginTop: 8 }}>
+                  Dernier resume: {new Date(study5LastSummary.endedAt).toLocaleString("fr-FR")} • {study5LastSummary.answered} questions •{" "}
+                  {study5LastSummary.accuracy}% de precision
+                </div>
+              )}
+            </div>
+            <span className="pill">Parents</span>
           </div>
 
           <div className="toast" style={{ marginTop: 12 }}>
