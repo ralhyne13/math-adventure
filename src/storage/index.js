@@ -21,13 +21,13 @@ export function isCloudEnabled() {
   return !!SUPABASE_URL && !!SUPABASE_ANON_KEY;
 }
 
-async function supabaseRequest(path, { method = "GET", body, query } = {}) {
+async function supabaseRequest(path, { method = "GET", body, query, accessToken } = {}) {
   if (!isCloudEnabled()) return null;
   const q = query ? `?${query}` : "";
   const url = `${SUPABASE_URL}/rest/v1/${path}${q}`;
   const headers = {
     apikey: SUPABASE_ANON_KEY,
-    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    Authorization: `Bearer ${accessToken || SUPABASE_ANON_KEY}`,
     "Content-Type": "application/json",
     Prefer: "return=representation",
   };
@@ -46,15 +46,102 @@ async function supabaseRequest(path, { method = "GET", body, query } = {}) {
   }
 }
 
-export async function cloudPullUserSave(pseudoKey) {
+async function supabaseAuthRequest(path, { method = "POST", body, accessToken } = {}) {
+  if (!isCloudEnabled()) return null;
+  const url = `${SUPABASE_URL}/auth/v1/${path}`;
+  const headers = {
+    apikey: SUPABASE_ANON_KEY,
+    "Content-Type": "application/json",
+  };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return { ok: false, error: data?.msg || data?.error_description || data?.error || "auth_error" };
+    return { ok: true, data };
+  } catch {
+    return { ok: false, error: "network_error" };
+  }
+}
+
+function pseudoToCloudEmail(pseudoKey) {
+  return `${normalizePseudo(pseudoKey)}@mathroyale.local`;
+}
+
+export function cloudAuthLoginToEmail(loginOrEmail) {
+  const raw = String(loginOrEmail || "").trim().toLowerCase();
+  if (!raw) return "";
+  if (raw.includes("@")) return raw;
+  return pseudoToCloudEmail(raw);
+}
+
+export async function cloudAuthSignUp(pseudoKey, password, pseudoDisplay) {
+  if (!pseudoKey || !password || !isCloudEnabled()) return { ok: false, error: "invalid_input" };
+  return supabaseAuthRequest("signup", {
+    method: "POST",
+    body: {
+      email: pseudoToCloudEmail(pseudoKey),
+      password,
+      data: { pseudo_key: normalizePseudo(pseudoKey), pseudo_display: pseudoDisplay ?? pseudoKey },
+    },
+  });
+}
+
+export async function cloudAuthSignIn(pseudoKey, password) {
+  if (!pseudoKey || !password || !isCloudEnabled()) return { ok: false, error: "invalid_input" };
+  return supabaseAuthRequest("token?grant_type=password", {
+    method: "POST",
+    body: {
+      email: cloudAuthLoginToEmail(pseudoKey),
+      password,
+    },
+  });
+}
+
+export async function cloudAuthSendPasswordReset(loginOrEmail, redirectTo) {
+  const email = cloudAuthLoginToEmail(loginOrEmail);
+  if (!email || !isCloudEnabled()) return { ok: false, error: "invalid_input" };
+  return supabaseAuthRequest("recover", {
+    method: "POST",
+    body: {
+      email,
+      ...(redirectTo ? { redirect_to: redirectTo } : {}),
+    },
+  });
+}
+
+export async function cloudAuthSignOut(accessToken) {
+  if (!accessToken || !isCloudEnabled()) return { ok: false, error: "invalid_input" };
+  return supabaseAuthRequest("logout", {
+    method: "POST",
+    accessToken,
+  });
+}
+
+export async function cloudAuthUpdatePassword(accessToken, nextPassword) {
+  if (!accessToken || !nextPassword || !isCloudEnabled()) return { ok: false, error: "invalid_input" };
+  return supabaseAuthRequest("user", {
+    method: "PUT",
+    accessToken,
+    body: { password: nextPassword },
+  });
+}
+
+export async function cloudPullUserSave(pseudoKey, accessToken) {
   if (!pseudoKey || !isCloudEnabled()) return null;
   const rows = await supabaseRequest("profiles", {
+    method: "GET",
+    accessToken,
     query: `pseudo_key=eq.${encodeURIComponent(pseudoKey)}&select=pseudo_key,save,updated_at&limit=1`,
   });
   return Array.isArray(rows) && rows.length ? rows[0] : null;
 }
 
-export async function cloudPushUserSave(pseudoKey, pseudoDisplay, save) {
+export async function cloudPushUserSave(pseudoKey, pseudoDisplay, save, accessToken) {
   if (!pseudoKey || !isCloudEnabled()) return null;
   const payload = {
     pseudo_key: pseudoKey,
@@ -64,15 +151,17 @@ export async function cloudPushUserSave(pseudoKey, pseudoDisplay, save) {
   };
   return supabaseRequest("profiles", {
     method: "POST",
+    accessToken,
     query: "on_conflict=pseudo_key",
     body: payload,
   });
 }
 
-export async function cloudPushLeaderboard({ pseudoKey, pseudoDisplay, mode, score }) {
+export async function cloudPushLeaderboard({ pseudoKey, pseudoDisplay, mode, score, accessToken }) {
   if (!pseudoKey || !isCloudEnabled()) return null;
   return supabaseRequest("leaderboard", {
     method: "POST",
+    accessToken,
     body: {
       pseudo_key: pseudoKey,
       pseudo_display: pseudoDisplay ?? pseudoKey,
@@ -83,10 +172,11 @@ export async function cloudPushLeaderboard({ pseudoKey, pseudoDisplay, mode, sco
   });
 }
 
-export async function cloudLogEvent({ pseudoKey, event, payload }) {
+export async function cloudLogEvent({ pseudoKey, event, payload, accessToken }) {
   if (!pseudoKey || !event || !isCloudEnabled()) return null;
   return supabaseRequest("analytics_events", {
     method: "POST",
+    accessToken,
     body: {
       pseudo_key: pseudoKey,
       event,

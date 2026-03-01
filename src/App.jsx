@@ -11,6 +11,11 @@ import {
   cloudPushUserSave,
   cloudPushLeaderboard,
   cloudLogEvent,
+  cloudAuthSignUp,
+  cloudAuthSignIn,
+  cloudAuthSignOut,
+  cloudAuthUpdatePassword,
+  cloudAuthSendPasswordReset,
   parisDayKey,
   isYesterdayKey,
   parisWeekKey,
@@ -545,12 +550,13 @@ export default function App() {
     if (!cloudEnabled || !cloudHydrateRef.current) return;
     if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
     cloudSaveTimerRef.current = setTimeout(() => {
-      cloudPushUserSave(authUser.pseudoKey, authUser?.pseudoDisplay, nextSave);
+      cloudPushUserSave(authUser.pseudoKey, authUser?.pseudoDisplay, nextSave, authUser?.accessToken);
     }, 800);
   }, [
     isLoggedIn,
     authUser?.pseudoKey,
     authUser?.pseudoDisplay,
+    authUser?.accessToken,
     cloudEnabled,
     skinId,
     selectedWorldId,
@@ -601,7 +607,7 @@ export default function App() {
     let cancelled = false;
 
     (async () => {
-      const remote = await cloudPullUserSave(authUser.pseudoKey);
+      const remote = await cloudPullUserSave(authUser.pseudoKey, authUser?.accessToken);
       if (cancelled || !remote?.save) return;
 
       const local = safeLSGet(userKey(authUser.pseudoKey), null);
@@ -617,7 +623,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [isLoggedIn, cloudEnabled, authUser?.pseudoKey]);
+  }, [isLoggedIn, cloudEnabled, authUser?.pseudoKey, authUser?.accessToken]);
 
   useEffect(() => {
     return () => {
@@ -986,6 +992,7 @@ export default function App() {
         pseudoKey: authUser?.pseudoKey,
         event: "study5_end",
         payload: summary,
+        accessToken: authUser?.accessToken,
       });
     }
   }
@@ -1065,11 +1072,13 @@ export default function App() {
         pseudoDisplay: authUser?.pseudoDisplay,
         mode: "rush",
         score: rushScore,
+        accessToken: authUser?.accessToken,
       });
       cloudLogEvent({
         pseudoKey: authUser?.pseudoKey,
         event: "rush_end",
         payload: { score: rushScore, best: Math.max(rushBestScore, rushScore) },
+        accessToken: authUser?.accessToken,
       });
     }
     showCoachPopup({
@@ -1106,6 +1115,7 @@ export default function App() {
         pseudoKey: authUser?.pseudoKey,
         event: "chest_opened",
         payload: { rewardKind: reward.kind, rewardText: reward.text },
+        accessToken: authUser?.accessToken,
       });
     }
   }
@@ -1151,6 +1161,7 @@ export default function App() {
         pseudoKey: authUser?.pseudoKey,
         event: "premium_change",
         payload: { plan },
+        accessToken: authUser?.accessToken,
       });
     }
   }
@@ -1167,6 +1178,7 @@ export default function App() {
         pseudoKey: authUser?.pseudoKey,
         event: "premium_change",
         payload: { plan: "free" },
+        accessToken: authUser?.accessToken,
       });
     }
   }
@@ -1786,25 +1798,6 @@ export default function App() {
 
     if (pseudoKey.length < 3) return setAuthMsg("Pseudo trop court (min 3).");
     if (pass.length < 4) return setAuthMsg("Mot de passe trop court (min 4).");
-    if (!crypto?.subtle) return setAuthMsg("Ton navigateur ne supporte pas crypto.subtle.");
-
-    const idx = getUsersIndex();
-    if (idx.users?.[pseudoKey]) return setAuthMsg("Pseudo deja pris.");
-
-    const hash = await sha256Hex(pass);
-
-    // Code de recuperation (front-only)
-    const recoveryCode = `${randInt(100000, 999999)}-${randInt(100000, 999999)}`;
-
-    const nextIdx = {
-      ...idx,
-      users: {
-        ...(idx.users ?? {}),
-        [pseudoKey]: { pseudoDisplay, passHash: hash, recoveryCode, createdAt: new Date().toISOString() },
-      },
-    };
-    setUsersIndex(nextIdx);
-
     const starterSave = {
       skinId: "neon-night",
       selectedWorldId: "ce1",
@@ -1849,19 +1842,46 @@ export default function App() {
       study5LastSummary: makeEmptyStudy5Summary(),
       updatedAt: new Date().toISOString(),
     };
-    safeLSSet(userKey(pseudoKey), starterSave);
+
     if (cloudEnabled) {
-      await cloudPushUserSave(pseudoKey, pseudoDisplay, starterSave);
-      await cloudLogEvent({ pseudoKey, event: "register", payload: {} });
+      const signUp = await cloudAuthSignUp(pseudoKey, pass, pseudoDisplay);
+      if (!signUp?.ok) return setAuthMsg(`Inscription cloud impossible: ${signUp?.error ?? "erreur"}`);
+      let accessToken = signUp?.data?.access_token ?? null;
+      let refreshToken = signUp?.data?.refresh_token ?? null;
+      if (!accessToken) {
+        const signIn = await cloudAuthSignIn(pseudoKey, pass);
+        if (!signIn?.ok) return setAuthMsg("Compte cree, mais connexion cloud impossible.");
+        accessToken = signIn?.data?.access_token ?? null;
+        refreshToken = signIn?.data?.refresh_token ?? null;
+      }
+      safeLSSet(userKey(pseudoKey), starterSave);
+      await cloudPushUserSave(pseudoKey, pseudoDisplay, starterSave, accessToken);
+      await cloudLogEvent({ pseudoKey, event: "register", payload: {}, accessToken });
+      const au = { pseudoDisplay, pseudoKey, accessToken, refreshToken, authProvider: "supabase" };
+      safeLSSet("math-adventure-auth", au);
+      setAuthUser(au);
+      window.location.reload();
+      return;
     }
 
-    // Info recovery code
+    if (!crypto?.subtle) return setAuthMsg("Ton navigateur ne supporte pas crypto.subtle.");
+    const idx = getUsersIndex();
+    if (idx.users?.[pseudoKey]) return setAuthMsg("Pseudo deja pris.");
+    const hash = await sha256Hex(pass);
+    const recoveryCode = `${randInt(100000, 999999)}-${randInt(100000, 999999)}`;
+    const nextIdx = {
+      ...idx,
+      users: {
+        ...(idx.users ?? {}),
+        [pseudoKey]: { pseudoDisplay, passHash: hash, recoveryCode, createdAt: new Date().toISOString() },
+      },
+    };
+    setUsersIndex(nextIdx);
+    safeLSSet(userKey(pseudoKey), starterSave);
     alert(`IMPORTANT : garde ce code de recuperation (si tu oublies ton mot de passe) :\n\n${recoveryCode}\n\nNote-le quelque part ✅`);
-
-    const au = { pseudoDisplay, pseudoKey };
+    const au = { pseudoDisplay, pseudoKey, authProvider: "local" };
     safeLSSet("math-adventure-auth", au);
     setAuthUser(au);
-
     window.location.reload();
   }
 
@@ -1873,26 +1893,36 @@ export default function App() {
 
     if (pseudoKey.length < 3) return setAuthMsg("Pseudo invalide.");
     if (pass.length < 1) return setAuthMsg("Mot de passe manquant.");
-    if (!crypto?.subtle) return setAuthMsg("Ton navigateur ne supporte pas crypto.subtle.");
+    if (cloudEnabled) {
+      const signIn = await cloudAuthSignIn(pseudoKey, pass);
+      if (!signIn?.ok) return setAuthMsg("Identifiants cloud invalides.");
+      const accessToken = signIn?.data?.access_token ?? null;
+      const refreshToken = signIn?.data?.refresh_token ?? null;
+      const cloudName = signIn?.data?.user?.user_metadata?.pseudo_display || pseudoDisplay || pseudoKey;
+      const au = { pseudoDisplay: cloudName, pseudoKey, accessToken, refreshToken, authProvider: "supabase" };
+      await cloudLogEvent({ pseudoKey, event: "login_success", payload: {}, accessToken });
+      safeLSSet("math-adventure-auth", au);
+      setAuthUser(au);
+      window.location.reload();
+      return;
+    }
 
+    if (!crypto?.subtle) return setAuthMsg("Ton navigateur ne supporte pas crypto.subtle.");
     const idx = getUsersIndex();
     const user = idx.users?.[pseudoKey];
     if (!user) return setAuthMsg("Utilisateur introuvable.");
-
     const hash = await sha256Hex(pass);
     if (hash !== user.passHash) return setAuthMsg("Mot de passe incorrect.");
-
-    const au = { pseudoDisplay: user.pseudoDisplay || pseudoDisplay, pseudoKey };
-    if (cloudEnabled) {
-      await cloudLogEvent({ pseudoKey, event: "login_success", payload: {} });
-    }
+    const au = { pseudoDisplay: user.pseudoDisplay || pseudoDisplay, pseudoKey, authProvider: "local" };
     safeLSSet("math-adventure-auth", au);
     setAuthUser(au);
-
     window.location.reload();
   }
 
-  function doLogout() {
+  async function doLogout() {
+    if (cloudEnabled && authUser?.accessToken) {
+      await cloudAuthSignOut(authUser.accessToken);
+    }
     safeLSSet("math-adventure-auth", null);
     setAuthUser(null);
     window.location.reload();
@@ -1901,6 +1931,16 @@ export default function App() {
   // Reset password via recovery code (login screen)
   async function resetPasswordWithRecovery() {
     setPwMsg("");
+    if (cloudEnabled) {
+      const loginOrEmail = String(pwTargetPseudo || "").trim();
+      if (!loginOrEmail) return setPwMsg("Pseudo ou email manquant.");
+      const redirectTo = `${window.location.origin}/`;
+      const sent = await cloudAuthSendPasswordReset(loginOrEmail, redirectTo);
+      if (!sent?.ok) return setPwMsg("Impossible d'envoyer l'email de reinitialisation.");
+      setPwTargetPseudo("");
+      setPwMsg("✅ Email de reinitialisation envoye. Verifie ta boite mail.");
+      return;
+    }
     if (!crypto?.subtle) return setPwMsg("Ton navigateur ne supporte pas crypto.subtle.");
 
     const pseudoKey = normalizePseudo(pwTargetPseudo);
@@ -1942,6 +1982,19 @@ export default function App() {
   async function changePasswordLoggedIn() {
     setPwChangeMsg("");
     if (!authUser?.pseudoKey) return;
+    if (cloudEnabled && authUser?.accessToken) {
+      const next = String(pwChangeNew || "");
+      const next2 = String(pwChangeNew2 || "");
+      if (next.length < 4) return setPwChangeMsg("Nouveau mot de passe trop court (min 4).");
+      if (next !== next2) return setPwChangeMsg("Confirmation differente.");
+      const upd = await cloudAuthUpdatePassword(authUser.accessToken, next);
+      if (!upd?.ok) return setPwChangeMsg("Impossible de changer le mot de passe cloud.");
+      setPwCurrent("");
+      setPwChangeNew("");
+      setPwChangeNew2("");
+      setPwChangeMsg("✅ Mot de passe cloud mis a jour.");
+      return;
+    }
     if (!crypto?.subtle) return setPwChangeMsg("Ton navigateur ne supporte pas crypto.subtle.");
 
     const cur = String(pwCurrent || "");
@@ -2077,48 +2130,77 @@ export default function App() {
 
               {pwMode === "forgot" && (
                 <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <div className="toast" style={{ marginTop: 0 }}>
-                    <div>
-                      <strong>Reinitialiser (front-only)</strong>
-                      <div className="sub" style={{ marginTop: 6 }}>
-                        Utilise ton <b>code de recuperation</b> (donne a l'inscription).
+                  {cloudEnabled ? (
+                    <>
+                      <div className="toast" style={{ marginTop: 0 }}>
+                        <div>
+                          <strong>Reinitialiser via email</strong>
+                          <div className="sub" style={{ marginTop: 6 }}>
+                            Entre ton pseudo ou ton email. On t'envoie un lien de reinitialisation.
+                          </div>
+                        </div>
+                        <span className="pill">✉️ cloud</span>
                       </div>
-                    </div>
-                    <span className="pill">🔑 recovery</span>
-                  </div>
 
-                  <input
-                    className="input smooth"
-                    placeholder="Pseudo"
-                    value={pwTargetPseudo}
-                    onChange={(e) => setPwTargetPseudo(e.target.value)}
-                  />
-                  <input
-                    className="input smooth"
-                    placeholder="Code de recuperation (ex: 123456-654321)"
-                    value={pwRecovery}
-                    onChange={(e) => setPwRecovery(e.target.value)}
-                  />
-                  <input
-                    className="input smooth"
-                    placeholder="Nouveau mot de passe"
-                    type="password"
-                    value={pwNew}
-                    onChange={(e) => setPwNew(e.target.value)}
-                  />
-                  <input
-                    className="input smooth"
-                    placeholder="Confirmer nouveau mot de passe"
-                    type="password"
-                    value={pwNew2}
-                    onChange={(e) => setPwNew2(e.target.value)}
-                  />
+                      <input
+                        className="input smooth"
+                        placeholder="Pseudo ou email"
+                        value={pwTargetPseudo}
+                        onChange={(e) => setPwTargetPseudo(e.target.value)}
+                      />
 
-                  {pwMsg && <div className={pwMsg.startsWith("✅") ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
+                      {pwMsg && <div className={pwMsg.startsWith("✅") ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
 
-                  <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
-                    Reinitialiser
-                  </button>
+                      <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
+                        Envoyer email de reset
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="toast" style={{ marginTop: 0 }}>
+                        <div>
+                          <strong>Reinitialiser (front-only)</strong>
+                          <div className="sub" style={{ marginTop: 6 }}>
+                            Utilise ton <b>code de recuperation</b> (donne a l'inscription).
+                          </div>
+                        </div>
+                        <span className="pill">🔑 recovery</span>
+                      </div>
+
+                      <input
+                        className="input smooth"
+                        placeholder="Pseudo"
+                        value={pwTargetPseudo}
+                        onChange={(e) => setPwTargetPseudo(e.target.value)}
+                      />
+                      <input
+                        className="input smooth"
+                        placeholder="Code de recuperation (ex: 123456-654321)"
+                        value={pwRecovery}
+                        onChange={(e) => setPwRecovery(e.target.value)}
+                      />
+                      <input
+                        className="input smooth"
+                        placeholder="Nouveau mot de passe"
+                        type="password"
+                        value={pwNew}
+                        onChange={(e) => setPwNew(e.target.value)}
+                      />
+                      <input
+                        className="input smooth"
+                        placeholder="Confirmer nouveau mot de passe"
+                        type="password"
+                        value={pwNew2}
+                        onChange={(e) => setPwNew2(e.target.value)}
+                      />
+
+                      {pwMsg && <div className={pwMsg.startsWith("✅") ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
+
+                      <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
+                        Reinitialiser
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
 

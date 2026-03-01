@@ -47,3 +47,12 @@ create table if not exists analytics_events (
 - Debounced cloud push during gameplay.
 - Rush score push to `leaderboard`.
 - Basic analytics events (`register`, `login_success`, `rush_end`, `chest_opened`, `premium_change`).
+- Supabase Auth support for secure accounts when cloud env vars are present (signup/login/logout/password update).
+
+### 4. Auth mode
+
+- If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set:
+  - app uses Supabase Auth for secure login/signup.
+  - cloud save + leaderboard + events use authenticated token.
+- If env vars are missing:
+  - app falls back to local-only auth/storage.
