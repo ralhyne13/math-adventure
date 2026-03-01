@@ -29,6 +29,7 @@ export const MODES = [
   { id: "fracOp", label: "Add/Sous fractions", icon: "±" },
   { id: "simpFrac", label: "Simplifier fraction", icon: "🧹" },
   { id: "fracVsNum", label: "Fraction vs nombre", icon: "↔" },
+  { id: "word", label: "Problemes", icon: "🧠" },
 ];
 
 export function modeName(mId) {
@@ -216,6 +217,7 @@ export function questionSignature(q, modeId, gradeId, diffId) {
   if (q.row.kind === "fracOp") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.op}|${q.row.bN}/${q.row.bD}`;
   if (q.row.kind === "fracSimp") return `${base}|${q.row.n}/${q.row.d}`;
   if (q.row.kind === "fracVsNum") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.numLabel}`;
+  if (q.row.kind === "storyFrac") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.op}|${q.row.bN}/${q.row.bD}`;
   return base;
 }
 
@@ -486,6 +488,51 @@ function makeQFracVsNum(cfg) {
   };
 }
 
+function makeQWord(cfg) {
+  const denMax = Math.max(8, cfg.fracDen);
+  const template = randInt(1, 3);
+  let op = "−";
+  let aD = randInt(3, denMax);
+  let bD = randInt(3, denMax);
+  let aN = randInt(1, aD - 1);
+  let bN = randInt(1, bD - 1);
+  if (template === 2) op = "+";
+  if (op === "−" && cmpFractions(aN, aD, bN, bD) === "<") {
+    [aN, bN] = [bN, aN];
+    [aD, bD] = [bD, aD];
+  }
+  const common = lcm(aD, bD);
+  const aEq = aN * (common / aD);
+  const bEq = bN * (common / bD);
+  const rawN = op === "+" ? aEq + bEq : aEq - bEq;
+  const [sN, sD] = simplify(rawN, common);
+  const correct = `${sN}/${sD}`;
+  const wrong1 = `${rawN}/${common}`;
+  const wrong2 = `${op === "+" ? aN + bN : Math.max(0, aN - bN)}/${aD + bD}`;
+  const wrong3 = `${Math.max(1, sN + 1)}/${sD}`;
+  let prompt = "";
+  if (template === 1) {
+    prompt = `Léo a ${aN}/${aD} d'une pizza et mange ${bN}/${bD}. Quelle fraction lui reste-t-il ?`;
+  } else if (template === 2) {
+    prompt = `Nina boit ${aN}/${aD} L le matin et ${bN}/${bD} L l'apres-midi. Quelle quantite boit-elle au total ?`;
+  } else {
+    prompt = `Une bouteille contient ${aN}/${aD} L de jus. On retire ${bN}/${bD} L. Quelle quantite reste ?`;
+  }
+  return {
+    prompt,
+    row: { kind: "storyFrac", aN, aD, bN, bD, op },
+    correct,
+    choices: makeChoicesFraction(correct, [wrong1, wrong2, wrong3]),
+    explain: (picked) => {
+      const e1 = `On met au meme denominateur ${common}: ${aN}/${aD} = ${aEq}/${common}, ${bN}/${bD} = ${bEq}/${common}.`;
+      const e2 = `Puis ${aEq} ${op} ${bEq} = ${rawN}, donc ${rawN}/${common}.`;
+      const e3 = `On simplifie: ${sN}/${sD}.`;
+      if (picked === correct) return `✅ ${e1} ${e2} ${e3}`;
+      return `❌ ${e1} ${e2} ${e3} Bonne reponse: ${correct}.`;
+    },
+  };
+}
+
 function makeQuestionCore(modeId, gradeId, diffId) {
   const base = gradeBase(gradeId);
   const f = diffFactor(diffId);
@@ -516,6 +563,8 @@ function makeQuestionCore(modeId, gradeId, diffId) {
       return makeQSimplifyFrac(cfg);
     case "fracVsNum":
       return makeQFracVsNum(cfg);
+    case "word":
+      return makeQWord(cfg);
     default:
       return makeQAdd(cfg);
   }
@@ -576,6 +625,10 @@ export function buildHints(question, gradeId) {
   if (r.kind === "fracSimp") return ["Cherche le PGCD du numerateur et du denominateur.", "Divise les deux par ce PGCD.", `Resultat simplifie : ${question.correct}.`];
   if (r.kind === "fracVsNum")
     return ['Transforme le nombre en fraction (ex: 0.7 -> 7/10, 2 -> 2/1).', "Compare ensuite avec produit en croix.", `Le bon signe est "${question.correct}".`];
+  if (r.kind === "storyFrac") {
+    const common = lcm(r.aD, r.bD);
+    return ["Repere les fractions dans l'enonce.", `Mets-les au meme denominateur (ici ${common}).`, "Fais l'operation puis simplifie."];
+  }
   return [];
 }
 
@@ -629,6 +682,18 @@ export function buildMethodSteps(question, gradeId) {
     const right = bN * r.aD;
     return [`Etape 1 : transforme ${r.numLabel} en ${bN}/${bD}.`, `Etape 2 : compare ${r.aN}×${bD}=${left} et ${bN}×${r.aD}=${right}.`, `Etape 3 : signe correct = "${question.correct}".`];
   }
+  if (r.kind === "storyFrac") {
+    const common = lcm(r.aD, r.bD);
+    const aEq = r.aN * (common / r.aD);
+    const bEq = r.bN * (common / r.bD);
+    const rawN = r.op === "+" ? aEq + bEq : aEq - bEq;
+    const [sN, sD] = simplify(rawN, common);
+    return [
+      `Etape 1 : denominateur commun = ${common}.`,
+      `Etape 2 : ${aEq} ${r.op} ${bEq} = ${rawN}, donc ${rawN}/${common}.`,
+      `Etape 3 : simplification -> ${sN}/${sD}.`,
+    ];
+  }
   return [];
 }
 
@@ -648,24 +713,26 @@ export function weakestMode(perfByMode) {
 export function modeHint(modeId) {
   switch (modeId) {
     case "div":
-      return "Astuce division : vérifie ton résultat avec × (diviseur × quotient = dividende).";
+      return "Astuce division : verifie ton resultat avec × (diviseur × quotient = dividende).";
     case "sub":
-      return "Astuce soustraction : aligne bien les unités/dizaines et vérifie si tu peux faire l’opération inverse (+).";
+      return "Astuce soustraction : aligne bien les unites/dizaines et verifie l'operation inverse (+).";
     case "mul":
-      return "Astuce multiplication : utilise les tables / décompose (ex: 7×12 = 7×10 + 7×2).";
+      return "Astuce multiplication : utilise les tables / decompose (ex: 7×12 = 7×10 + 7×2).";
     case "cmpFrac":
-      return "Astuce fractions : mets au même dénominateur OU fais un produit en croix.";
+      return "Astuce fractions : mets au meme denominateur OU fais un produit en croix.";
     case "eqFrac":
-      return "Astuce équivalences : multiplie/divise numérateur et dénominateur par le même nombre.";
+      return "Astuce equivalences : multiplie/divise numerateur et denominateur par le meme nombre.";
     case "fracOp":
-      return "Astuce fractions : trouve le dénominateur commun, calcule le numérateur, puis simplifie.";
+      return "Astuce fractions : trouve le denominateur commun, calcule le numerateur, puis simplifie.";
     case "simpFrac":
-      return "Astuce simplification : cherche le PGCD du numérateur et du dénominateur.";
+      return "Astuce simplification : cherche le PGCD du numerateur et du denominateur.";
     case "fracVsNum":
       return "Astuce comparaison : transforme le nombre en fraction puis compare (ou produit en croix).";
+    case "word":
+      return "Astuce probleme : traduis l'enonce en operation sur fractions, puis simplifie.";
     case "add":
     default:
-      return "Astuce addition : vérifie vite avec l’opération inverse (−) si tu doutes.";
+      return "Astuce addition : verifie vite avec l'operation inverse (−) si tu doutes.";
   }
 }
 

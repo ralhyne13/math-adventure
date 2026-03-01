@@ -1655,6 +1655,14 @@ export default function App() {
                   <div className="bigOp">{q.row.numLabel}</div>
                 </>
               )}
+
+              {q.row.kind === "storyFrac" && (
+                <>
+                  <Fraction n={q.row.aN} d={q.row.aD} />
+                  <div className="bigOp opSep">{q.row.op}</div>
+                  <Fraction n={q.row.bN} d={q.row.bD} />
+                </>
+              )}
             </div>
 
             <div className="learningRow">
