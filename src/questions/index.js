@@ -287,7 +287,7 @@ function makeQMul(cfg) {
 function makeQDiv(cfg) {
   const bMax = Math.max(2, cfg.divB);
   const b = randInt(2, bMax);
-  const q = randInt(1, Math.max(8, Math.round(bMax * 1.3)));
+  const q = randInt(2, Math.max(9, Math.round(bMax * 1.35)));
   const a = b * q;
   const correct = q;
   return {

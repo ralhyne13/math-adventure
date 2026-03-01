@@ -20,6 +20,16 @@ export function playBeep(kind = "ok", enabled = true) {
       g.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
       o.start(now);
       o.stop(now + 0.18);
+    } else if (kind === "level") {
+      o.type = "triangle";
+      o.frequency.setValueAtTime(520, now);
+      o.frequency.exponentialRampToValueAtTime(880, now + 0.11);
+      o.frequency.exponentialRampToValueAtTime(1320, now + 0.24);
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(0.22, now + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      o.start(now);
+      o.stop(now + 0.32);
     } else {
       o.type = "square";
       o.frequency.setValueAtTime(180, now);
@@ -31,6 +41,6 @@ export function playBeep(kind = "ok", enabled = true) {
       o.stop(now + 0.22);
     }
 
-    setTimeout(() => ctx.close().catch(() => {}), 300);
+    setTimeout(() => ctx.close().catch(() => {}), 420);
   } catch {}
 }

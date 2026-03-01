@@ -295,6 +295,7 @@ export default function App() {
         autoNextOn: false,
         autoNextMs: 1800,
         adaptiveOn: true,
+        noPenaltyOnWrong: false,
         reduceMotion: false,
         achievements: {},
         lastLoginDayKey: null,
@@ -325,6 +326,7 @@ export default function App() {
       autoNextOn: saved?.autoNextOn ?? false,
       autoNextMs: saved?.autoNextMs ?? 1800,
       adaptiveOn: saved?.adaptiveOn ?? true,
+      noPenaltyOnWrong: saved?.noPenaltyOnWrong ?? false,
       reduceMotion: saved?.reduceMotion ?? false,
       achievements: saved?.achievements ?? {},
       lastLoginDayKey: saved?.lastLoginDayKey ?? null,
@@ -358,6 +360,7 @@ export default function App() {
   const [autoNextOn, setAutoNextOn] = useState(initial.autoNextOn);
   const [autoNextMs, setAutoNextMs] = useState(initial.autoNextMs);
   const [adaptiveOn, setAdaptiveOn] = useState(initial.adaptiveOn);
+  const [noPenaltyOnWrong, setNoPenaltyOnWrong] = useState(initial.noPenaltyOnWrong);
   const [reduceMotion, setReduceMotion] = useState(initial.reduceMotion);
 
   const [achievements, setAchievements] = useState(initial.achievements);
@@ -456,6 +459,7 @@ export default function App() {
       autoNextOn,
       autoNextMs,
       adaptiveOn,
+      noPenaltyOnWrong,
       reduceMotion,
       achievements,
       lastLoginDayKey,
@@ -485,6 +489,7 @@ export default function App() {
     autoNextOn,
     autoNextMs,
     adaptiveOn,
+    noPenaltyOnWrong,
     reduceMotion,
     achievements,
     lastLoginDayKey,
@@ -567,7 +572,7 @@ export default function App() {
 
     if (lvl > startLevel) {
       vibrate(30);
-      playBeep("ok", audioOn);
+      playBeep("level", audioOn);
       showLevelPopup({
         toLevel: lvl,
         gainedLevels: levelsGained,
@@ -604,7 +609,7 @@ export default function App() {
     const sig = questionSignature(qNew, modeId, gradeId, diffId);
     const arr = qHistoryRef.current ?? [];
     const next = [sig, ...arr];
-    qHistoryRef.current = next.slice(0, 12);
+    qHistoryRef.current = next.slice(0, 25);
   }
 
   function newQuestion(resetPick = false) {
@@ -823,7 +828,9 @@ export default function App() {
       vibrate(60);
       triggerFx("bad");
 
-      setCoins((c) => Math.max(0, c - 1));
+      if (!noPenaltyOnWrong) {
+        setCoins((c) => Math.max(0, c - 1));
+      }
 
       setTotalWrong((x) => x + 1);
       setStreak(0);
@@ -1070,6 +1077,7 @@ export default function App() {
       autoNextOn: false,
       autoNextMs: 1800,
       adaptiveOn: true,
+      noPenaltyOnWrong: false,
       reduceMotion: false,
       achievements: {},
       lastLoginDayKey: null,
@@ -2119,6 +2127,19 @@ export default function App() {
 
             <div className="small" style={{ marginTop: 8 }}>
               Sur une fenetre de 20 reponses : plus de 85% =&gt; difficulte +1, moins de 55% =&gt; difficulte -1 + entrainement cible.
+            </div>
+          </div>
+
+          <div className="shopCard" style={{ marginTop: 12 }}>
+            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Jeunes joueurs</div>
+
+            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+              <span>Sans malus (pas de -1 coin en erreur)</span>
+              <input type="checkbox" checked={noPenaltyOnWrong} onChange={(e) => setNoPenaltyOnWrong(e.target.checked)} />
+            </label>
+
+            <div className="small" style={{ marginTop: 8 }}>
+              Recommande pour CP/CE1: l'erreur ne retire aucun coin.
             </div>
           </div>
 
