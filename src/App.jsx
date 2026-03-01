@@ -80,10 +80,10 @@ function rewardRoll(streakDay, ownedAvatars) {
       const picked = notOwned[randInt(0, notOwned.length - 1)];
       return { kind: "avatar", avatarId: picked.id, label: `Avatar : ${picked.emoji} ${picked.name}` };
     }
-    return { kind: "coins", coins: coinReward + 40, label: `Coins : +${coinReward + 40}` };
+    return { kind: "coins", coins: coinReward + 40, label: `Pieces : +${coinReward + 40}` };
   }
 
-  return { kind: "coins", coins: coinReward, label: `Coins : +${coinReward}` };
+  return { kind: "coins", coins: coinReward, label: `Pieces : +${coinReward}` };
 }
 
 function leagueTierFromPoints(points) {
@@ -189,7 +189,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
     }
     if (r < 0.97) return { kind: "xpBoost", minutes: 45, text: "Boost XP x2 (45 min)" };
     const coins = randInt(260, 520);
-    return { kind: "coins", coins, text: `+${coins} coins` };
+    return { kind: "coins", coins, text: `+${coins} pieces` };
   }
 
   if (type === "epic") {
@@ -207,7 +207,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
     }
     if (r < 0.8) return { kind: "xpBoost", minutes: 30, text: "Boost XP x2 (30 min)" };
     const coins = randInt(140, 300);
-    return { kind: "coins", coins, text: `+${coins} coins` };
+    return { kind: "coins", coins, text: `+${coins} pieces` };
   }
 
   if (type === "rare") {
@@ -221,7 +221,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
     }
     if (r < 0.64) return { kind: "xpBoost", minutes: 20, text: "Boost XP x2 (20 min)" };
     const coins = randInt(80, 180);
-    return { kind: "coins", coins, text: `+${coins} coins` };
+    return { kind: "coins", coins, text: `+${coins} pieces` };
   }
 
   if (commonAvatars.length && r < 0.18) {
@@ -230,7 +230,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
   }
   if (r < 0.32) return { kind: "xpBoost", minutes: 15, text: "Boost XP x2 (15 min)" };
   const coins = randInt(40, 110);
-  return { kind: "coins", coins, text: `+${coins} coins` };
+  return { kind: "coins", coins, text: `+${coins} pieces` };
 }
 
 const WORLD_LEVEL_MAX = 30;
@@ -284,10 +284,10 @@ function rushComboMultiplier(combo) {
 
 function rewardVisualMeta(reward, chestType) {
   if (reward.kind === "dust") {
-    return { icon: "🧩", label: `${reward.dust} dust cosmetique`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
+    return { icon: "🧩", label: `${reward.dust} diamant cosmetique`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
   }
   if (reward.kind === "coins") {
-    return { icon: "🪙", label: `${reward.coins} coins`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
+    return { icon: "🪙", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
   }
   if (reward.kind === "avatar") {
     const avatar = AVATARS.find((a) => a.id === reward.avatarId);
@@ -1025,7 +1025,7 @@ export default function App() {
     showBadgePopup({
       icon: "🧩",
       title: "Effet debloque",
-      desc: `${fx.label} • -${cost} dust`,
+      desc: `${fx.label} • -${cost} diamant`,
       reward: 0,
     });
   }
@@ -1360,7 +1360,7 @@ export default function App() {
       if (reward.kind === "avatar") {
         if (tempOwnedAvatars.has(reward.avatarId)) {
           const dust = dustForDuplicate("avatar");
-          finalReward = { kind: "dust", dust, text: `Doublon avatar converti en ${dust} dust` };
+          finalReward = { kind: "dust", dust, text: `Doublon avatar converti en ${dust} diamant` };
         } else {
           tempOwnedAvatars.add(reward.avatarId);
         }
@@ -1368,7 +1368,7 @@ export default function App() {
       if (reward.kind === "skin") {
         if (tempOwnedSkins.has(reward.skinId)) {
           const dust = dustForDuplicate("skin");
-          finalReward = { kind: "dust", dust, text: `Doublon skin converti en ${dust} dust` };
+          finalReward = { kind: "dust", dust, text: `Doublon skin converti en ${dust} diamant` };
         } else {
           tempOwnedSkins.add(reward.skinId);
         }
@@ -1376,7 +1376,7 @@ export default function App() {
       if (reward.kind === "effect") {
         if (tempOwnedEffects.has(reward.effectId)) {
           const dust = dustForDuplicate("effect");
-          finalReward = { kind: "dust", dust, text: `Doublon effet converti en ${dust} dust` };
+          finalReward = { kind: "dust", dust, text: `Doublon effet converti en ${dust} diamant` };
         } else {
           tempOwnedEffects.add(reward.effectId);
         }
@@ -1565,13 +1565,13 @@ export default function App() {
     const nextLevel = hintLevel + 1;
     const cost = getHintCost(nextLevel);
     if (cost > 0 && coins < cost) {
-      setHintMsg("Pas assez de coins pour un indice.");
+      setHintMsg("Pas assez de pieces pour un indice.");
       return;
     }
 
     if (cost > 0) setCoins((c) => Math.max(0, c - cost));
     setHintLevel(nextLevel);
-    setHintMsg(cost > 0 ? `Indice debloque (-${cost} coin).` : "Premier indice gratuit en facile.");
+    setHintMsg(cost > 0 ? `Indice debloque (-${cost} piece).` : "Premier indice gratuit en facile.");
   }
 
   function computeAdaptiveAction(roll20, perfByMode) {
@@ -1737,7 +1737,7 @@ export default function App() {
             showBadgePopup({
               icon: currentWorld.icon,
               title: `Monde complete: ${currentWorld.name}`,
-              desc: `${currentWorld.badge} debloque • +180 coins • +220 XP`,
+              desc: `${currentWorld.badge} debloque • +180 pieces • +220 XP`,
               reward: 180,
             });
           }
@@ -1978,7 +1978,7 @@ export default function App() {
     showBadgePopup({
       icon: ch.icon ?? "🎯",
       title: `Defi ${isDaily ? "journalier" : "hebdo"} complete`,
-      desc: `${ch.title} • +${ch.rewardCoins} coins • +${ch.rewardXp} XP`,
+      desc: `${ch.title} • +${ch.rewardCoins} pieces • +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
     });
 
@@ -1999,7 +1999,7 @@ export default function App() {
     showBadgePopup({
       icon: "🏆",
       title: "Defi college complete",
-      desc: "12 bonnes reponses en difficile • +90 coins • +120 XP",
+      desc: "12 bonnes reponses en difficile • +90 pieces • +120 XP",
       reward: 90,
     });
   }
@@ -2130,7 +2130,7 @@ export default function App() {
 
     if (reward.kind === "coins") {
       nextCoins += reward.coins;
-      rewardText = `+${reward.coins} coins`;
+      rewardText = `+${reward.coins} pieces`;
     } else {
       if (!nextOwnedAv.includes(reward.avatarId)) nextOwnedAv.push(reward.avatarId);
       rewardText = `NOUVEL AVATAR : ${AVATARS.find((a) => a.id === reward.avatarId)?.emoji ?? "✨"} ${
@@ -2646,7 +2646,7 @@ export default function App() {
                 Niveau <b>{levelPop.toLevel}</b>
                 {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} •
                 <span className="levelCoins">
-                  <span className="coinDot" /> +{levelPop.gainedCoins} coins
+                  <span className="coinDot" /> +{levelPop.gainedCoins} pieces
                 </span>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
@@ -3040,7 +3040,7 @@ export default function App() {
                   <div className="bar" style={{ width: `${collegeArenaPct}%` }} />
                 </div>
                 <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span className="pill">+90 coins</span>
+                  <span className="pill">+90 pieces</span>
                   <span className="pill">+120 XP</span>
                   <button
                     className="btn btnPrimary smooth hover-lift press"
@@ -3214,7 +3214,7 @@ export default function App() {
                 />
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span className="pill">+{dailyChallenge?.rewardCoins ?? 0} coins</span>
+                <span className="pill">+{dailyChallenge?.rewardCoins ?? 0} pieces</span>
                 <span className="pill">+{dailyChallenge?.rewardXp ?? 0} XP</span>
                 <button
                   className="btn btnPrimary smooth hover-lift press"
@@ -3241,7 +3241,7 @@ export default function App() {
                 />
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span className="pill">+{weeklyChallenge?.rewardCoins ?? 0} coins</span>
+                <span className="pill">+{weeklyChallenge?.rewardCoins ?? 0} pieces</span>
                 <span className="pill">+{weeklyChallenge?.rewardXp ?? 0} XP</span>
                 <button
                   className="btn btnPrimary smooth hover-lift press"

@@ -51,11 +51,11 @@ export default function Profile({
         </button>
         <div className="coins" style={{ marginLeft: "auto" }}>
           <span className="coinDot" />
-          <span>{coins} coins</span>
+          <span>{coins} pieces</span>
         </div>
         <div className="chip smooth">
           <span className="chipIcon">🧩</span>
-          <span>{cosmeticDust} dust</span>
+          <span>{cosmeticDust} diamant</span>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export default function Profile({
               <div className="sub" style={{ marginTop: 8 }}>
                 Joueur : <b>{authUser.pseudoDisplay}</b>
                 <br />
-                Niveau : <b>{level}</b> - Coins : <b>{coins}</b> - Dust : <b>{cosmeticDust}</b> - Streak login : <b>{loginStreak}/7</b>
+                Niveau : <b>{level}</b> - Pieces : <b>{coins}</b> - Diamant : <b>{cosmeticDust}</b> - Streak login : <b>{loginStreak}/7</b>
                 <br />
                 Bonnes : <b>{totalRight}</b> - Erreurs : <b>{totalWrong}</b> - Precision : <b>{accuracy}%</b>
                 <br />
@@ -121,7 +121,7 @@ export default function Profile({
                 Astuce : vise les combos et la precision.
               </div>
             </div>
-            <span className="pill">+ coins</span>
+            <span className="pill">+ pieces</span>
           </div>
 
           <div className="badgeGrid">
@@ -135,7 +135,7 @@ export default function Profile({
                     <div className="badgeTitle">{unlocked ? a.title : "Badge verrouille"}</div>
                     <div className="badgeDesc">{unlocked ? a.desc : "Continue a jouer pour le debloquer."}</div>
                     <div className="badgeMeta">
-                      <span className="badgeProgress">+{a.reward} coins</span>
+                      <span className="badgeProgress">+{a.reward} pieces</span>
                       {unlocked && dateIso && <span className="badgeProgress">{formatDateFR(dateIso)}</span>}
                     </div>
                   </div>
@@ -156,7 +156,7 @@ export default function Profile({
                 <b>{answerEffects.length}</b>
               </div>
             </div>
-            <span className="pill">{cosmeticDust} dust</span>
+            <span className="pill">{cosmeticDust} diamant</span>
           </div>
 
           <div className="small" style={{ marginTop: 12 }}>Skins</div>
@@ -168,7 +168,7 @@ export default function Profile({
                 <div key={s.id} className={`shopCard ${owned ? "" : "badgeLocked"}`}>
                   <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
                   <div className="shopTitle">{owned ? s.name : "Skin verrouille"}</div>
-                  <div className="small" style={{ marginTop: 6 }}>{owned ? s.desc : `Prix boutique: ${s.price} coins`}</div>
+                  <div className="small" style={{ marginTop: 6 }}>{owned ? s.desc : `Prix boutique: ${s.price} pieces`}</div>
                   {equipped && <div className="badgeMeta"><span className="badgeProgress">Equipe</span></div>}
                 </div>
               );
@@ -184,7 +184,7 @@ export default function Profile({
                 <div key={a.id} className={`shopCard ${owned ? "" : "badgeLocked"}`}>
                   <div className="avatarBig">{owned ? a.emoji : "🔒"}</div>
                   <div className="shopTitle">{owned ? a.name : "Avatar verrouille"}</div>
-                  <div className="small" style={{ marginTop: 6 }}>{owned ? a.rarity : `Prix boutique: ${a.price} coins`}</div>
+                  <div className="small" style={{ marginTop: 6 }}>{owned ? a.rarity : `Prix boutique: ${a.price} pieces`}</div>
                   {equipped && <div className="badgeMeta"><span className="badgeProgress">Equipe</span></div>}
                 </div>
               );
@@ -201,7 +201,7 @@ export default function Profile({
                 <div key={fx.id} className={`shopCard ${owned ? "" : "badgeLocked"}`}>
                   <div className="badgeIcon">{fx.id === "default" ? "✨" : "💥"}</div>
                   <div className="shopTitle">{owned ? fx.label : "Effet verrouille"}</div>
-                  <div className="small" style={{ marginTop: 6 }}>{owned ? fx.desc : `Deblocage: ${cost} dust`}</div>
+                  <div className="small" style={{ marginTop: 6 }}>{owned ? fx.desc : `Deblocage: ${cost} diamant`}</div>
                   <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {equipped && <span className="badgeProgress">Equipe</span>}
                     {!owned && fx.id !== "default" && (

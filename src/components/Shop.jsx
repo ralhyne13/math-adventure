@@ -32,14 +32,14 @@ export default function Shop({
         </button>
         <div className="coins" style={{ marginLeft: "auto" }}>
           <span className="coinDot" />
-          <span>{coins} coins</span>
+          <span>{coins} pieces</span>
         </div>
       </div>
 
       {shopTab === "skins" && (
         <>
           <div className="small" style={{ marginBottom: 12 }}>
-            Achete des skins avec tes coins. Les skins premium demandent un abonnement.
+            Achete des skins avec tes pieces. Les skins premium demandent un abonnement.
           </div>
 
           <div className="shopGrid">
@@ -77,7 +77,7 @@ export default function Shop({
                       )}
                     </div>
                   </div>
-                  {!owned && !premiumLocked && !canBuy(s.price) && <div className="small" style={{ marginTop: 10 }}>Pas assez de coins</div>}
+                  {!owned && !premiumLocked && !canBuy(s.price) && <div className="small" style={{ marginTop: 10 }}>Pas assez de pieces</div>}
                 </div>
               );
             })}
@@ -132,7 +132,7 @@ export default function Shop({
                     </div>
                   </div>
 
-                  {!owned && !premiumLocked && !canBuy(a.price) && <div className="small" style={{ marginTop: 10 }}>Continue a jouer pour gagner des coins</div>}
+                  {!owned && !premiumLocked && !canBuy(a.price) && <div className="small" style={{ marginTop: 10 }}>Continue a jouer pour gagner des pieces</div>}
                 </div>
               );
             })}

@@ -40,7 +40,7 @@ export default function TopBar({
           <div className="coins chip coinChip smooth" title="Monnaie virtuelle">
             <span className="coinDot" />
             <span>{coins}</span>
-            <span className="chipLabel">coins</span>
+            <span className="chipLabel">pieces</span>
           </div>
 
           <div className="chip smooth" title="Niveau">
