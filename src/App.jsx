@@ -166,6 +166,20 @@ function worldIdFromGrade(gradeId) {
   return WORLDS.find((w) => w.gradeId === gradeId)?.id ?? "ce1";
 }
 
+function evolvedOwlForLevel(level) {
+  if (level >= 30) return { emoji: "🌟🦉🌟", name: "Hibou legendaire" };
+  if (level >= 20) return { emoji: "👑🦉", name: "Hibou dore" };
+  if (level >= 10) return { emoji: "🛡️🦉", name: "Hibou armure" };
+  return { emoji: "🦉", name: "Petit hibou" };
+}
+
+function displayAvatarByLevel(baseAvatar, avatarId, level) {
+  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "🦉" };
+  if (avatarId !== "owl") return baseAvatar;
+  const evo = evolvedOwlForLevel(level);
+  return { ...baseAvatar, ...evo };
+}
+
 /* ------------------------ App ------------------------ */
 export default function App() {
   const qHistoryRef = useRef([]);
@@ -398,7 +412,8 @@ export default function App() {
     return o;
   });
 
-  const avatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
+  const avatarBase = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
+  const avatar = useMemo(() => displayAvatarByLevel(avatarBase, avatarId, level), [avatarBase, avatarId, level]);
   const skin = SKINS.find((s) => s.id === skinId) ?? SKINS[0];
   const currentWorld = WORLDS.find((w) => w.id === selectedWorldId) ?? WORLDS[1];
   const currentWorldState = worldProgress?.[currentWorld.id] ?? { level: 1, progress: 0, bossDone: false, badgeWon: false };
