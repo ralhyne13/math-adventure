@@ -16,8 +16,8 @@ export function dayKeyStamp(dayKey) {
 
 export function rankForProfile(level) {
   if (level >= 18) return { icon: "👑", label: "Roi des Maths" };
-  if (level >= 12) return { icon: "🧠", label: "Génie des fractions" };
-  if (level >= 6) return { icon: "📐", label: "Stratège" };
+  if (level >= 12) return { icon: "🧠", label: "Genie des fractions" };
+  if (level >= 6) return { icon: "📐", label: "Stratege" };
   return { icon: "🧮", label: "Apprenti" };
 }
 

@@ -14,6 +14,8 @@ export default function TopBar({
   onOpenSettings,
   onOpenProfile,
   onOpenShop,
+  canInstallApp,
+  onInstallApp,
   onLogout,
 }) {
   return (
@@ -22,10 +24,10 @@ export default function TopBar({
         <div className="logo smooth" />
         <div>
           <div className="h1">
-            Math Adventure <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
+            Math Royale <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
           </div>
           <div className="sub">
-            Connecté : <b>{authUser.pseudoDisplay}</b> • Streak login : <b>{loginStreak}/7</b>
+            Connecte: <b>{authUser.pseudoDisplay}</b> • Streak login: <b>{loginStreak}/7</b>
           </div>
           <div className="rankTag">
             {profileRank.icon} {profileRank.label}
@@ -63,8 +65,13 @@ export default function TopBar({
         </div>
 
         <div className="hudRight">
+          {canInstallApp && (
+            <button className="btn btnPrimary smooth hover-lift press" onClick={onInstallApp} title="Installer l'application">
+              Installer l'app
+            </button>
+          )}
           <button className="btn smooth hover-lift press" onClick={onOpenSettings}>
-            Réglages
+            Reglages
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenProfile}>
             Profil
@@ -72,8 +79,8 @@ export default function TopBar({
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenShop}>
             Boutique
           </button>
-          <button className="btn smooth hover-lift press" onClick={onLogout} title="Se déconnecter">
-            Déconnexion
+          <button className="btn smooth hover-lift press" onClick={onLogout} title="Se deconnecter">
+            Deconnexion
           </button>
         </div>
       </div>

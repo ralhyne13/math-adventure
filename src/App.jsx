@@ -62,7 +62,7 @@ function rewardRoll(streakDay, ownedAvatars) {
   if (roll < avatarChance) {
     const commons = AVATARS.filter((a) => a.rarity === "Commun");
     const rares = AVATARS.filter((a) => a.rarity === "Rare");
-    const epics = AVATARS.filter((a) => a.rarity === "Ã‰pique");
+    const epics = AVATARS.filter((a) => a.rarity === "Épique");
 
     const tierRoll = Math.random();
     let pool = commons;
@@ -81,11 +81,11 @@ function rewardRoll(streakDay, ownedAvatars) {
 }
 
 function leagueTierFromPoints(points) {
-  if (points >= 520) return { id: "master", label: "Maitre", icon: "ðŸ‘‘" };
-  if (points >= 390) return { id: "diamond", label: "Diamant", icon: "ðŸ’Ž" };
-  if (points >= 270) return { id: "gold", label: "Or", icon: "ðŸ¥‡" };
-  if (points >= 160) return { id: "silver", label: "Argent", icon: "ðŸ¥ˆ" };
-  return { id: "bronze", label: "Bronze", icon: "ðŸ¥‰" };
+  if (points >= 520) return { id: "master", label: "Maitre", icon: "👑" };
+  if (points >= 390) return { id: "diamond", label: "Diamant", icon: "💎" };
+  if (points >= 270) return { id: "gold", label: "Or", icon: "🥇" };
+  if (points >= 160) return { id: "silver", label: "Argent", icon: "🥈" };
+  return { id: "bronze", label: "Bronze", icon: "🥉" };
 }
 
 function freshSeasonState(now = Date.now()) {
@@ -129,7 +129,7 @@ function buildRushLeaderboard(prev, entry) {
 function rollChestReward({ ownedAvatars, ownedSkins }) {
   const r = Math.random();
   if (r < 0.12) {
-    const rare = AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Epique" || a.rarity === "Ã‰pique" || a.rarity === "Exclusif");
+    const rare = AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Epique" || a.rarity === "Épique" || a.rarity === "Exclusif");
     const notOwned = rare.filter((a) => !ownedAvatars.includes(a.id));
     if (notOwned.length) {
       const pick = notOwned[randInt(0, notOwned.length - 1)];
@@ -321,6 +321,10 @@ export default function App() {
   const [league, setLeague] = useState(initial.league);
   const [challengeProgress, setChallengeProgress] = useState(initial.challengeProgress);
   const [loginRewardPop, setLoginRewardPop] = useState(null);
+  const [installPromptEvent, setInstallPromptEvent] = useState(null);
+  const [isInstalledPwa, setIsInstalledPwa] = useState(
+    () => window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true
+  );
 
   // Session
   const [score, setScore] = useState(0);
@@ -358,7 +362,7 @@ export default function App() {
   const [profileTab, setProfileTab] = useState("stats");
   const [activitySpan, setActivitySpan] = useState(7);
 
-  // historique rÃ©ponses
+  // historique reponses
   const [lastAnswers, setLastAnswers] = useState([]);
   const [sessionAnswered, setSessionAnswered] = useState(0);
   const [sessionPerf, setSessionPerf] = useState(() => {
@@ -521,6 +525,23 @@ export default function App() {
   useEffect(() => {
     return () => {
       if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setInstallPromptEvent(e);
+    };
+    const onInstalled = () => {
+      setInstallPromptEvent(null);
+      setIsInstalledPwa(true);
+    };
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);
 
@@ -831,7 +852,7 @@ export default function App() {
     }
 
     showBadgePopup({
-      icon: "ðŸŽ",
+      icon: "🎁",
       title: "Coffre ouvert",
       desc: reward.text,
       reward: 0,
@@ -904,6 +925,15 @@ export default function App() {
         payload: { plan: "free" },
       });
     }
+  }
+
+  async function installPwaApp() {
+    if (!installPromptEvent) return;
+    installPromptEvent.prompt();
+    try {
+      await installPromptEvent.userChoice;
+    } catch {}
+    setInstallPromptEvent(null);
   }
 
 
@@ -1073,7 +1103,7 @@ export default function App() {
         const next = (p ?? 0) + 1;
         if (next >= 15) {
           setChestPending((v) => v + 1);
-          showBadgePopup({ icon: "ðŸŽ", title: "Coffre gagne", desc: "15 bonnes reponses atteintes. Ouvre ton coffre.", reward: 0 });
+          showBadgePopup({ icon: "🎁", title: "Coffre gagne", desc: "15 bonnes reponses atteintes. Ouvre ton coffre.", reward: 0 });
           return next - 15;
         }
         return next;
@@ -1258,9 +1288,9 @@ export default function App() {
     awardCoins(ch.rewardCoins);
     awardXp(ch.rewardXp);
     showBadgePopup({
-      icon: ch.icon ?? "ðŸŽ¯",
+      icon: ch.icon ?? "🎯",
       title: `Defi ${isDaily ? "journalier" : "hebdo"} complete`,
-      desc: `${ch.title} â€¢ +${ch.rewardCoins} coins â€¢ +${ch.rewardXp} XP`,
+      desc: `${ch.title} • +${ch.rewardCoins} coins • +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
     });
 
@@ -1324,7 +1354,7 @@ export default function App() {
   const canAskHint = !disableChoices && hintLevel < hintList.length;
 
   const FLOATERS = useMemo(
-    () => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", "âˆ’", "Ã—", "Ã·", "=", "<", ">", "âˆ‘", "Ï€", "%", "ðŸ§®", "â­"],
+    () => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", "−", "×", "÷", "=", "<", ">", "∑", "π", "%", "🧮", "⭐"],
     []
   );
 
@@ -1354,7 +1384,7 @@ export default function App() {
       rewardText = `+${reward.coins} coins`;
     } else {
       if (!nextOwnedAv.includes(reward.avatarId)) nextOwnedAv.push(reward.avatarId);
-      rewardText = `NOUVEL AVATAR : ${AVATARS.find((a) => a.id === reward.avatarId)?.emoji ?? "âœ¨"} ${
+      rewardText = `NOUVEL AVATAR : ${AVATARS.find((a) => a.id === reward.avatarId)?.emoji ?? "✨"} ${
         AVATARS.find((a) => a.id === reward.avatarId)?.name ?? "Avatar"
       }`;
     }
@@ -1395,11 +1425,11 @@ export default function App() {
     if (!crypto?.subtle) return setAuthMsg("Ton navigateur ne supporte pas crypto.subtle.");
 
     const idx = getUsersIndex();
-    if (idx.users?.[pseudoKey]) return setAuthMsg("Pseudo dÃ©jÃ  pris.");
+    if (idx.users?.[pseudoKey]) return setAuthMsg("Pseudo deja pris.");
 
     const hash = await sha256Hex(pass);
 
-    // âœ… code de rÃ©cupÃ©ration (front-only)
+    // Code de recuperation (front-only)
     const recoveryCode = `${randInt(100000, 999999)}-${randInt(100000, 999999)}`;
 
     const nextIdx = {
@@ -1458,7 +1488,7 @@ export default function App() {
     }
 
     // Info recovery code
-    alert(`IMPORTANT : garde ce code de rÃ©cupÃ©ration (si tu oublies ton mot de passe) :\n\n${recoveryCode}\n\nNote-le quelque part âœ…`);
+    alert(`IMPORTANT : garde ce code de recuperation (si tu oublies ton mot de passe) :\n\n${recoveryCode}\n\nNote-le quelque part ✅`);
 
     const au = { pseudoDisplay, pseudoKey };
     safeLSSet("math-adventure-auth", au);
@@ -1500,7 +1530,7 @@ export default function App() {
     window.location.reload();
   }
 
-  // âœ… Reset password via recovery code (login screen)
+  // Reset password via recovery code (login screen)
   async function resetPasswordWithRecovery() {
     setPwMsg("");
     if (!crypto?.subtle) return setPwMsg("Ton navigateur ne supporte pas crypto.subtle.");
@@ -1511,15 +1541,15 @@ export default function App() {
     const next2 = String(pwNew2 || "");
 
     if (pseudoKey.length < 3) return setPwMsg("Pseudo invalide.");
-    if (rec.length < 3) return setPwMsg("Code de rÃ©cupÃ©ration manquant.");
+    if (rec.length < 3) return setPwMsg("Code de recuperation manquant.");
     if (next.length < 4) return setPwMsg("Nouveau mot de passe trop court (min 4).");
-    if (next !== next2) return setPwMsg("Confirmation diffÃ©rente.");
+    if (next !== next2) return setPwMsg("Confirmation differente.");
 
     const idx = getUsersIndex();
     const u = idx.users?.[pseudoKey];
     if (!u) return setPwMsg("Utilisateur introuvable.");
 
-    if (String(u.recoveryCode || "").trim() !== rec) return setPwMsg("Code de rÃ©cupÃ©ration incorrect.");
+    if (String(u.recoveryCode || "").trim() !== rec) return setPwMsg("Code de recuperation incorrect.");
 
     const nextHash = await sha256Hex(next);
 
@@ -1535,12 +1565,12 @@ export default function App() {
     setPwRecovery("");
     setPwNew("");
     setPwNew2("");
-    setPwMsg("âœ… Mot de passe rÃ©initialisÃ©. Tu peux te connecter.");
+    setPwMsg("✅ Mot de passe reinitialise. Tu peux te connecter.");
     setAuthMode("login");
     setPwMode("none");
   }
 
-  // âœ… Change password (logged in)
+  // Change password (logged in)
   async function changePasswordLoggedIn() {
     setPwChangeMsg("");
     if (!authUser?.pseudoKey) return;
@@ -1552,7 +1582,7 @@ export default function App() {
 
     if (!cur) return setPwChangeMsg("Mot de passe actuel manquant.");
     if (next.length < 4) return setPwChangeMsg("Nouveau mot de passe trop court (min 4).");
-    if (next !== next2) return setPwChangeMsg("Confirmation diffÃ©rente.");
+    if (next !== next2) return setPwChangeMsg("Confirmation differente.");
 
     const idx = getUsersIndex();
     const u = idx.users?.[authUser.pseudoKey];
@@ -1574,7 +1604,7 @@ export default function App() {
     setPwCurrent("");
     setPwChangeNew("");
     setPwChangeNew2("");
-    setPwChangeMsg("âœ… Mot de passe mis Ã  jour.");
+    setPwChangeMsg("✅ Mot de passe mis a jour.");
   }
 
   /* ------------------------ Apply login reward after login ------------------------ */
@@ -1615,8 +1645,8 @@ export default function App() {
           <div className="brand">
             <div className="logo smooth" />
             <div>
-              <div className="h1">Math Adventure</div>
-              <div className="sub">Connecte-toi pour accÃ©der Ã  ton profil</div>
+              <div className="h1">Math Royale</div>
+              <div className="sub">Connecte-toi pour acceder a ton profil</div>
             </div>
           </div>
         </div>
@@ -1647,7 +1677,7 @@ export default function App() {
                   </button>
                 ) : (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={doRegister}>
-                    CrÃ©er le compte
+                    Creer le compte
                   </button>
                 )}
 
@@ -1660,7 +1690,7 @@ export default function App() {
                     setAuthMode((m) => (m === "login" ? "register" : "login"));
                   }}
                 >
-                  {authMode === "login" ? "CrÃ©er un compte" : "J'ai dÃ©jÃ  un compte"}
+                  {authMode === "login" ? "Creer un compte" : "J'ai deja un compte"}
                 </button>
 
                 {authMode === "login" && (
@@ -1672,7 +1702,7 @@ export default function App() {
                       setPwMode((m) => (m === "forgot" ? "none" : "forgot"));
                     }}
                   >
-                    {pwMode === "forgot" ? "Retour" : "Mot de passe oubliÃ©"}
+                    {pwMode === "forgot" ? "Retour" : "Mot de passe oublie"}
                   </button>
                 )}
               </div>
@@ -1681,12 +1711,12 @@ export default function App() {
                 <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
                   <div className="toast" style={{ marginTop: 0 }}>
                     <div>
-                      <strong>RÃ©initialiser (front-only)</strong>
+                      <strong>Reinitialiser (front-only)</strong>
                       <div className="sub" style={{ marginTop: 6 }}>
-                        Utilise ton <b>code de rÃ©cupÃ©ration</b> (donnÃ© Ã  lâ€™inscription).
+                        Utilise ton <b>code de recuperation</b> (donne a l'inscription).
                       </div>
                     </div>
-                    <span className="pill">ðŸ”‘ recovery</span>
+                    <span className="pill">🔑 recovery</span>
                   </div>
 
                   <input
@@ -1697,7 +1727,7 @@ export default function App() {
                   />
                   <input
                     className="input smooth"
-                    placeholder="Code de rÃ©cupÃ©ration (ex: 123456-654321)"
+                    placeholder="Code de recuperation (ex: 123456-654321)"
                     value={pwRecovery}
                     onChange={(e) => setPwRecovery(e.target.value)}
                   />
@@ -1716,16 +1746,16 @@ export default function App() {
                     onChange={(e) => setPwNew2(e.target.value)}
                   />
 
-                  {pwMsg && <div className={pwMsg.startsWith("âœ…") ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
+                  {pwMsg && <div className={pwMsg.startsWith("✅") ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
 
                   <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
-                    RÃ©initialiser
+                    Reinitialiser
                   </button>
                 </div>
               )}
 
               <div className="small">
-                Note : stockage local (front). Pour une vraie sÃ©curitÃ© multi-utilisateurs, il faut un serveur.
+                Note : stockage local (front). Pour une vraie securite multi-utilisateurs, il faut un serveur.
               </div>
             </div>
           </div>
@@ -1758,12 +1788,12 @@ export default function App() {
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
             <div className="levelBadge" aria-hidden="true">
-              ðŸŽ
+              🎁
             </div>
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">Connexion quotidienne</div>
               <div className="levelPopSub">
-                Jour <b>{loginRewardPop.day}</b>/7 â€¢ <span className="levelCoins">{loginRewardPop.text}</span>
+                Jour <b>{loginRewardPop.day}</b>/7 • <span className="levelCoins">{loginRewardPop.text}</span>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 {loginRewardPop.detail}
@@ -1780,19 +1810,19 @@ export default function App() {
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
             <div className="levelBadge" aria-hidden="true">
-              â¬†ï¸
+              ⬆️
             </div>
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">LEVEL UP !</div>
               <div className="levelPopSub">
                 Niveau <b>{levelPop.toLevel}</b>
-                {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} â€¢
+                {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} •
                 <span className="levelCoins">
                   <span className="coinDot" /> +{levelPop.gainedCoins} coins
                 </span>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Continue comme Ã§a ðŸš€
+                Continue comme ca 🚀
               </div>
             </div>
             <button className="btn btnPrimary smooth hover-lift press" onClick={() => setLevelPop(null)}>
@@ -1806,7 +1836,7 @@ export default function App() {
         <div className="coachPop" role="status" aria-live="polite">
           <div className="coachPopInner smooth">
             <div className="coachBadge" aria-hidden="true">
-              ðŸ§ 
+              🧠
             </div>
             <div style={{ flex: 1 }}>
               <div className="coachPopTitle">{coachPop.title}</div>
@@ -1859,6 +1889,8 @@ export default function App() {
         onOpenSettings={() => setShowSettings(true)}
         onOpenProfile={() => setShowProfile(true)}
         onOpenShop={() => setShowShop(true)}
+        canInstallApp={!isInstalledPwa && !!installPromptEvent}
+        onInstallApp={installPwaApp}
         onLogout={doLogout}
       />
 
@@ -1911,7 +1943,7 @@ export default function App() {
             <span>Tableau de bord</span>
             <span className="pill">
               {skin.name}
-              {skin.animated ? " âœ¨" : ""}
+              {skin.animated ? " ✨" : ""}
             </span>
           </div>
 
@@ -1925,16 +1957,16 @@ export default function App() {
               <div className="statValue">{streak}</div>
             </div>
             <div className="statBox smooth">
-              <div className="statLabel">PrÃ©cision</div>
+              <div className="statLabel">Precision</div>
               <div className="statValue">{accuracy}%</div>
             </div>
             <div className="statBox smooth">
               <div className="statLabel">Connexion (7 jours)</div>
               <div className="statValue" style={{ fontSize: 18 }}>
-                ðŸ”¥ {loginStreak}/7
+                🔥 {loginStreak}/7
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                DerniÃ¨re connexion : <b>{lastLoginDayKey ?? "â€”"}</b>
+                Derniere connexion : <b>{lastLoginDayKey ?? "-"}</b>
               </div>
             </div>
           </div>
@@ -2053,7 +2085,7 @@ export default function App() {
               <strong>Boss Fight</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Etat: <b>{bossActive ? "ACTIF" : "attente"}</b>
-                {bossActive ? ` â€¢ Questions restantes: ${bossRemaining} â€¢ Temps: ${bossTimeLeft}s` : ` â€¢ Prochain boss toutes les 10 questions`}
+                {bossActive ? ` • Questions restantes: ${bossRemaining} • Temps: ${bossTimeLeft}s` : ` • Prochain boss toutes les 10 questions`}
               </div>
             </div>
             <span className="pill">XP x3</span>
@@ -2082,7 +2114,7 @@ export default function App() {
                 })}
               </div>
               <div className="small" style={{ marginTop: 8 }}>
-                Jours joues : <b>{playedDays}/{activitySpan}</b> â€¢ Streak visuel : <b>{visualStreak}</b>
+                Jours joues : <b>{playedDays}/{activitySpan}</b> • Streak visuel : <b>{visualStreak}</b>
               </div>
             </div>
           </div>
@@ -2143,12 +2175,12 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div>
-              <strong>RÃ©compense quotidienne</strong>
+              <strong>Recompense quotidienne</strong>
               <div className="sub" style={{ marginTop: 8 }}>
-                Connecte-toi 7 jours dâ€™affilÃ©e pour maximiser les rÃ©compenses. RÃ©compense donnÃ©e automatiquement au 1er lancement du jour.
+                Connecte-toi 7 jours d'affilee pour maximiser les recompenses. Recompense donnee automatiquement au 1er lancement du jour.
               </div>
             </div>
-            <span className="pill">ðŸŽ alÃ©atoire</span>
+            <span className="pill">🎁 aleatoire</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>

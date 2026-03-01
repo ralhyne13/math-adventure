@@ -1,4 +1,4 @@
-# Math Adventure
+# Math Royale
 
 ## Supabase migration (Step 1)
 
