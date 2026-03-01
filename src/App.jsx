@@ -284,7 +284,7 @@ function rushComboMultiplier(combo) {
 
 function rewardVisualMeta(reward, chestType) {
   if (reward.kind === "dust") {
-    return { icon: "🧩", label: `${reward.dust} diamant cosmetique`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
+    return { icon: "🧩", label: `${reward.dust} diamants cosmetiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
   }
   if (reward.kind === "coins") {
     return { icon: "🪙", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
@@ -1025,7 +1025,7 @@ export default function App() {
     showBadgePopup({
       icon: "🧩",
       title: "Effet debloque",
-      desc: `${fx.label} • -${cost} diamant`,
+      desc: `${fx.label} • -${cost} diamants`,
       reward: 0,
     });
   }
@@ -1571,7 +1571,7 @@ export default function App() {
 
     if (cost > 0) setCoins((c) => Math.max(0, c - cost));
     setHintLevel(nextLevel);
-    setHintMsg(cost > 0 ? `Indice debloque (-${cost} piece).` : "Premier indice gratuit en facile.");
+    setHintMsg(cost > 0 ? `Indice debloque (-${cost} piece${cost > 1 ? "s" : ""}).` : "Premier indice gratuit en facile.");
   }
 
   function computeAdaptiveAction(roll20, perfByMode) {
@@ -3089,7 +3089,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Effets cosmetiques debloques</strong>
+              <strong>Effets cosmetiques</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Effet equipe: <b>{ANSWER_EFFECTS.find((e) => e.id === answerEffectId)?.label ?? "Classique"}</b>
               </div>

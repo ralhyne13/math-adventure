@@ -37,7 +37,7 @@ export default function TopBar({
 
       <div className="hud">
         <div className="hudLeft">
-          <div className="coins chip coinChip smooth" title="Monnaie virtuelle">
+          <div className="coins chip coinChip smooth" title="Pieces">
             <span className="coinDot" />
             <span>{coins}</span>
             <span className="chipLabel">pieces</span>

@@ -225,9 +225,9 @@ export default function QuestionCard({
         <div className="learningRow">
           <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
             Indice {hintLevel + 1}/{hintList.length}
-            {canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} coin`})`}
+            {canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} piece${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
           </button>
-          <span className="small">Les indices aident, mais coutent des coins (sauf le 1er en facile).</span>
+          <span className="small">Les indices aident, mais coutent des pieces (sauf le 1er en facile).</span>
         </div>
         {hintMsg && !visibleHints.length && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
 

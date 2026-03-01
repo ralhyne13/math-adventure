@@ -55,7 +55,7 @@ export default function Profile({
         </div>
         <div className="chip smooth">
           <span className="chipIcon">🧩</span>
-          <span>{cosmeticDust} diamant</span>
+          <span>{cosmeticDust} diamants</span>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export default function Profile({
               <div className="sub" style={{ marginTop: 8 }}>
                 Joueur : <b>{authUser.pseudoDisplay}</b>
                 <br />
-                Niveau : <b>{level}</b> - Pieces : <b>{coins}</b> - Diamant : <b>{cosmeticDust}</b> - Streak login : <b>{loginStreak}/7</b>
+                Niveau : <b>{level}</b> - Pieces : <b>{coins}</b> - Diamants : <b>{cosmeticDust}</b> - Streak login : <b>{loginStreak}/7</b>
                 <br />
                 Bonnes : <b>{totalRight}</b> - Erreurs : <b>{totalWrong}</b> - Precision : <b>{accuracy}%</b>
                 <br />
@@ -156,7 +156,7 @@ export default function Profile({
                 <b>{answerEffects.length}</b>
               </div>
             </div>
-            <span className="pill">{cosmeticDust} diamant</span>
+            <span className="pill">{cosmeticDust} diamants</span>
           </div>
 
           <div className="small" style={{ marginTop: 12 }}>Skins</div>
@@ -201,7 +201,7 @@ export default function Profile({
                 <div key={fx.id} className={`shopCard ${owned ? "" : "badgeLocked"}`}>
                   <div className="badgeIcon">{fx.id === "default" ? "✨" : "💥"}</div>
                   <div className="shopTitle">{owned ? fx.label : "Effet verrouille"}</div>
-                  <div className="small" style={{ marginTop: 6 }}>{owned ? fx.desc : `Deblocage: ${cost} diamant`}</div>
+                  <div className="small" style={{ marginTop: 6 }}>{owned ? fx.desc : `Deblocage: ${cost} diamants`}</div>
                   <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {equipped && <span className="badgeProgress">Equipe</span>}
                     {!owned && fx.id !== "default" && (
