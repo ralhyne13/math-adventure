@@ -73,6 +73,26 @@ function isYesterdayKey(prevKey, todayKey) {
   return diff === 1;
 }
 
+function parisIsoDate(date = new Date()) {
+  return date.toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
+}
+function parisWeekKey(date = new Date()) {
+  const iso = parisIsoDate(date); // YYYY-MM-DD
+  const base = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(base.getTime())) return `week-${iso}`;
+  const day = base.getDay(); // 0 Sunday ... 6 Saturday
+  const mondayShift = (day + 6) % 7;
+  base.setDate(base.getDate() - mondayShift);
+  const mondayIso = `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}-${String(base.getDate()).padStart(2, "0")}`;
+  return `week-${mondayIso}`;
+}
+
+function hashString(s) {
+  let h = 0;
+  for (let i = 0; i < String(s).length; i++) h = (h * 31 + String(s).charCodeAt(i)) >>> 0;
+  return h;
+}
+
 /* ------------------------ Password hashing (SHA-256) ------------------------ */
 async function sha256Hex(text) {
   const enc = new TextEncoder().encode(text);
@@ -272,10 +292,161 @@ const MODES = [
   { id: "div", label: "Division", icon: "÷" },
   { id: "cmpFrac", label: "Comparer fractions", icon: "?" },
   { id: "eqFrac", label: "Équivalences", icon: "≡" },
+  { id: "fracOp", label: "Add/Sous fractions", icon: "±" },
+  { id: "simpFrac", label: "Simplifier fraction", icon: "🧹" },
+  { id: "fracVsNum", label: "Fraction vs nombre", icon: "↔" },
 ];
 
 function modeName(mId) {
   return MODES.find((m) => m.id === mId)?.label ?? mId;
+}
+
+const DAILY_CHALLENGES = [
+  {
+    id: "day-frac-20",
+    title: "Fractions du jour",
+    desc: "Reussis 20 questions de fractions aujourd'hui.",
+    type: "modeRightCount",
+    modeIds: ["cmpFrac", "eqFrac"],
+    target: 20,
+    rewardCoins: 60,
+    rewardXp: 80,
+    icon: "🧩",
+  },
+  {
+    id: "day-mul-streak-10",
+    title: "Combo multiplication",
+    desc: "Fais 10 bonnes d'affilee en multiplication.",
+    type: "modeBestStreak",
+    modeIds: ["mul"],
+    target: 10,
+    rewardCoins: 70,
+    rewardXp: 90,
+    icon: "🔥",
+  },
+  {
+    id: "day-div-15",
+    title: "Division sprint",
+    desc: "Reussis 15 divisions aujourd'hui.",
+    type: "modeRightCount",
+    modeIds: ["div"],
+    target: 15,
+    rewardCoins: 65,
+    rewardXp: 85,
+    icon: "➗",
+  },
+];
+
+const WEEKLY_CHALLENGES = [
+  {
+    id: "week-frac-100",
+    title: "Semaine fractions",
+    desc: "Reussis 100 questions de fractions cette semaine.",
+    type: "modeRightCount",
+    modeIds: ["cmpFrac", "eqFrac"],
+    target: 100,
+    rewardCoins: 220,
+    rewardXp: 280,
+    icon: "🏆",
+  },
+  {
+    id: "week-mul-60",
+    title: "Maitre des tables",
+    desc: "Reussis 60 multiplications cette semaine.",
+    type: "modeRightCount",
+    modeIds: ["mul"],
+    target: 60,
+    rewardCoins: 210,
+    rewardXp: 260,
+    icon: "✖️",
+  },
+  {
+    id: "week-streak-15",
+    title: "Serie pro",
+    desc: "Atteins 15 de serie dans un mode cette semaine.",
+    type: "anyBestStreak",
+    target: 15,
+    rewardCoins: 240,
+    rewardXp: 320,
+    icon: "⚡",
+  },
+];
+
+function emptyModeValueMap() {
+  const out = {};
+  for (const m of MODES) out[m.id] = 0;
+  return out;
+}
+
+function createChallengeStats() {
+  return {
+    modeRight: emptyModeValueMap(),
+    modeRun: emptyModeValueMap(),
+    modeBestRun: emptyModeValueMap(),
+  };
+}
+
+function pickChallengeId(pool, keySeed) {
+  if (!pool.length) return null;
+  const idx = hashString(keySeed) % pool.length;
+  return pool[idx].id;
+}
+
+function hydrateChallengeStats(raw) {
+  const base = createChallengeStats();
+  const modeRight = { ...base.modeRight, ...(raw?.modeRight ?? {}) };
+  const modeRun = { ...base.modeRun, ...(raw?.modeRun ?? {}) };
+  const modeBestRun = { ...base.modeBestRun, ...(raw?.modeBestRun ?? {}) };
+  return { modeRight, modeRun, modeBestRun };
+}
+
+function createChallengeProgress(saved) {
+  const dayKey = parisDayKey();
+  const weekKey = parisWeekKey();
+  const sameDay = saved?.dayKey === dayKey;
+  const sameWeek = saved?.weekKey === weekKey;
+
+  return {
+    dayKey,
+    weekKey,
+    dailyId: sameDay ? saved?.dailyId ?? pickChallengeId(DAILY_CHALLENGES, dayKey) : pickChallengeId(DAILY_CHALLENGES, dayKey),
+    weeklyId: sameWeek ? saved?.weeklyId ?? pickChallengeId(WEEKLY_CHALLENGES, weekKey) : pickChallengeId(WEEKLY_CHALLENGES, weekKey),
+    dailyStats: sameDay ? hydrateChallengeStats(saved?.dailyStats) : createChallengeStats(),
+    weeklyStats: sameWeek ? hydrateChallengeStats(saved?.weeklyStats) : createChallengeStats(),
+    claimedDaily: sameDay ? !!saved?.claimedDaily : false,
+    claimedWeekly: sameWeek ? !!saved?.claimedWeekly : false,
+  };
+}
+
+function challengeById(pool, id, fallbackSeed) {
+  return pool.find((c) => c.id === id) ?? pool.find((c) => c.id === pickChallengeId(pool, fallbackSeed)) ?? pool[0];
+}
+
+function challengeProgressValue(challenge, stats) {
+  if (!challenge || !stats) return 0;
+  const ids = challenge.modeIds ?? [];
+  if (challenge.type === "modeRightCount") {
+    return ids.reduce((sum, id) => sum + (stats.modeRight?.[id] ?? 0), 0);
+  }
+  if (challenge.type === "modeBestStreak") {
+    return ids.reduce((best, id) => Math.max(best, stats.modeBestRun?.[id] ?? 0), 0);
+  }
+  if (challenge.type === "anyBestStreak") {
+    return Object.values(stats.modeBestRun ?? {}).reduce((best, v) => Math.max(best, Number(v) || 0), 0);
+  }
+  return 0;
+}
+
+function applyAnswerToChallengeStats(prevStats, modeId, isCorrect) {
+  const next = hydrateChallengeStats(prevStats);
+  if (isCorrect) {
+    next.modeRight[modeId] = (next.modeRight[modeId] ?? 0) + 1;
+    next.modeRun[modeId] = (next.modeRun[modeId] ?? 0) + 1;
+  } else {
+    next.modeRun[modeId] = 0;
+  }
+  next.modeBestRun[modeId] = Math.max(next.modeBestRun[modeId] ?? 0, next.modeRun[modeId] ?? 0);
+  return next;
 }
 
 function gradeBase(gradeId) {
@@ -322,6 +493,9 @@ function questionSignature(q, modeId, gradeId, diffId) {
   if (q.row.kind === "op") return `${base}|${q.row.a}|${q.row.op}|${q.row.b}`;
   if (q.row.kind === "fracCmp") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.bN}/${q.row.bD}`;
   if (q.row.kind === "fracEq") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.bN}/${q.row.bD}`;
+  if (q.row.kind === "fracOp") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.op}|${q.row.bN}/${q.row.bD}`;
+  if (q.row.kind === "fracSimp") return `${base}|${q.row.n}/${q.row.d}`;
+  if (q.row.kind === "fracVsNum") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.numLabel}`;
   return base;
 }
 
@@ -335,6 +509,15 @@ function makeChoicesNumber(correct, spread = 10) {
     if (v >= 0) set.add(v);
   }
   return shuffle([...set]);
+}
+function makeChoicesFraction(correct, distractors = []) {
+  const set = new Set([correct, ...distractors].filter(Boolean));
+  while (set.size < 4) {
+    const d = randInt(2, 12);
+    const n = randInt(0, d * 2);
+    set.add(`${n}/${d}`);
+  }
+  return shuffle([...set].slice(0, 4));
 }
 
 function makeQAdd(cfg) {
@@ -506,6 +689,118 @@ function makeQEqFrac(cfg, gradeId) {
   };
 }
 
+function makeQFracOp(cfg) {
+  const denMax = Math.max(8, cfg.fracDen);
+  let aD = randInt(2, denMax);
+  let bD = randInt(2, denMax);
+  let aN = randInt(1, aD - 1);
+  let bN = randInt(1, bD - 1);
+  const op = Math.random() < 0.5 ? "+" : "−";
+
+  if (op === "−" && cmpFractions(aN, aD, bN, bD) === "<") {
+    [aN, bN] = [bN, aN];
+    [aD, bD] = [bD, aD];
+  }
+
+  const common = lcm(aD, bD);
+  const aEq = aN * (common / aD);
+  const bEq = bN * (common / bD);
+  const rawN = op === "+" ? aEq + bEq : aEq - bEq;
+  const [sN, sD] = simplify(rawN, common);
+  const correct = `${sN}/${sD}`;
+
+  const wrong1 = `${rawN}/${common}`;
+  const wrong2 = `${op === "+" ? aN + bN : Math.max(0, aN - bN)}/${aD + bD}`;
+  const wrong3 = `${op === "+" ? aN + bN : Math.max(0, aN - bN)}/${common}`;
+
+  return {
+    prompt: "Calcule :",
+    row: { kind: "fracOp", aN, aD, bN, bD, op },
+    correct,
+    choices: makeChoicesFraction(correct, [wrong1, wrong2, wrong3]),
+    explain: (picked) => {
+      const base = `Denominateur commun ${common} : ${aN}/${aD} = ${aEq}/${common}, ${bN}/${bD} = ${bEq}/${common}.`;
+      const calc = `Puis ${aEq} ${op === "+" ? "+" : "−"} ${bEq} = ${rawN}, donc ${rawN}/${common}.`;
+      const simp = `On simplifie -> ${sN}/${sD}.`;
+      if (picked === correct) return `✅ ${base} ${calc} ${simp}`;
+      return `❌ ${base} ${calc} ${simp} Bonne reponse : ${correct}.`;
+    },
+  };
+}
+
+function makeQSimplifyFrac(cfg) {
+  const denMax = Math.max(8, cfg.fracDen);
+  const baseD = randInt(2, denMax);
+  const baseN = randInt(1, baseD - 1);
+  const [sBaseN, sBaseD] = simplify(baseN, baseD);
+  const k = randInt(2, 9);
+  const n = sBaseN * k;
+  const d = sBaseD * k;
+  const g = gcd(n, d);
+  const correct = `${n / g}/${d / g}`;
+
+  const properDivs = [];
+  for (let i = 2; i < k; i++) if (k % i === 0) properDivs.push(i);
+  const midDiv = properDivs.length ? properDivs[randInt(0, properDivs.length - 1)] : null;
+
+  const wrong1 = `${n}/${d}`;
+  const wrong2 = midDiv ? `${n / midDiv}/${d / midDiv}` : `${(n / g) * 2}/${(d / g) * 2}`;
+  const wrong3 = `${(n / g) * 3}/${(d / g) * 3}`;
+
+  return {
+    prompt: "Simplifie :",
+    row: { kind: "fracSimp", n, d },
+    correct,
+    choices: makeChoicesFraction(correct, [wrong1, wrong2, wrong3]),
+    explain: (picked) => {
+      const line = `PGCD(${n}, ${d}) = ${g}. On divise numerateur et denominateur par ${g}.`;
+      if (picked === correct) return `✅ ${line} Resultat : ${correct}.`;
+      return `❌ ${line} Bonne reponse : ${correct}.`;
+    },
+  };
+}
+
+function makeQFracVsNum(cfg) {
+  const denMax = Math.max(8, cfg.fracDen);
+  const aD = randInt(2, denMax);
+  const aN = randInt(1, Math.max(3, aD * 2));
+
+  const useDecimal = Math.random() < 0.55;
+  let numLabel;
+  let bN;
+  let bD;
+
+  if (useDecimal) {
+    const tenth = randInt(1, 35);
+    numLabel = (tenth / 10).toFixed(1);
+    bN = tenth;
+    bD = 10;
+  } else {
+    const iv = randInt(0, 4);
+    numLabel = String(iv);
+    bN = iv;
+    bD = 1;
+  }
+
+  const cmp = cmpFractions(aN, aD, bN, bD);
+  const correct = cmp;
+  const bAsFrac = `${bN}/${bD}`;
+  const left = aN * bD;
+  const right = bN * aD;
+
+  return {
+    prompt: "Compare :",
+    row: { kind: "fracVsNum", aN, aD, numLabel },
+    correct,
+    choices: ["<", "=", ">"],
+    explain: (picked) => {
+      const line = `${numLabel} = ${bAsFrac}. Produit en croix: ${aN}×${bD}=${left} et ${bN}×${aD}=${right}.`;
+      if (picked === correct) return `✅ ${line} Donc ${aN}/${aD} ${correct} ${numLabel}.`;
+      return `❌ ${line} Bonne reponse : "${correct}".`;
+    },
+  };
+}
+
 function makeQuestionCore(modeId, gradeId, diffId) {
   const base = gradeBase(gradeId);
   const f = diffFactor(diffId);
@@ -531,6 +826,12 @@ function makeQuestionCore(modeId, gradeId, diffId) {
       return makeQCmpFrac(cfg, gradeId);
     case "eqFrac":
       return makeQEqFrac(cfg, gradeId);
+    case "fracOp":
+      return makeQFracOp(cfg);
+    case "simpFrac":
+      return makeQSimplifyFrac(cfg);
+    case "fracVsNum":
+      return makeQFracVsNum(cfg);
     default:
       return makeQAdd(cfg);
   }
@@ -602,6 +903,31 @@ function buildHints(question, gradeId) {
     ];
   }
 
+  if (r.kind === "fracOp") {
+    const common = lcm(r.aD, r.bD);
+    return [
+      "Mets les deux fractions au meme denominateur.",
+      `Denominateur commun = ${common}.`,
+      "Additionne/soustrais les numerateurs puis simplifie.",
+    ];
+  }
+
+  if (r.kind === "fracSimp") {
+    return [
+      "Cherche le PGCD du numerateur et du denominateur.",
+      "Divise les deux par ce PGCD.",
+      `Resultat simplifie : ${question.correct}.`,
+    ];
+  }
+
+  if (r.kind === "fracVsNum") {
+    return [
+      "Transforme le nombre en fraction (ex: 0.7 -> 7/10, 2 -> 2/1).",
+      "Compare ensuite avec produit en croix.",
+      `Le bon signe est "${question.correct}".`,
+    ];
+  }
+
   return [];
 }
 
@@ -650,6 +976,41 @@ function buildMethodSteps(question, gradeId) {
       `Etape 1 : teste ${r.aN}×${r.bD} et ${r.bN}×${r.aD}.`,
       `Etape 2 : on obtient ${left} et ${right}.`,
       `Etape 3 : ${left === right ? "egaux" : "differents"}, reponse "${question.correct}".`,
+    ];
+  }
+
+  if (r.kind === "fracOp") {
+    const common = lcm(r.aD, r.bD);
+    const aEq = r.aN * (common / r.aD);
+    const bEq = r.bN * (common / r.bD);
+    const rawN = r.op === "+" ? aEq + bEq : aEq - bEq;
+    const [sN, sD] = simplify(rawN, common);
+    return [
+      `Etape 1 : denominateur commun = ${common}.`,
+      `Etape 2 : ${aEq} ${r.op} ${bEq} = ${rawN}, donc ${rawN}/${common}.`,
+      `Etape 3 : simplification -> ${sN}/${sD}.`,
+    ];
+  }
+
+  if (r.kind === "fracSimp") {
+    const g = gcd(r.n, r.d);
+    return [
+      `Etape 1 : PGCD(${r.n}, ${r.d}) = ${g}.`,
+      `Etape 2 : ${r.n} ÷ ${g} / ${r.d} ÷ ${g}.`,
+      `Etape 3 : resultat = ${question.correct}.`,
+    ];
+  }
+
+  if (r.kind === "fracVsNum") {
+    const isDecimal = String(r.numLabel).includes(".");
+    const bN = isDecimal ? Math.round(Number(r.numLabel) * 10) : parseInt(r.numLabel, 10);
+    const bD = isDecimal ? 10 : 1;
+    const left = r.aN * bD;
+    const right = bN * r.aD;
+    return [
+      `Etape 1 : transforme ${r.numLabel} en ${bN}/${bD}.`,
+      `Etape 2 : compare ${r.aN}×${bD}=${left} et ${bN}×${r.aD}=${right}.`,
+      `Etape 3 : signe correct = "${question.correct}".`,
     ];
   }
 
@@ -734,6 +1095,12 @@ function modeHint(modeId) {
       return "Astuce fractions : mets au même dénominateur OU fais un produit en croix.";
     case "eqFrac":
       return "Astuce équivalences : multiplie/divise numérateur et dénominateur par le même nombre.";
+    case "fracOp":
+      return "Astuce fractions : trouve le dénominateur commun, calcule le numérateur, puis simplifie.";
+    case "simpFrac":
+      return "Astuce simplification : cherche le PGCD du numérateur et du dénominateur.";
+    case "fracVsNum":
+      return "Astuce comparaison : transforme le nombre en fraction puis compare (ou produit en croix).";
     case "add":
     default:
       return "Astuce addition : vérifie vite avec l’opération inverse (−) si tu doutes.";
@@ -876,6 +1243,7 @@ export default function App() {
         achievements: {},
         lastLoginDayKey: null,
         loginStreak: 0,
+        challengeProgress: createChallengeProgress(null),
       };
     }
 
@@ -905,6 +1273,7 @@ export default function App() {
       achievements: saved?.achievements ?? {},
       lastLoginDayKey: saved?.lastLoginDayKey ?? null,
       loginStreak: saved?.loginStreak ?? 0,
+      challengeProgress: createChallengeProgress(saved?.challengeProgress),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, authUser?.pseudoKey]);
@@ -943,6 +1312,7 @@ export default function App() {
 
   const [lastLoginDayKey, setLastLoginDayKey] = useState(initial.lastLoginDayKey);
   const [loginStreak, setLoginStreak] = useState(initial.loginStreak);
+  const [challengeProgress, setChallengeProgress] = useState(initial.challengeProgress);
   const [loginRewardPop, setLoginRewardPop] = useState(null);
 
   // Session
@@ -1034,6 +1404,7 @@ export default function App() {
       achievements,
       lastLoginDayKey,
       loginStreak,
+      challengeProgress,
     });
   }, [
     isLoggedIn,
@@ -1062,12 +1433,22 @@ export default function App() {
     achievements,
     lastLoginDayKey,
     loginStreak,
+    challengeProgress,
   ]);
 
   useEffect(() => {
     newQuestion(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeId, gradeId, diffId]);
+
+  useEffect(() => {
+    setChallengeProgress((prev) => {
+      const nowDay = parisDayKey();
+      const nowWeek = parisWeekKey();
+      if (prev?.dayKey === nowDay && prev?.weekKey === nowWeek) return prev;
+      return createChallengeProgress(prev);
+    });
+  }, [questionIndex]);
 
   function vibrate(ms) {
     if (!vibrateOn) return;
@@ -1347,6 +1728,15 @@ export default function App() {
     adaptiveRollRef.current = nextRoll;
     setAdaptiveAction(computeAdaptiveAction(nextRoll, nextSessionPerf));
 
+    setChallengeProgress((prev) => {
+      const base = createChallengeProgress(prev);
+      return {
+        ...base,
+        dailyStats: applyAnswerToChallengeStats(base.dailyStats, modeId, isCorrect),
+        weeklyStats: applyAnswerToChallengeStats(base.weeklyStats, modeId, isCorrect),
+      };
+    });
+
     if (isCorrect) {
       setStatus("ok");
       playBeep("ok", audioOn);
@@ -1452,6 +1842,51 @@ export default function App() {
   }
 
   const bestScore = getBestScoreFor(modeId, gradeId, diffId);
+
+  const dailyChallenge = useMemo(
+    () => challengeById(DAILY_CHALLENGES, challengeProgress?.dailyId, challengeProgress?.dayKey ?? parisDayKey()),
+    [challengeProgress?.dailyId, challengeProgress?.dayKey]
+  );
+  const weeklyChallenge = useMemo(
+    () => challengeById(WEEKLY_CHALLENGES, challengeProgress?.weeklyId, challengeProgress?.weekKey ?? parisWeekKey()),
+    [challengeProgress?.weeklyId, challengeProgress?.weekKey]
+  );
+
+  const dailyProgress = useMemo(
+    () => challengeProgressValue(dailyChallenge, challengeProgress?.dailyStats),
+    [dailyChallenge, challengeProgress?.dailyStats]
+  );
+  const weeklyProgress = useMemo(
+    () => challengeProgressValue(weeklyChallenge, challengeProgress?.weeklyStats),
+    [weeklyChallenge, challengeProgress?.weeklyStats]
+  );
+
+  const isDailyDone = !!dailyChallenge && dailyProgress >= dailyChallenge.target;
+  const isWeeklyDone = !!weeklyChallenge && weeklyProgress >= weeklyChallenge.target;
+
+  function claimChallenge(scope) {
+    const isDaily = scope === "daily";
+    const ch = isDaily ? dailyChallenge : weeklyChallenge;
+    if (!ch) return;
+    const already = isDaily ? challengeProgress?.claimedDaily : challengeProgress?.claimedWeekly;
+    const isDone = isDaily ? isDailyDone : isWeeklyDone;
+    if (already || !isDone) return;
+
+    awardCoins(ch.rewardCoins);
+    awardXp(ch.rewardXp);
+    showBadgePopup({
+      icon: ch.icon ?? "🎯",
+      title: `Defi ${isDaily ? "journalier" : "hebdo"} complete`,
+      desc: `${ch.title} • +${ch.rewardCoins} coins • +${ch.rewardXp} XP`,
+      reward: ch.rewardCoins,
+    });
+
+    setChallengeProgress((prev) => {
+      if (!prev) return prev;
+      if (isDaily) return { ...prev, claimedDaily: true };
+      return { ...prev, claimedWeekly: true };
+    });
+  }
 
   const accuracy = useMemo(() => {
     const total = totalRight + totalWrong;
@@ -1583,6 +2018,7 @@ export default function App() {
       achievements: {},
       lastLoginDayKey: null,
       loginStreak: 0,
+      challengeProgress: createChallengeProgress(null),
     });
 
     // Info recovery code
@@ -2137,6 +2573,24 @@ export default function App() {
                   <Fraction n={q.row.bN} d={q.row.bD} />
                 </>
               )}
+
+              {q.row.kind === "fracOp" && (
+                <>
+                  <Fraction n={q.row.aN} d={q.row.aD} />
+                  <div className="bigOp opSep">{q.row.op}</div>
+                  <Fraction n={q.row.bN} d={q.row.bD} />
+                </>
+              )}
+
+              {q.row.kind === "fracSimp" && <Fraction n={q.row.n} d={q.row.d} />}
+
+              {q.row.kind === "fracVsNum" && (
+                <>
+                  <Fraction n={q.row.aN} d={q.row.aD} />
+                  <div className="bigOp opSep">?</div>
+                  <div className="bigOp">{q.row.numLabel}</div>
+                </>
+              )}
             </div>
 
             <div className="learningRow">
@@ -2243,6 +2697,60 @@ export default function App() {
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Dernière connexion : <b>{lastLoginDayKey ?? "—"}</b>
+              </div>
+            </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 14 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Defi journalier</strong>
+              <div className="sub" style={{ marginTop: 6 }}>{dailyChallenge?.desc}</div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Progression: <b>{Math.min(dailyProgress, dailyChallenge?.target ?? 0)}</b> / <b>{dailyChallenge?.target ?? 0}</b>
+              </div>
+              <div className="barWrap" style={{ marginTop: 8 }}>
+                <div
+                  className="bar"
+                  style={{ width: `${Math.round(((dailyProgress || 0) / Math.max(1, dailyChallenge?.target ?? 1)) * 100)}%` }}
+                />
+              </div>
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <span className="pill">+{dailyChallenge?.rewardCoins ?? 0} coins</span>
+                <span className="pill">+{dailyChallenge?.rewardXp ?? 0} XP</span>
+                <button
+                  className="btn btnPrimary smooth hover-lift press"
+                  disabled={!isDailyDone || !!challengeProgress?.claimedDaily}
+                  onClick={() => claimChallenge("daily")}
+                >
+                  {challengeProgress?.claimedDaily ? "Recompense recue" : "Recuperer"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Defi hebdo</strong>
+              <div className="sub" style={{ marginTop: 6 }}>{weeklyChallenge?.desc}</div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Progression: <b>{Math.min(weeklyProgress, weeklyChallenge?.target ?? 0)}</b> / <b>{weeklyChallenge?.target ?? 0}</b>
+              </div>
+              <div className="barWrap" style={{ marginTop: 8 }}>
+                <div
+                  className="bar"
+                  style={{ width: `${Math.round(((weeklyProgress || 0) / Math.max(1, weeklyChallenge?.target ?? 1)) * 100)}%` }}
+                />
+              </div>
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <span className="pill">+{weeklyChallenge?.rewardCoins ?? 0} coins</span>
+                <span className="pill">+{weeklyChallenge?.rewardXp ?? 0} XP</span>
+                <button
+                  className="btn btnPrimary smooth hover-lift press"
+                  disabled={!isWeeklyDone || !!challengeProgress?.claimedWeekly}
+                  onClick={() => claimChallenge("weekly")}
+                >
+                  {challengeProgress?.claimedWeekly ? "Recompense recue" : "Recuperer"}
+                </button>
               </div>
             </div>
           </div>
