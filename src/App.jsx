@@ -1663,6 +1663,14 @@ export default function App() {
                   <Fraction n={q.row.bN} d={q.row.bD} />
                 </>
               )}
+
+              {q.row.kind === "storyOp" && (
+                <>
+                  <div className="bigOp">{q.row.a}</div>
+                  <div className="bigOp opSep">{q.row.op}</div>
+                  <div className="bigOp">{q.row.b}</div>
+                </>
+              )}
             </div>
 
             <div className="learningRow">

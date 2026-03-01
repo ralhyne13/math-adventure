@@ -218,6 +218,7 @@ export function questionSignature(q, modeId, gradeId, diffId) {
   if (q.row.kind === "fracSimp") return `${base}|${q.row.n}/${q.row.d}`;
   if (q.row.kind === "fracVsNum") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.numLabel}`;
   if (q.row.kind === "storyFrac") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.op}|${q.row.bN}/${q.row.bD}`;
+  if (q.row.kind === "storyOp") return `${base}|${q.row.a}|${q.row.op}|${q.row.b}`;
   return base;
 }
 
@@ -489,6 +490,62 @@ function makeQFracVsNum(cfg) {
 }
 
 function makeQWord(cfg) {
+  const useFractionStory = Math.random() < 0.45;
+  if (!useFractionStory) {
+    const opRoll = Math.random();
+    let op = "+";
+    if (opRoll < 0.25) op = "+";
+    else if (opRoll < 0.5) op = "−";
+    else if (opRoll < 0.75) op = "×";
+    else op = "÷";
+
+    const addMax = Math.max(20, cfg.addMax);
+    const subMax = Math.max(20, cfg.subMax);
+    const mulA = Math.max(3, cfg.mulA);
+    const mulB = Math.max(3, cfg.mulB);
+    const divB = Math.max(3, cfg.divB);
+
+    let a = 0;
+    let b = 0;
+    let correct = 0;
+    let prompt = "";
+
+    if (op === "+") {
+      a = randInt(2, addMax);
+      b = randInt(2, addMax);
+      correct = a + b;
+      prompt = `Emma a ${a} billes et en gagne ${b}. Combien en a-t-elle maintenant ?`;
+    } else if (op === "−") {
+      a = randInt(8, subMax);
+      b = randInt(2, Math.max(2, Math.min(a - 1, Math.round(subMax * 0.7))));
+      if (b > a) [a, b] = [b, a];
+      correct = a - b;
+      prompt = `Il y a ${a} livres sur une etagere. On en retire ${b}. Combien en reste-t-il ?`;
+    } else if (op === "×") {
+      a = randInt(2, mulA);
+      b = randInt(2, mulB);
+      correct = a * b;
+      prompt = `Il y a ${a} boites avec ${b} crayons chacune. Combien de crayons au total ?`;
+    } else {
+      b = randInt(2, divB);
+      correct = randInt(2, Math.max(8, Math.round(divB * 1.3)));
+      a = b * correct;
+      prompt = `${a} bonbons sont partages en ${b} paquets egaux. Combien dans chaque paquet ?`;
+    }
+
+    return {
+      prompt,
+      row: { kind: "storyOp", a, op, b },
+      correct,
+      choices: makeChoicesNumber(correct, Math.max(4, Math.round(Math.abs(correct) * 0.2 + 8))),
+      explain: (picked) => {
+        const calc = `${a} ${op} ${b} = ${correct}.`;
+        if (picked === correct) return `✅ ${calc}`;
+        return `❌ ${calc} Bonne reponse : ${correct}.`;
+      },
+    };
+  }
+
   const denMax = Math.max(8, cfg.fracDen);
   const template = randInt(1, 3);
   let op = "−";
@@ -629,6 +686,10 @@ export function buildHints(question, gradeId) {
     const common = lcm(r.aD, r.bD);
     return ["Repere les fractions dans l'enonce.", `Mets-les au meme denominateur (ici ${common}).`, "Fais l'operation puis simplifie."];
   }
+  if (r.kind === "storyOp") {
+    if (r.op === "÷") return ["Repere l'operation de partage.", "Pose la division.", "Verifie avec l'operation inverse (×)."];
+    return ["Repere l'operation dans l'enonce.", `Pose ${r.a} ${r.op} ${r.b}.`, "Calcule le resultat."];
+  }
   return [];
 }
 
@@ -692,6 +753,13 @@ export function buildMethodSteps(question, gradeId) {
       `Etape 1 : denominateur commun = ${common}.`,
       `Etape 2 : ${aEq} ${r.op} ${bEq} = ${rawN}, donc ${rawN}/${common}.`,
       `Etape 3 : simplification -> ${sN}/${sD}.`,
+    ];
+  }
+  if (r.kind === "storyOp") {
+    return [
+      `Etape 1 : operation ${r.a} ${r.op} ${r.b}.`,
+      `Etape 2 : calcul -> ${question.correct}.`,
+      r.op === "÷" ? `Etape 3 : verification ${r.b} × ${question.correct} = ${r.a}.` : "Etape 3 : resultat final.",
     ];
   }
   return [];
