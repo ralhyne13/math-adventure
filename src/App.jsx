@@ -63,7 +63,6 @@ function dayKeyToDate(dayKey) {
   if (parts.length !== 3) return null;
   const [dd, mm, yyyy] = parts.map((x) => parseInt(x, 10));
   if (!dd || !mm || !yyyy) return null;
-  // créer une date "locale" OK pour comparer jours (on compare uniquement via keys ensuite)
   return new Date(yyyy, mm - 1, dd, 12, 0, 0);
 }
 function isYesterdayKey(prevKey, todayKey) {
@@ -214,9 +213,8 @@ const SKINS = [
   },
 ];
 
-// ✅ Beaucoup plus de "communs"
 const AVATARS = [
-  // COMMUNS (0-60)
+  // COMMUNS
   { id: "owl", name: "Hibou", emoji: "🦉", price: 0, rarity: "Commun" },
   { id: "cat", name: "Chat", emoji: "🐱", price: 20, rarity: "Commun" },
   { id: "dog", name: "Chien", emoji: "🐶", price: 20, rarity: "Commun" },
@@ -494,8 +492,7 @@ function makeQEqFrac(cfg, gradeId) {
 
       const factN = bN / aN;
       const factD = bD / aD;
-      const sameFactor =
-        Number.isFinite(factN) && Number.isFinite(factD) && Math.abs(factN - factD) < 1e-9;
+      const sameFactor = Number.isFinite(factN) && Number.isFinite(factD) && Math.abs(factN - factD) < 1e-9;
 
       if (ok && eq) {
         return sameFactor
@@ -601,7 +598,7 @@ function formatDateFR(iso) {
   }
 }
 
-/* ------------------------ (Coach helpers) ------------------------ */
+/* ------------------------ Coach helpers ------------------------ */
 function modeHint(modeId) {
   switch (modeId) {
     case "div":
@@ -613,7 +610,7 @@ function modeHint(modeId) {
     case "cmpFrac":
       return "Astuce fractions : mets au même dénominateur OU fais un produit en croix.";
     case "eqFrac":
-      return "Astuce équivalences : multiplie/Divise numérateur et dénominateur par le même nombre.";
+      return "Astuce équivalences : multiplie/divise numérateur et dénominateur par le même nombre.";
     case "add":
     default:
       return "Astuce addition : vérifie vite avec l’opération inverse (−) si tu doutes.";
@@ -661,22 +658,18 @@ function setUsersIndex(next) {
   safeLSSet(USERS_KEY, next);
 }
 function safeName(pseudo) {
-  // affichage joli: garde ce que l'utilisateur tape, mais pour clé on normalise
   return String(pseudo || "").trim();
 }
 
 /* ------------------------ Login Streak Rewards (7 jours) ------------------------ */
 function rewardRoll(streakDay, ownedAvatars) {
-  // streakDay 1..7
   const baseCoins = 30 + (streakDay - 1) * 18;
   const coinReward = randInt(baseCoins, baseCoins + 45);
 
-  // chance avatar augmente avec le jour
   const avatarChance = clamp(0.18 + (streakDay - 1) * 0.07, 0.18, 0.62);
   const roll = Math.random();
 
   if (roll < avatarChance) {
-    // pool : surtout communs, un peu rares, très peu epique
     const commons = AVATARS.filter((a) => a.rarity === "Commun");
     const rares = AVATARS.filter((a) => a.rarity === "Rare");
     const epics = AVATARS.filter((a) => a.rarity === "Épique");
@@ -691,11 +684,9 @@ function rewardRoll(streakDay, ownedAvatars) {
       const picked = notOwned[randInt(0, notOwned.length - 1)];
       return { kind: "avatar", avatarId: picked.id, label: `Avatar : ${picked.emoji} ${picked.name}` };
     }
-    // si tout déjà possédé -> coins
     return { kind: "coins", coins: coinReward + 40, label: `Coins : +${coinReward + 40}` };
   }
 
-  // sinon coins
   return { kind: "coins", coins: coinReward, label: `Coins : +${coinReward}` };
 }
 
@@ -717,12 +708,25 @@ export default function App() {
   const [authPass, setAuthPass] = useState("");
   const [authMsg, setAuthMsg] = useState("");
 
+  // Forgot/reset password UI (only on login screen)
+  const [pwMode, setPwMode] = useState("none"); // none | forgot
+  const [pwTargetPseudo, setPwTargetPseudo] = useState("");
+  const [pwRecovery, setPwRecovery] = useState("");
+  const [pwNew, setPwNew] = useState("");
+  const [pwNew2, setPwNew2] = useState("");
+  const [pwMsg, setPwMsg] = useState("");
+
+  // Change password (logged in, settings)
+  const [pwCurrent, setPwCurrent] = useState("");
+  const [pwChangeNew, setPwChangeNew] = useState("");
+  const [pwChangeNew2, setPwChangeNew2] = useState("");
+  const [pwChangeMsg, setPwChangeMsg] = useState("");
+
   const isLoggedIn = !!authUser?.pseudoKey;
 
   /* ------------------------ Load per-user save ------------------------ */
   const initial = useMemo(() => {
     if (!isLoggedIn) {
-      // valeurs par défaut tant qu'on est pas connecté
       return {
         skinId: "neon-night",
         gradeId: "CE1",
@@ -745,7 +749,6 @@ export default function App() {
         autoNextMs: 1800,
         reduceMotion: false,
         achievements: {},
-        // login streak
         lastLoginDayKey: null,
         loginStreak: 0,
       };
@@ -811,7 +814,6 @@ export default function App() {
   const [levelPop, setLevelPop] = useState(null);
   const [coachPop, setCoachPop] = useState(null);
 
-  // login streak per user
   const [lastLoginDayKey, setLastLoginDayKey] = useState(initial.lastLoginDayKey);
   const [loginStreak, setLoginStreak] = useState(initial.loginStreak);
   const [loginRewardPop, setLoginRewardPop] = useState(null);
@@ -1014,10 +1016,7 @@ export default function App() {
       next[gradeId] ??= {};
       next[gradeId][diffId] ??= {};
       next[gradeId][diffId][modeId] ??= { bestScore: 0 };
-      next[gradeId][diffId][modeId].bestScore = Math.max(
-        next[gradeId][diffId][modeId].bestScore ?? 0,
-        finalScore
-      );
+      next[gradeId][diffId][modeId].bestScore = Math.max(next[gradeId][diffId][modeId].bestScore ?? 0, finalScore);
       return next;
     });
   }
@@ -1120,6 +1119,7 @@ export default function App() {
     const nextTotalRight = totalRight + (isCorrect ? 1 : 0);
     const nextTotalWrong = totalWrong + (isCorrect ? 0 : 1);
     const nextStreak = isCorrect ? streak + 1 : 0;
+
     const nextScoreAdd = isCorrect ? 10 + Math.min(18, streak * 2) : 0;
 
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
@@ -1257,40 +1257,32 @@ export default function App() {
   const xpNeed = xpToNext(level);
   const xpPct = Math.round((xp / xpNeed) * 100);
 
-  const unlockedCount = useMemo(() => {
-    return ACHIEVEMENTS.filter((a) => isUnlocked(a.id)).length;
-  }, [achievements]);
+  const unlockedCount = useMemo(() => ACHIEVEMENTS.filter((a) => isUnlocked(a.id)).length, [achievements]);
 
   const disableChoices = isLocked || showExplain;
 
-  // Fond dynamique maths
   const FLOATERS = useMemo(
-    () => ["1","2","3","4","5","6","7","8","9","0","+","−","×","÷","=","<",">","∑","π","%","🧮","⭐"],
+    () => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", "−", "×", "÷", "=", "<", ">", "∑", "π", "%", "🧮", "⭐"],
     []
   );
 
   /* ------------------------ Login reward on login (once/day) ------------------------ */
   function applyLoginRewardIfNeeded(userPseudoKey) {
     const today = parisDayKey();
-    // charge l'état utilisateur (déjà chargé aussi dans state, mais on sécurise)
     const saved = safeLSGet(userKey(userPseudoKey), null);
 
     const ownedA = saved?.ownedAvatars ?? ["owl"];
     const prevDay = saved?.lastLoginDayKey ?? null;
     const prevStreak = saved?.loginStreak ?? 0;
 
-    // déjà connecté aujourd'hui -> rien
     if (prevDay === today) return;
 
-    // calc streak
     let nextStreak = 1;
     if (prevDay && isYesterdayKey(prevDay, today)) nextStreak = clamp(prevStreak + 1, 1, 7);
     else nextStreak = 1;
 
-    // reward
     const reward = rewardRoll(nextStreak, ownedA);
 
-    // applique
     let nextCoins = saved?.coins ?? 120;
     let nextOwnedAv = [...(saved?.ownedAvatars ?? ["owl"])];
     let rewardText = "";
@@ -1305,8 +1297,6 @@ export default function App() {
       }`;
     }
 
-    // si jour 7 atteint -> reset au lendemain (mais on garde à 7 aujourd'hui)
-    // (tu peux changer si tu veux faire une boucle)
     const nextSaved = {
       ...(saved ?? {}),
       coins: nextCoins,
@@ -1316,7 +1306,6 @@ export default function App() {
     };
     safeLSSet(userKey(userPseudoKey), nextSaved);
 
-    // sync states
     setCoins(nextCoins);
     setOwnedAvatars(nextOwnedAv);
     setLastLoginDayKey(today);
@@ -1328,7 +1317,6 @@ export default function App() {
       detail: reward.label,
     });
 
-    // petit feedback
     playBeep("ok", saved?.audioOn ?? true);
     vibrate(18);
   }
@@ -1349,17 +1337,18 @@ export default function App() {
 
     const hash = await sha256Hex(pass);
 
-    // créer entrée
+    // ✅ code de récupération (front-only)
+    const recoveryCode = `${randInt(100000, 999999)}-${randInt(100000, 999999)}`;
+
     const nextIdx = {
       ...idx,
       users: {
         ...(idx.users ?? {}),
-        [pseudoKey]: { pseudoDisplay, passHash: hash, createdAt: new Date().toISOString() },
+        [pseudoKey]: { pseudoDisplay, passHash: hash, recoveryCode, createdAt: new Date().toISOString() },
       },
     };
     setUsersIndex(nextIdx);
 
-    // init save user
     safeLSSet(userKey(pseudoKey), {
       skinId: "neon-night",
       gradeId: "CE1",
@@ -1386,12 +1375,13 @@ export default function App() {
       loginStreak: 0,
     });
 
-    // login direct
+    // Info recovery code
+    alert(`IMPORTANT : garde ce code de récupération (si tu oublies ton mot de passe) :\n\n${recoveryCode}\n\nNote-le quelque part ✅`);
+
     const au = { pseudoDisplay, pseudoKey };
     safeLSSet("math-adventure-auth", au);
     setAuthUser(au);
 
-    // recharge l'app (simple + safe)
     window.location.reload();
   }
 
@@ -1425,22 +1415,97 @@ export default function App() {
     window.location.reload();
   }
 
+  // ✅ Reset password via recovery code (login screen)
+  async function resetPasswordWithRecovery() {
+    setPwMsg("");
+    if (!crypto?.subtle) return setPwMsg("Ton navigateur ne supporte pas crypto.subtle.");
+
+    const pseudoKey = normalizePseudo(pwTargetPseudo);
+    const rec = String(pwRecovery || "").trim();
+    const next = String(pwNew || "");
+    const next2 = String(pwNew2 || "");
+
+    if (pseudoKey.length < 3) return setPwMsg("Pseudo invalide.");
+    if (rec.length < 3) return setPwMsg("Code de récupération manquant.");
+    if (next.length < 4) return setPwMsg("Nouveau mot de passe trop court (min 4).");
+    if (next !== next2) return setPwMsg("Confirmation différente.");
+
+    const idx = getUsersIndex();
+    const u = idx.users?.[pseudoKey];
+    if (!u) return setPwMsg("Utilisateur introuvable.");
+
+    if (String(u.recoveryCode || "").trim() !== rec) return setPwMsg("Code de récupération incorrect.");
+
+    const nextHash = await sha256Hex(next);
+
+    setUsersIndex({
+      ...idx,
+      users: {
+        ...(idx.users ?? {}),
+        [pseudoKey]: { ...u, passHash: nextHash, updatedAt: new Date().toISOString() },
+      },
+    });
+
+    setPwTargetPseudo("");
+    setPwRecovery("");
+    setPwNew("");
+    setPwNew2("");
+    setPwMsg("✅ Mot de passe réinitialisé. Tu peux te connecter.");
+    setAuthMode("login");
+    setPwMode("none");
+  }
+
+  // ✅ Change password (logged in)
+  async function changePasswordLoggedIn() {
+    setPwChangeMsg("");
+    if (!authUser?.pseudoKey) return;
+    if (!crypto?.subtle) return setPwChangeMsg("Ton navigateur ne supporte pas crypto.subtle.");
+
+    const cur = String(pwCurrent || "");
+    const next = String(pwChangeNew || "");
+    const next2 = String(pwChangeNew2 || "");
+
+    if (!cur) return setPwChangeMsg("Mot de passe actuel manquant.");
+    if (next.length < 4) return setPwChangeMsg("Nouveau mot de passe trop court (min 4).");
+    if (next !== next2) return setPwChangeMsg("Confirmation différente.");
+
+    const idx = getUsersIndex();
+    const u = idx.users?.[authUser.pseudoKey];
+    if (!u) return setPwChangeMsg("Utilisateur introuvable.");
+
+    const curHash = await sha256Hex(cur);
+    if (curHash !== u.passHash) return setPwChangeMsg("Mot de passe actuel incorrect.");
+
+    const nextHash = await sha256Hex(next);
+
+    setUsersIndex({
+      ...idx,
+      users: {
+        ...(idx.users ?? {}),
+        [authUser.pseudoKey]: { ...u, passHash: nextHash, updatedAt: new Date().toISOString() },
+      },
+    });
+
+    setPwCurrent("");
+    setPwChangeNew("");
+    setPwChangeNew2("");
+    setPwChangeMsg("✅ Mot de passe mis à jour.");
+  }
+
   /* ------------------------ Apply login reward after login ------------------------ */
   useEffect(() => {
     if (!isLoggedIn) return;
-    // on applique la récompense 1 fois quand on démarre l'app connecté
     applyLoginRewardIfNeeded(authUser.pseudoKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, authUser?.pseudoKey]);
 
-  /* ------------------------ Login reward popup timer ------------------------ */
   useEffect(() => {
     if (!loginRewardPop) return;
     const t = setTimeout(() => setLoginRewardPop(null), 3800);
     return () => clearTimeout(t);
   }, [loginRewardPop]);
 
-  /* ------------------------ No actions if not logged in ------------------------ */
+  /* ------------------------ Not logged in screen ------------------------ */
   if (!isLoggedIn) {
     return (
       <div className="shell">
@@ -1479,12 +1544,7 @@ export default function App() {
             </div>
 
             <div style={{ marginTop: 12, display: "grid", gap: 10, maxWidth: 520 }}>
-              <input
-                className="input smooth"
-                placeholder="Pseudo"
-                value={authPseudo}
-                onChange={(e) => setAuthPseudo(e.target.value)}
-              />
+              <input className="input smooth" placeholder="Pseudo" value={authPseudo} onChange={(e) => setAuthPseudo(e.target.value)} />
               <input
                 className="input smooth"
                 placeholder="Mot de passe"
@@ -1510,15 +1570,77 @@ export default function App() {
                   className="btn smooth hover-lift press"
                   onClick={() => {
                     setAuthMsg("");
+                    setPwMode("none");
+                    setPwMsg("");
                     setAuthMode((m) => (m === "login" ? "register" : "login"));
                   }}
                 >
                   {authMode === "login" ? "Créer un compte" : "J'ai déjà un compte"}
                 </button>
+
+                {authMode === "login" && (
+                  <button
+                    className="btn smooth hover-lift press"
+                    onClick={() => {
+                      setPwMsg("");
+                      setAuthMsg("");
+                      setPwMode((m) => (m === "forgot" ? "none" : "forgot"));
+                    }}
+                  >
+                    {pwMode === "forgot" ? "Retour" : "Mot de passe oublié"}
+                  </button>
+                )}
               </div>
 
+              {pwMode === "forgot" && (
+                <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                  <div className="toast" style={{ marginTop: 0 }}>
+                    <div>
+                      <strong>Réinitialiser (front-only)</strong>
+                      <div className="sub" style={{ marginTop: 6 }}>
+                        Utilise ton <b>code de récupération</b> (donné à l’inscription).
+                      </div>
+                    </div>
+                    <span className="pill">🔑 recovery</span>
+                  </div>
+
+                  <input
+                    className="input smooth"
+                    placeholder="Pseudo"
+                    value={pwTargetPseudo}
+                    onChange={(e) => setPwTargetPseudo(e.target.value)}
+                  />
+                  <input
+                    className="input smooth"
+                    placeholder="Code de récupération (ex: 123456-654321)"
+                    value={pwRecovery}
+                    onChange={(e) => setPwRecovery(e.target.value)}
+                  />
+                  <input
+                    className="input smooth"
+                    placeholder="Nouveau mot de passe"
+                    type="password"
+                    value={pwNew}
+                    onChange={(e) => setPwNew(e.target.value)}
+                  />
+                  <input
+                    className="input smooth"
+                    placeholder="Confirmer nouveau mot de passe"
+                    type="password"
+                    value={pwNew2}
+                    onChange={(e) => setPwNew2(e.target.value)}
+                  />
+
+                  {pwMsg && <div className={pwMsg.startsWith("✅") ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
+
+                  <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
+                    Réinitialiser
+                  </button>
+                </div>
+              )}
+
               <div className="small">
-                Note : c’est un stockage local (front). Pour une vraie sécurité multi-utilisateurs, il faut un serveur.
+                Note : stockage local (front). Pour une vraie sécurité multi-utilisateurs, il faut un serveur.
               </div>
             </div>
           </div>
@@ -1547,7 +1669,6 @@ export default function App() {
         ))}
       </div>
 
-      {/* Login reward popup */}
       {loginRewardPop && (
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
@@ -1570,7 +1691,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Level popup */}
       {levelPop && (
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
@@ -1597,7 +1717,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Coach popup */}
       {coachPop && (
         <div className="coachPop" role="status" aria-live="polite">
           <div className="coachPopInner smooth">
@@ -1624,7 +1743,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Badge popup */}
       {badgePop && (
         <div className="badgePop">
           <div className="badgePopInner smooth">
@@ -1642,7 +1760,6 @@ export default function App() {
         </div>
       )}
 
-      {/* TOPBAR */}
       <div className="topbar">
         <div className="brand">
           <div className="logo smooth" />
@@ -1705,7 +1822,6 @@ export default function App() {
       </div>
 
       <div className="grid">
-        {/* MAIN */}
         <div className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""}`}>
           <div className={`fx ${fx === "ok" ? "fxOk" : fx === "bad" ? "fxBad" : ""}`} />
           <div className={`sparkles ${spark ? "on" : ""}`}>
@@ -1851,7 +1967,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* SIDE */}
         <div className="card smooth">
           <div className="cardTitle">
             <span>Tableau de bord</span>
@@ -1889,8 +2004,7 @@ export default function App() {
             <div>
               <strong>Récompense quotidienne</strong>
               <div className="sub" style={{ marginTop: 8 }}>
-                Connecte-toi 7 jours d’affilée pour maximiser les récompenses.  
-                Récompense donnée automatiquement au 1er lancement du jour.
+                Connecte-toi 7 jours d’affilée pour maximiser les récompenses. Récompense donnée automatiquement au 1er lancement du jour.
               </div>
             </div>
             <span className="pill">🎁 aléatoire</span>
@@ -1903,7 +2017,6 @@ export default function App() {
             <button
               className="btn smooth hover-lift press"
               onClick={() => {
-                // reset uniquement pour CET utilisateur
                 localStorage.removeItem(userKey(authUser.pseudoKey));
                 window.location.reload();
               }}
@@ -1987,9 +2100,7 @@ export default function App() {
 
                   return (
                     <div key={a.id} className={`shopCard smooth hover-lift ${isExclusive ? "premium" : ""}`}>
-                      <div className="shopRibbonWrap">
-                        {isExclusive && <div className="ribbon">Exclusif</div>}
-                      </div>
+                      <div className="shopRibbonWrap">{isExclusive && <div className="ribbon">Exclusif</div>}</div>
 
                       <div className="shopRow">
                         <div className="shopLeft">
@@ -2184,6 +2295,44 @@ export default function App() {
 
             <div className="small" style={{ marginTop: 8 }}>
               Skins animés : {skin.animated ? <b>disponible</b> : <b>skin statique</b>} (désactivé si “réduire” activé)
+            </div>
+          </div>
+
+          {/* ✅ Sécurité : changement de mot de passe */}
+          <div className="shopCard" style={{ marginTop: 12 }}>
+            <div style={{ fontWeight: 1100, marginBottom: 8 }}>Sécurité</div>
+            <div className="small" style={{ marginBottom: 10 }}>
+              Changer ton mot de passe (stocké hashé en local).
+            </div>
+
+            <div style={{ display: "grid", gap: 10, maxWidth: 520 }}>
+              <input
+                className="input smooth"
+                placeholder="Mot de passe actuel"
+                type="password"
+                value={pwCurrent}
+                onChange={(e) => setPwCurrent(e.target.value)}
+              />
+              <input
+                className="input smooth"
+                placeholder="Nouveau mot de passe"
+                type="password"
+                value={pwChangeNew}
+                onChange={(e) => setPwChangeNew(e.target.value)}
+              />
+              <input
+                className="input smooth"
+                placeholder="Confirmer nouveau mot de passe"
+                type="password"
+                value={pwChangeNew2}
+                onChange={(e) => setPwChangeNew2(e.target.value)}
+              />
+
+              {pwChangeMsg && <div className={pwChangeMsg.startsWith("✅") ? "authMsg authMsgOk" : "authMsg"}>{pwChangeMsg}</div>}
+
+              <button className="btn btnPrimary smooth hover-lift press" onClick={changePasswordLoggedIn}>
+                Mettre à jour
+              </button>
             </div>
           </div>
         </Modal>
