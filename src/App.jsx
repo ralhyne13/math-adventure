@@ -6,6 +6,11 @@ import { playBeep } from "./utils/audio";
 import {
   safeLSGet,
   safeLSSet,
+  isCloudEnabled,
+  cloudPullUserSave,
+  cloudPushUserSave,
+  cloudPushLeaderboard,
+  cloudLogEvent,
   parisDayKey,
   isYesterdayKey,
   parisWeekKey,
@@ -152,6 +157,8 @@ export default function App() {
   const levelTimerRef = useRef(null);
   const coachTimerRef = useRef(null);
   const rushWasOnRef = useRef(false);
+  const cloudHydrateRef = useRef(false);
+  const cloudSaveTimerRef = useRef(null);
 
   const levelRef = useRef(1);
   const xpRef = useRef(0);
@@ -349,6 +356,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [shopTab, setShopTab] = useState("skins");
   const [profileTab, setProfileTab] = useState("stats");
+  const [activitySpan, setActivitySpan] = useState(7);
 
   // historique rÃ©ponses
   const [lastAnswers, setLastAnswers] = useState([]);
@@ -361,6 +369,7 @@ export default function App() {
 
   const avatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
   const skin = SKINS.find((s) => s.id === skinId) ?? SKINS[0];
+  const cloudEnabled = isCloudEnabled();
   const { profileRank, xpNeed } = useGameLogic(level);
   const { isUnlocked, unlockAchievement } = useAchievements({
     achievements,
@@ -394,7 +403,7 @@ export default function App() {
   /* ------------------------ Save per-user ------------------------ */
   useEffect(() => {
     if (!isLoggedIn) return;
-    safeLSSet(userKey(authUser.pseudoKey), {
+    const nextSave = {
       skinId,
       gradeId,
       diffId,
@@ -432,10 +441,20 @@ export default function App() {
       rushTodayCount,
       league,
       challengeProgress,
-    });
+      updatedAt: new Date().toISOString(),
+    };
+    safeLSSet(userKey(authUser.pseudoKey), nextSave);
+
+    if (!cloudEnabled || !cloudHydrateRef.current) return;
+    if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
+    cloudSaveTimerRef.current = setTimeout(() => {
+      cloudPushUserSave(authUser.pseudoKey, authUser?.pseudoDisplay, nextSave);
+    }, 800);
   }, [
     isLoggedIn,
     authUser?.pseudoKey,
+    authUser?.pseudoDisplay,
+    cloudEnabled,
     skinId,
     gradeId,
     diffId,
@@ -474,6 +493,36 @@ export default function App() {
     league,
     challengeProgress,
   ]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !cloudEnabled || cloudHydrateRef.current) return;
+    cloudHydrateRef.current = true;
+    let cancelled = false;
+
+    (async () => {
+      const remote = await cloudPullUserSave(authUser.pseudoKey);
+      if (cancelled || !remote?.save) return;
+
+      const local = safeLSGet(userKey(authUser.pseudoKey), null);
+      const remoteTs = Date.parse(remote.updated_at || remote.save?.updatedAt || "") || 0;
+      const localTs = Date.parse(local?.updatedAt || "") || 0;
+      const shouldUseRemote = !local || remoteTs > localTs;
+      if (!shouldUseRemote) return;
+
+      safeLSSet(userKey(authUser.pseudoKey), remote.save);
+      window.location.reload();
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn, cloudEnabled, authUser?.pseudoKey]);
+
+  useEffect(() => {
+    return () => {
+      if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     newQuestion(true);
@@ -745,6 +794,19 @@ export default function App() {
       date: new Date().toISOString(),
     };
     setRushLeaderboard((prev) => buildRushLeaderboard(prev, entry));
+    if (cloudEnabled) {
+      cloudPushLeaderboard({
+        pseudoKey: authUser?.pseudoKey,
+        pseudoDisplay: authUser?.pseudoDisplay,
+        mode: "rush",
+        score: rushScore,
+      });
+      cloudLogEvent({
+        pseudoKey: authUser?.pseudoKey,
+        event: "rush_end",
+        payload: { score: rushScore, best: Math.max(rushBestScore, rushScore) },
+      });
+    }
     showCoachPopup({
       title: "Rush termine",
       lines: [`Score rush: ${rushScore}`, `Meilleur: ${Math.max(rushBestScore, rushScore)}`],
@@ -774,6 +836,13 @@ export default function App() {
       desc: reward.text,
       reward: 0,
     });
+    if (cloudEnabled) {
+      cloudLogEvent({
+        pseudoKey: authUser?.pseudoKey,
+        event: "chest_opened",
+        payload: { rewardKind: reward.kind, rewardText: reward.text },
+      });
+    }
   }
 
   function watchAdDoubleReward() {
@@ -812,6 +881,13 @@ export default function App() {
       lines: [plan === "lifetime" ? "Plan Lifetime active" : "Plan Mensuel actif"],
       hint: "Skins/avatars premium + Rush illimite + stats avancees.",
     });
+    if (cloudEnabled) {
+      cloudLogEvent({
+        pseudoKey: authUser?.pseudoKey,
+        event: "premium_change",
+        payload: { plan },
+      });
+    }
   }
 
   function disablePremium() {
@@ -821,6 +897,13 @@ export default function App() {
       lines: ["Mode gratuit actif."],
       hint: "Tu gardes les objets deja achetes.",
     });
+    if (cloudEnabled) {
+      cloudLogEvent({
+        pseudoKey: authUser?.pseudoKey,
+        event: "premium_change",
+        payload: { plan: "free" },
+      });
+    }
   }
 
 
@@ -1205,28 +1288,30 @@ export default function App() {
   const xpBoostActive = Date.now() < (xpBoostUntilTs ?? 0);
   const xpBoostMinutesLeft = xpBoostActive ? Math.max(1, Math.ceil((xpBoostUntilTs - Date.now()) / 60000)) : 0;
 
-  const activity7 = useMemo(() => {
+  const activityDays = useMemo(() => {
     const base = new Date();
     const arr = [];
-    for (let i = 6; i >= 0; i--) {
+    const span = activitySpan === 30 ? 30 : 7;
+    for (let i = span - 1; i >= 0; i--) {
       const d = new Date(base);
       d.setDate(base.getDate() - i);
       const key = parisDayKey(d);
       const count = Number(activityMap?.[key] ?? 0);
       const day = d.toLocaleDateString("fr-FR", { weekday: "short" }).slice(0, 2);
-      arr.push({ key, count, day });
+      const dayNum = d.toLocaleDateString("fr-FR", { day: "2-digit" });
+      arr.push({ key, count, day, dayNum });
     }
     return arr;
-  }, [activityMap]);
-  const playedDays7 = useMemo(() => activity7.filter((d) => d.count > 0).length, [activity7]);
-  const visualStreak7 = useMemo(() => {
+  }, [activityMap, activitySpan]);
+  const playedDays = useMemo(() => activityDays.filter((d) => d.count > 0).length, [activityDays]);
+  const visualStreak = useMemo(() => {
     let st = 0;
-    for (let i = activity7.length - 1; i >= 0; i--) {
-      if (activity7[i].count > 0) st += 1;
+    for (let i = activityDays.length - 1; i >= 0; i--) {
+      if (activityDays[i].count > 0) st += 1;
       else break;
     }
     return st;
-  }, [activity7]);
+  }, [activityDays]);
 
   const xpPct = Math.round((xp / xpNeed) * 100);
 
@@ -1326,7 +1411,7 @@ export default function App() {
     };
     setUsersIndex(nextIdx);
 
-    safeLSSet(userKey(pseudoKey), {
+    const starterSave = {
       skinId: "neon-night",
       gradeId: "CE1",
       diffId: "moyen",
@@ -1364,7 +1449,13 @@ export default function App() {
       rushTodayCount: 0,
       league: freshSeasonState(),
       challengeProgress: createChallengeProgress(null),
-    });
+      updatedAt: new Date().toISOString(),
+    };
+    safeLSSet(userKey(pseudoKey), starterSave);
+    if (cloudEnabled) {
+      await cloudPushUserSave(pseudoKey, pseudoDisplay, starterSave);
+      await cloudLogEvent({ pseudoKey, event: "register", payload: {} });
+    }
 
     // Info recovery code
     alert(`IMPORTANT : garde ce code de rÃ©cupÃ©ration (si tu oublies ton mot de passe) :\n\n${recoveryCode}\n\nNote-le quelque part âœ…`);
@@ -1394,6 +1485,9 @@ export default function App() {
     if (hash !== user.passHash) return setAuthMsg("Mot de passe incorrect.");
 
     const au = { pseudoDisplay: user.pseudoDisplay || pseudoDisplay, pseudoKey };
+    if (cloudEnabled) {
+      await cloudLogEvent({ pseudoKey, event: "login_success", payload: {} });
+    }
     safeLSSet("math-adventure-auth", au);
     setAuthUser(au);
 
@@ -1967,20 +2061,28 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Activite 7 jours</strong>
-              <div className="heatmapGrid" style={{ marginTop: 10 }}>
-                {activity7.map((d) => {
+              <strong>Calendrier activite</strong>
+              <div className="heatmapTabs" style={{ marginTop: 8 }}>
+                <button className={`btn smooth hover-lift press ${activitySpan === 7 ? "btnPrimary" : ""}`} onClick={() => setActivitySpan(7)}>
+                  7 jours
+                </button>
+                <button className={`btn smooth hover-lift press ${activitySpan === 30 ? "btnPrimary" : ""}`} onClick={() => setActivitySpan(30)}>
+                  30 jours
+                </button>
+              </div>
+              <div className={`heatmapGrid ${activitySpan === 30 ? "month" : "week"}`} style={{ marginTop: 10 }}>
+                {activityDays.map((d) => {
                   const lv = d.count === 0 ? 0 : d.count < 3 ? 1 : d.count < 7 ? 2 : d.count < 12 ? 3 : 4;
                   return (
                     <div key={d.key} className="heatCol" title={`${d.key} : ${d.count} question(s)`}>
                       <span className={`heatCell lv${lv}`} />
-                      <span className="heatLbl">{d.day}</span>
+                      <span className="heatLbl">{activitySpan === 30 ? d.dayNum : d.day}</span>
                     </div>
                   );
                 })}
               </div>
               <div className="small" style={{ marginTop: 8 }}>
-                Jours joues : <b>{playedDays7}/7</b> â€¢ Streak visuel : <b>{visualStreak7}</b>
+                Jours joues : <b>{playedDays}/{activitySpan}</b> â€¢ Streak visuel : <b>{visualStreak}</b>
               </div>
             </div>
           </div>

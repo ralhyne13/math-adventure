@@ -619,6 +619,15 @@ body.reduce-motion .choice:hover::after{ animation:none !important; opacity:0; }
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
 }
+.heatmapGrid.month{
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.heatmapTabs{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
 .heatCol{
   display:flex;
   flex-direction:column;
@@ -644,6 +653,14 @@ body.reduce-motion .choice:hover::after{ animation:none !important; opacity:0; }
   font-size: 11px;
   color: var(--muted);
   text-transform: lowercase;
+}
+.heatmapGrid.month .heatCell{
+  max-width: 28px;
+  border-radius: 7px;
+}
+.heatmapGrid.month .heatLbl{
+  font-variant-numeric: tabular-nums;
+  text-transform:none;
 }
 
 .stats{
