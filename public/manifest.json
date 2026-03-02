@@ -1,7 +1,7 @@
 {
   "name": "Math Royale",
-  "short_name": "Math",
-  "description": "Jeu de maths avec progression, badges et defis.",
+  "short_name": "Royale",
+  "description": "Jeu de maths mobile avec progression, rush, boss et recompenses.",
   "lang": "fr-FR",
   "start_url": "/",
   "scope": "/",
@@ -11,10 +11,16 @@
   "theme_color": "#0b1020",
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/icon-app.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

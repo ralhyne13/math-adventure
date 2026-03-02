@@ -27,16 +27,21 @@ export default function TopBar({
           <div>
             <div className="topbarCompactTitle">Math Royale</div>
             <div className="small">
-              <b>{authUser.pseudoDisplay}</b> • {profileRank.icon} {profileRank.label}
+              <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
             </div>
           </div>
         </div>
 
         <div className="topbarCompactRight">
-          <div className="mobileStatPill">🪙 {coins}</div>
-          <div className="mobileStatPill">⬆️ {level}</div>
+          <div className="mobileStatPill">P {coins}</div>
+          <div className="mobileStatPill">Lv {level}</div>
+          {canInstallApp && (
+            <button className="btn btnPrimary smooth hover-lift press topbarCompactBtn" onClick={onInstallApp} aria-label="Installer l'app">
+              DL
+            </button>
+          )}
           <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Reglages">
-            ⚙️
+            Cfg
           </button>
         </div>
       </div>
@@ -52,7 +57,7 @@ export default function TopBar({
             Math Royale <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
           </div>
           <div className="sub">
-            Connecte: <b>{authUser.pseudoDisplay}</b> • Streak login: <b>{loginStreak}/7</b>
+            Connecte : <b>{authUser.pseudoDisplay}</b> | Streak login : <b>{loginStreak}/7</b>
           </div>
           <div className="rankTag">
             {profileRank.icon} {profileRank.label}
@@ -69,14 +74,14 @@ export default function TopBar({
           </div>
 
           <div className="chip smooth" title="Niveau">
-            <span className="chipIcon">⬆️</span>
+            <span className="chipIcon">Lv</span>
             <span>
               Lv <b>{level}</b>
             </span>
           </div>
 
           <div className="chip smooth" title="XP">
-            <span className="chipIcon">✨</span>
+            <span className="chipIcon">XP</span>
             <span className="mono">{xp}</span>
           </div>
         </div>

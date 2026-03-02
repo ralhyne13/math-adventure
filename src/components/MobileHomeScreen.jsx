@@ -1,4 +1,4 @@
-﻿export default function MobileHomeScreen({
+export default function MobileHomeScreen({
   avatar,
   authUser,
   profileRank,
@@ -16,6 +16,8 @@
   chestProgress,
   dailyChallenge,
   dailyProgress,
+  canInstallApp,
+  onInstallApp,
   onOpenPlay,
   onOpenArena,
   onOpenRush,
@@ -36,7 +38,7 @@
             <div>
               <div className="mobileHomeTitle">Math Royale</div>
               <div className="small">
-                <b>{authUser.pseudoDisplay}</b> • {profileRank.icon} {profileRank.label}
+                <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
               </div>
               <div className="small">Streak login: {loginStreak}/7</div>
             </div>
@@ -47,29 +49,34 @@
         </div>
 
         <div className="mobileQuickStats">
-          <div className="mobileStatPill">🪙 {coins} pieces</div>
-          <div className="mobileStatPill">⬆️ Lv {level}</div>
-          <div className="mobileStatPill">✨ {xp}</div>
-          <div className="mobileStatPill">🔥 {streak}</div>
-          <div className="mobileStatPill">🎯 {accuracy}%</div>
+          <div className="mobileStatPill">P {coins} pieces</div>
+          <div className="mobileStatPill">Lv {level}</div>
+          <div className="mobileStatPill">XP {xp}</div>
+          <div className="mobileStatPill">Stk {streak}</div>
+          <div className="mobileStatPill">Acc {accuracy}%</div>
         </div>
 
         <div className="mobileActionRow">
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenPlay}>
-            ▶ Jouer
+            Play
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenArena}>
-            🏟 Arena
+            Arena
           </button>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
-            ⚡ Rush
+            Rush
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenShop}>
-            🛍 Boutique
+            Shop
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenProfile}>
-            👤 Profil
+            Profil
           </button>
+          {canInstallApp && (
+            <button className="btn smooth hover-lift press" onClick={onInstallApp}>
+              Install
+            </button>
+          )}
         </div>
       </div>
 
