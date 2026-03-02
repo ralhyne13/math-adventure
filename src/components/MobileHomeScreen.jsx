@@ -1,4 +1,4 @@
-export default function MobileHomeScreen({
+﻿export default function MobileHomeScreen({
   avatar,
   authUser,
   profileRank,
@@ -16,6 +16,7 @@ export default function MobileHomeScreen({
   chestProgress,
   dailyChallenge,
   dailyProgress,
+  onOpenPlay,
   onOpenRush,
   onOpenShop,
   onOpenProfile,
@@ -53,6 +54,9 @@ export default function MobileHomeScreen({
         </div>
 
         <div className="mobileActionRow">
+          <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenPlay}>
+            ▶ Jouer
+          </button>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
             ⚡ Rush
           </button>

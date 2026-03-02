@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { clamp } from "../utils/math";
 import { playBeep } from "../utils/audio";
 import { DIFFS, GRADES, MODES, questionSignature } from "../questions";
@@ -26,10 +26,10 @@ function speedBonus(rtMs) {
 }
 
 const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "🥉", min: 0 },
-  { id: "silver", name: "Argent", icon: "🥈", min: 1200 },
-  { id: "gold", name: "Or", icon: "🥇", min: 2600 },
-  { id: "diamond", name: "Diamant", icon: "💎", min: 4200 },
+  { id: "bronze", name: "Bronze", icon: "??", min: 0 },
+  { id: "silver", name: "Argent", icon: "??", min: 1200 },
+  { id: "gold", name: "Or", icon: "??", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "??", min: 4200 },
 ];
 
 function leagueFromScore(score) {
@@ -133,7 +133,7 @@ function renderQuestionRow(q) {
     return (
       <>
         <Fraction n={q.row.aN} d={q.row.aD} />
-        <div className="bigOp opSep">≡</div>
+        <div className="bigOp opSep">=</div>
         <Fraction n={q.row.bN} d={q.row.bD} />
       </>
     );
@@ -393,8 +393,8 @@ export default function RushScreen({
   const timePct = Math.round((timeLeft / 60000) * 100);
 
   return (
-    <div className="shell">
-      <div className="topbar">
+    <div className="shell rushScreen">
+      <div className="topbar rushTopbar">
         <div className="brand">
           <div className="logo smooth" />
           <div>
@@ -403,7 +403,7 @@ export default function RushScreen({
           </div>
         </div>
 
-        <div className="hudRight">
+        <div className="hudRight rushTopbarActions">
           <button className="btn smooth hover-lift press" onClick={onExit}>
             Retour
           </button>
@@ -414,7 +414,7 @@ export default function RushScreen({
       </div>
 
       {phase === "start" && (
-        <div className="card smooth">
+        <div className="card smooth rushStartCard rushPhasePanel">
           <div className="cardTitle">
             <span>Pret ?</span>
             <span className="pill">Mode arcade</span>
@@ -469,10 +469,10 @@ export default function RushScreen({
       )}
 
       {phase === "play" && (
-        <div className="card smooth">
+        <div className="card smooth rushPlayCard rushPhasePanel">
           <div className="rushHud">
             <div className="rushHudLeft">
-              <div className={`rushTime ${dangerTime ? "danger" : ""}`}>⏱ {(timeLeft / 1000).toFixed(1)}s</div>
+              <div className={`rushTime ${dangerTime ? "danger" : ""}`}>? {(timeLeft / 1000).toFixed(1)}s</div>
               <div className={`rushBarWrap ${dangerTime ? "danger" : ""}`}>
                 <div
                   className="rushBar"
@@ -497,11 +497,11 @@ export default function RushScreen({
             </div>
           </div>
 
-          <div className="heroQuestion" style={{ marginTop: 12 }}>
+          <div className={`heroQuestion rushQuestionShell ${dangerTime ? "rushQuestionDanger" : ""}`} style={{ marginTop: 12 }}>
             <div className="heroTop">
               <div className="qPrompt">{q.prompt}</div>
               <div className="heroMeta">
-                <span className="metaPill">Rush</span>
+                <span className="metaPill rushModePill">Rush</span>
               </div>
             </div>
 
@@ -509,7 +509,7 @@ export default function RushScreen({
 
             {floatText && <div className={`rushFloat ${floatText.startsWith("+") ? "ok" : "bad"}`}>{floatText}</div>}
 
-            <div className="controls">
+            <div className="controls rushControls">
               {q.choices.map((c) => (
                 <button
                   key={String(c)}
@@ -523,7 +523,7 @@ export default function RushScreen({
             </div>
 
             {dangerTime && (
-              <div className="small" style={{ marginTop: 12, color: "rgba(255,170,170,.95)", fontWeight: 1100 }}>
+              <div className="small rushDangerNote" style={{ marginTop: 12, color: "rgba(255,170,170,.95)", fontWeight: 1100 }}>
                 Zone critique: moins de 10 secondes.
               </div>
             )}
@@ -532,7 +532,7 @@ export default function RushScreen({
       )}
 
       {phase === "end" && (
-        <div className="card smooth">
+        <div className="card smooth rushEndCard rushPhasePanel">
           <div className="cardTitle">
             <span>Fin du Rush</span>
             <span className="pill">resultats</span>
@@ -551,18 +551,18 @@ export default function RushScreen({
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div>
-              <strong>🏆 Record Rush</strong>
+              <strong>?? Record Rush</strong>
               <div className="sub" style={{ marginTop: 8 }}>
                 Record : <b>{rushBest}</b>
                 {newBest && <span className="pill" style={{ marginLeft: 8 }}>NOUVEAU !</span>}
               </div>
             </div>
-            <span className="pill">⚡ Rush</span>
+            <span className="pill">? Rush</span>
           </div>
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div>
-              <strong>🥇 Ligue</strong>
+              <strong>?? Ligue</strong>
               <div className="sub" style={{ marginTop: 8 }}>
                 Actuelle :{" "}
                 <b>
@@ -570,7 +570,7 @@ export default function RushScreen({
                 </b>
                 {leagueUp && (
                   <div className="small" style={{ marginTop: 6 }}>
-                    Promotion : {LEAGUES.find((l) => l.id === leagueUp.from)?.icon} → {LEAGUES.find((l) => l.id === leagueUp.to)?.icon}
+                    Promotion : {LEAGUES.find((l) => l.id === leagueUp.from)?.icon} ? {LEAGUES.find((l) => l.id === leagueUp.to)?.icon}
                   </div>
                 )}
               </div>
@@ -583,21 +583,21 @@ export default function RushScreen({
               <div className="chestTop">
                 <div>
                   <div style={{ fontWeight: 1100 }}>
-                    🎁 Coffre {chest.rarity === "epic" ? "Epique" : chest.rarity === "rare" ? "Rare" : "Commun"}
+                    ?? Coffre {chest.rarity === "epic" ? "Épique" : chest.rarity === "rare" ? "Rare" : "Commun"}
                   </div>
                   <div className="small" style={{ marginTop: 6 }}>
                     Ouvre pour recuperer ta recompense.
                   </div>
                 </div>
-                <span className="pill">{chest.rarity === "epic" ? "✨" : chest.rarity === "rare" ? "🌟" : "🎈"}</span>
+                <span className="pill">{chest.rarity === "epic" ? "?" : chest.rarity === "rare" ? "??" : "??"}</span>
               </div>
 
               <div className={`chestBox ${chestPhase}`} aria-live="polite">
-                <div className="chestEmoji">🧰</div>
+                <div className="chestEmoji">??</div>
                 {chestPhase === "opened" ? (
                   <div className="chestReward">
                     <div style={{ fontWeight: 1200 }}>{chest.label}</div>
-                    <div className="small" style={{ marginTop: 6 }}>Recompense ajoutee ✅</div>
+                    <div className="small" style={{ marginTop: 6 }}>Récompense ajoutée ?</div>
                   </div>
                 ) : (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={openChest} disabled={chestPhase !== "closed"}>
@@ -621,3 +621,4 @@ export default function RushScreen({
     </div>
   );
 }
+

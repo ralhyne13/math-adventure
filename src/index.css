@@ -84,6 +84,7 @@ body.reduce-motion *{
 
 .appFrame{
   padding-bottom: 94px;
+  animation: appScreenIn 320ms var(--ease-out) 1;
 }
 
 .mobileHeroStrip{
@@ -121,6 +122,7 @@ body.reduce-motion *{
   background: linear-gradient(180deg, rgba(18,22,44,.94), rgba(10,14,30,.92));
   box-shadow: 0 22px 60px rgba(0,0,0,.55);
   overflow: hidden;
+  animation: pageSheetIn 340ms var(--ease-out) 1;
 }
 .pageSheetHead{
   display:flex;
@@ -236,6 +238,24 @@ body.reduce-motion *{
   min-height: 54px;
   padding: 12px 10px;
 }
+.classicPlayScreen{
+  display:grid;
+  gap: 12px;
+}
+.classicPlayTopbar{
+  display:grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items:center;
+}
+.classicPlayTitleWrap{
+  min-width: 0;
+}
+.classicPlayTitle{
+  font-size: 16px;
+  font-weight: 1200;
+  letter-spacing: .2px;
+}
 
 @media (max-width: 820px){
   .shell{
@@ -263,6 +283,12 @@ body.reduce-motion *{
   .mobileActionRow{
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .classicPlayTopbar{
+    grid-template-columns: 1fr;
+  }
+  .classicPlayTopbar .btn{
+    width: 100%;
+  }
   .mobileDock{
     position: fixed;
     left: 12px;
@@ -279,13 +305,14 @@ body.reduce-motion *{
     box-shadow: 0 22px 60px rgba(0,0,0,.55);
     backdrop-filter: blur(16px);
   }
-  .mobileDockBtn{
-    display:flex;
-    flex-direction: column;
-    align-items:center;
-    justify-content:center;
-    font-size: 11px;
-    line-height: 1.1;
+.mobileDockBtn{
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  font-size: 11px;
+  line-height: 1.1;
+  transition: transform 180ms var(--ease-out), background 180ms var(--ease-out), color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
   }
 }
 
@@ -299,6 +326,27 @@ body.reduce-motion *{
   .mobileActionRow{
     grid-template-columns: 1fr;
   }
+  .classicPlayScreen{
+    gap: 10px;
+  }
+}
+
+@keyframes appScreenIn{
+  0%{ opacity:0; transform: translateY(10px) scale(.988); }
+  100%{ opacity:1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pageSheetIn{
+  0%{ opacity:0; transform: translateX(18px) scale(.992); }
+  100%{ opacity:1; transform: translateX(0) scale(1); }
+}
+
+body.reduce-motion .appFrame,
+body.reduce-motion .pageSheet{
+  animation:none !important;
+}
+body.reduce-motion .rushPhasePanel{
+  animation:none !important;
 }
 
 /* background float */
@@ -974,6 +1022,64 @@ body.reduce-motion .bossCallout{ animation:none !important; opacity:0; }
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(0,0,0,.18);
 }
+.rushScreen{
+  animation: appScreenIn 320ms var(--ease-out) 1;
+}
+.rushTopbar{
+  margin-bottom: 12px;
+}
+.rushPhasePanel{
+  animation: rushPhaseIn 360ms var(--ease-out) 1;
+}
+.rushStartCard.rushPhasePanel{
+  animation-name: rushPhaseStartIn;
+}
+.rushPlayCard.rushPhasePanel{
+  animation-name: rushPhasePlayIn;
+}
+.rushEndCard.rushPhasePanel{
+  animation-name: rushPhaseEndIn;
+}
+.rushPlayCard{
+  overflow: visible;
+}
+.rushPlayCard::before{
+  opacity: .72;
+}
+.rushQuestionShell{
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.36);
+}
+.rushQuestionDanger{
+  border-color: color-mix(in srgb, var(--danger) 58%, rgba(255,255,255,.12));
+}
+.rushModePill{
+  background: color-mix(in srgb, var(--accent) 22%, rgba(0,0,0,.18));
+  border-color: color-mix(in srgb, var(--accent) 30%, rgba(255,255,255,.12));
+}
+.rushControls{
+  margin-top: 14px;
+}
+.rushDangerNote{
+  letter-spacing: .2px;
+}
+@keyframes rushPhaseIn{
+  0%{ opacity:0; transform: translateY(12px) scale(.986); }
+  100%{ opacity:1; transform: translateY(0) scale(1); }
+}
+@keyframes rushPhaseStartIn{
+  0%{ opacity:0; transform: translateY(16px) scale(.985); }
+  100%{ opacity:1; transform: translateY(0) scale(1); }
+}
+@keyframes rushPhasePlayIn{
+  0%{ opacity:0; transform: translateY(8px) scale(.992); filter: saturate(.9); }
+  100%{ opacity:1; transform: translateY(0) scale(1); filter: saturate(1); }
+}
+@keyframes rushPhaseEndIn{
+  0%{ opacity:0; transform: translateY(18px) scale(.975); }
+  60%{ opacity:1; transform: translateY(-3px) scale(1.01); }
+  100%{ opacity:1; transform: translateY(0) scale(1); }
+}
 
 .rushHudLeft{ flex: 1; min-width: 220px; }
 .rushTime{
@@ -1035,6 +1141,111 @@ body.reduce-motion .bossCallout{ animation:none !important; opacity:0; }
 @keyframes rushPop{
   0%{ transform: translateY(6px) scale(.96); opacity:.0; }
   100%{ transform: translateY(0) scale(1); opacity:1; }
+}
+
+@media (max-width: 820px){
+  .rushScreen{
+    padding-bottom: 96px;
+  }
+  .rushTopbar{
+    align-items:center;
+    gap: 10px;
+  }
+  .rushTopbar .brand{
+    min-width: 0;
+    flex: 1;
+  }
+  .rushTopbarActions{
+    width: 100%;
+    justify-content: space-between;
+  }
+  .rushTopbarActions .btn{
+    flex: 1;
+  }
+  .rushStartCard,
+  .rushPlayCard,
+  .rushEndCard{
+    min-height: calc(100vh - 210px);
+    border-radius: 26px;
+  }
+  .rushPlayCard{
+    padding: 14px;
+  }
+  .rushHud{
+    position: sticky;
+    top: calc(8px + env(safe-area-inset-top));
+    z-index: 4;
+    border-radius: 20px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 18px 44px rgba(0,0,0,.28);
+  }
+  .rushHudLeft{ min-width: 100%; }
+  .rushHudMid,
+  .rushHudRight{
+    flex: 1;
+    min-width: 0;
+  }
+  .rushHudRight{
+    align-items:flex-start;
+  }
+  .rushTime{
+    font-size: 22px;
+  }
+  .rushScore{
+    font-size: 26px;
+  }
+  .rushQuestionShell{
+    min-height: calc(100vh - 360px);
+    display:flex;
+    flex-direction: column;
+    padding: 16px 14px 18px;
+  }
+  .rushQuestionShell .qPrompt{
+    font-size: 15px;
+  }
+  .rushQuestionShell .bigOp{
+    font-size: clamp(38px, 9vw, 54px);
+  }
+  .rushQuestionShell .fraction{
+    font-size: clamp(30px, 7vw, 40px);
+    min-width: 74px;
+  }
+  .rushControls{
+    margin-top: auto;
+    padding-top: 14px;
+    gap: 12px;
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(10,14,30,0), rgba(10,14,30,.76) 30%, rgba(10,14,30,.92));
+  }
+  .rushControls .choice{
+    min-height: 74px;
+    border-radius: 22px;
+  }
+  .rushControls .choiceValue{
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 520px){
+  .rushStartCard,
+  .rushPlayCard,
+  .rushEndCard{
+    min-height: calc(100vh - 196px);
+  }
+  .rushQuestionShell{
+    min-height: calc(100vh - 338px);
+    padding: 14px 12px 16px;
+  }
+  .rushHud{
+    gap: 8px;
+  }
+  .rushHudMid{
+    align-items:flex-start;
+  }
+  .rushControls{
+    gap: 10px;
+  }
 }
 
 .chestCard{
