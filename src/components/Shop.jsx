@@ -3,6 +3,7 @@ import Modal from "./Modal";
 export default function Shop({
   show,
   onClose,
+  presentation = "modal",
   shopTab,
   setShopTab,
   coins,
@@ -22,7 +23,7 @@ export default function Shop({
   if (!show) return null;
 
   return (
-    <Modal title="Boutique - Skins & Avatars" onClose={onClose}>
+    <Modal title="Boutique - Skins & Avatars" onClose={onClose} presentation={presentation}>
       <div className="tabs">
         <button className={`btn smooth hover-lift press ${shopTab === "skins" ? "btnPrimary" : ""}`} onClick={() => setShopTab("skins")}>
           Skins

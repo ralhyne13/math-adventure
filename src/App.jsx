@@ -693,6 +693,8 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [shopTab, setShopTab] = useState("skins");
   const [profileTab, setProfileTab] = useState("stats");
+  const [mobileTab, setMobileTab] = useState("home");
+  const [isMobileViewport, setIsMobileViewport] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 820 : false));
   const [activitySpan, setActivitySpan] = useState(7);
 
   // historique reponses
@@ -2195,6 +2197,36 @@ export default function App() {
     setAvatarId(aid);
   }
 
+  function openShopPanel() {
+    setMobileTab("shop");
+    setShowShop(true);
+  }
+
+  function closeShopPanel() {
+    setShowShop(false);
+    setMobileTab("home");
+  }
+
+  function openProfilePanel() {
+    setMobileTab("profile");
+    setShowProfile(true);
+  }
+
+  function closeProfilePanel() {
+    setShowProfile(false);
+    setMobileTab("home");
+  }
+
+  function openSettingsPanel() {
+    setMobileTab("settings");
+    setShowSettings(true);
+  }
+
+  function closeSettingsPanel() {
+    setShowSettings(false);
+    setMobileTab("home");
+  }
+
   const bestScore = getBestScoreFor(modeId, gradeId, diffId);
   const study5Accuracy = study5Answered ? Math.round((study5Right / study5Answered) * 100) : 0;
 
@@ -2679,6 +2711,12 @@ export default function App() {
     return () => clearTimeout(t);
   }, [loginRewardPop]);
 
+  useEffect(() => {
+    const onResize = () => setIsMobileViewport(window.innerWidth <= 820);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   /* ------------------------ Not logged in screen ------------------------ */
   if (!isLoggedIn) {
     return (
@@ -2936,6 +2974,9 @@ export default function App() {
     );
   }
 
+  const useMobilePages = isMobileViewport && screen === "classic";
+  const activeMobilePage = useMobilePages ? mobileTab : "home";
+
   /* ------------------------ Main app render ------------------------ */
   return (
     <div className="shell">
@@ -3175,17 +3216,31 @@ export default function App() {
         questionIndex={questionIndex}
         bestScore={bestScore}
         unlockedCount={unlockedCount}
-        onOpenSettings={() => setShowSettings(true)}
-        onOpenProfile={() => setShowProfile(true)}
-        onOpenShop={() => setShowShop(true)}
+        onOpenSettings={openSettingsPanel}
+        onOpenProfile={openProfilePanel}
+        onOpenShop={openShopPanel}
         canInstallApp={!isInstalledPwa && !!installPromptEvent}
         onInstallApp={installPwaApp}
         onLogout={doLogout}
       />
 
-      <div className="grid">
-        <QuestionCard {...questionCardProps} />
-        <div className="card smooth">
+      {activeMobilePage === "home" && (
+        <>
+          <div className="mobileHeroStrip">
+            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setScreen("rush")}>
+              ⚡ Rush 60s
+            </button>
+            <button className="btn smooth hover-lift press" onClick={openShopPanel}>
+              🛍 Boutique
+            </button>
+            <button className="btn smooth hover-lift press" onClick={openProfilePanel}>
+              👤 Profil
+            </button>
+          </div>
+
+          <div className="grid appFrame">
+            <QuestionCard {...questionCardProps} />
+            <div className="card smooth">
           <div className="cardTitle">
             <span>Tableau de bord</span>
             <span className="pill">
@@ -3662,12 +3717,15 @@ export default function App() {
               Reset profil
             </button>
           </div>
-        </div>
-      </div>
+            </div>
+          </div>
+        </>
+      )}
 
       <Shop
-        show={showShop}
-        onClose={() => setShowShop(false)}
+        show={useMobilePages ? activeMobilePage === "shop" : showShop}
+        onClose={closeShopPanel}
+        presentation={useMobilePages ? "page" : "modal"}
         shopTab={shopTab}
         setShopTab={setShopTab}
         coins={coins}
@@ -3686,8 +3744,9 @@ export default function App() {
       />
       {/* Profil */}
       <Profile
-        show={showProfile}
-        onClose={() => setShowProfile(false)}
+        show={useMobilePages ? activeMobilePage === "profile" : showProfile}
+        onClose={closeProfilePanel}
+        presentation={useMobilePages ? "page" : "modal"}
         profileTab={profileTab}
         setProfileTab={setProfileTab}
         coins={coins}
@@ -3720,8 +3779,9 @@ export default function App() {
         unlockEffectWithDust={unlockEffectWithDust}
       />
       <Settings
-        show={showSettings}
-        onClose={() => setShowSettings(false)}
+        show={useMobilePages ? activeMobilePage === "settings" : showSettings}
+        onClose={closeSettingsPanel}
+        presentation={useMobilePages ? "page" : "modal"}
         audioOn={audioOn}
         setAudioOn={setAudioOn}
         vibrateOn={vibrateOn}
@@ -3746,6 +3806,35 @@ export default function App() {
         pwChangeMsg={pwChangeMsg}
         changePasswordLoggedIn={changePasswordLoggedIn}
       />
+
+      <div className="mobileDock" aria-label="Navigation mobile">
+        <button className={`mobileDockBtn ${mobileTab === "home" ? "isActive" : ""}`} onClick={() => setMobileTab("home")}>
+          <span className="mobileDockIcon">🏠</span>
+          <span>Accueil</span>
+        </button>
+        <button
+          className={`mobileDockBtn ${screen === "rush" ? "isActive" : ""}`}
+          onClick={() => {
+            setMobileTab("home");
+            setScreen("rush");
+          }}
+        >
+          <span className="mobileDockIcon">⚡</span>
+          <span>Rush</span>
+        </button>
+        <button className={`mobileDockBtn ${mobileTab === "shop" ? "isActive" : ""}`} onClick={openShopPanel}>
+          <span className="mobileDockIcon">🛍</span>
+          <span>Boutique</span>
+        </button>
+        <button className={`mobileDockBtn ${mobileTab === "profile" ? "isActive" : ""}`} onClick={openProfilePanel}>
+          <span className="mobileDockIcon">👤</span>
+          <span>Profil</span>
+        </button>
+        <button className={`mobileDockBtn ${mobileTab === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
+          <span className="mobileDockIcon">⚙️</span>
+          <span>Reglages</span>
+        </button>
+      </div>
     </div>
   );
 }

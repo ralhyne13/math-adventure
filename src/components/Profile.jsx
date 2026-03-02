@@ -4,6 +4,7 @@ import { formatDateFR } from "../hooks/useAchievements";
 export default function Profile({
   show,
   onClose,
+  presentation = "modal",
   profileTab,
   setProfileTab,
   coins,
@@ -38,7 +39,7 @@ export default function Profile({
   if (!show) return null;
 
   return (
-    <Modal title="Profil - Stats, Badges, Album" onClose={onClose}>
+    <Modal title="Profil - Stats, Badges, Album" onClose={onClose} presentation={presentation}>
       <div className="tabs">
         <button className={`btn smooth hover-lift press ${profileTab === "stats" ? "btnPrimary" : ""}`} onClick={() => setProfileTab("stats")}>
           Stats
