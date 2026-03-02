@@ -55,6 +55,7 @@ import Settings from "./components/Settings";
 import { sha256Hex } from "./hooks/useAuth";
 import useAchievements from "./hooks/useAchievements";
 import useGameLogic, { awardLevelCoins, dayKeyStamp, xpToNext } from "./hooks/useGameLogic";
+import useRewardedAds, { OPTIONAL_AD_LIMITS, emptyAdUsageByKind, normalizeAdUsageByKind } from "./hooks/useRewardedAds";
 
 /* ------------------------ Coach helpers ------------------------ */
 /* ------------------------ Login Streak Rewards (7 jours) ------------------------ */
@@ -439,8 +440,13 @@ export default function App() {
         xpBoostUntilTs: 0,
         premiumPlan: "free",
         premiumSinceTs: 0,
+        adDayKey: parisDayKey(),
+        adTodayCount: 0,
+        adUsageByKind: emptyAdUsageByKind(),
+        adCooldownUntilTs: 0,
         rushDayKey: parisDayKey(),
         rushTodayCount: 0,
+        adSurvivalLives: 0,
         league: freshSeasonState(),
         challengeProgress: createChallengeProgress(null),
         collegeArena: { dayKey: parisDayKey(), hardRight: 0, claimed: false },
@@ -491,8 +497,13 @@ export default function App() {
       xpBoostUntilTs: saved?.xpBoostUntilTs ?? 0,
       premiumPlan: saved?.premiumPlan ?? "free",
       premiumSinceTs: saved?.premiumSinceTs ?? 0,
+      adDayKey: saved?.adDayKey ?? parisDayKey(),
+      adTodayCount: saved?.adTodayCount ?? 0,
+      adUsageByKind: normalizeAdUsageByKind(saved?.adUsageByKind),
+      adCooldownUntilTs: saved?.adCooldownUntilTs ?? 0,
       rushDayKey: saved?.rushDayKey ?? parisDayKey(),
       rushTodayCount: saved?.rushTodayCount ?? 0,
+      adSurvivalLives: saved?.adSurvivalLives ?? 0,
       league: ensureSeasonState(saved?.league),
       challengeProgress: createChallengeProgress(saved?.challengeProgress),
       collegeArena: {
@@ -633,12 +644,42 @@ export default function App() {
   const worldBossDone = !!currentWorldState.bossDone;
   const worldBossReady = worldLevel >= WORLD_LEVEL_MAX && !worldBossDone && !worldBossActive;
   const cloudEnabled = isCloudEnabled();
+  const isPremium = premiumPlan === "monthly" || premiumPlan === "lifetime";
   const { profileRank, xpNeed } = useGameLogic(level);
   const { isUnlocked, unlockAchievement } = useAchievements({
     achievements,
     setAchievements,
     awardCoins,
     showBadgePopup,
+  });
+  const {
+    adSim,
+    adDayKey,
+    adTodayCount,
+    adUsageByKind,
+    adCooldownUntilTs,
+    adSurvivalLives,
+    setAdSurvivalLives,
+    adTodayUsed,
+    adUsageToday,
+    adCooldownLeftSec,
+    adLocked,
+    startOptionalAd,
+    skipOptionalAd,
+    logAdEvent,
+  } = useRewardedAds({
+    initial: {
+      adDayKey: initial.adDayKey,
+      adTodayCount: initial.adTodayCount,
+      adUsageByKind: initial.adUsageByKind,
+      adCooldownUntilTs: initial.adCooldownUntilTs,
+      adSurvivalLives: initial.adSurvivalLives,
+    },
+    isPremium,
+    cloudEnabled,
+    authUser,
+    showCoachPopup,
+    cloudLogEvent,
   });
 
   useEffect(() => {
@@ -720,8 +761,13 @@ export default function App() {
       xpBoostUntilTs,
       premiumPlan,
       premiumSinceTs,
+      adDayKey,
+      adTodayCount,
+      adUsageByKind,
+      adCooldownUntilTs,
       rushDayKey,
       rushTodayCount,
+      adSurvivalLives,
       league,
       challengeProgress,
       collegeArena,
@@ -781,8 +827,13 @@ export default function App() {
     xpBoostUntilTs,
     premiumPlan,
     premiumSinceTs,
+    adDayKey,
+    adTodayCount,
+    adUsageByKind,
+    adCooldownUntilTs,
     rushDayKey,
     rushTodayCount,
+    adSurvivalLives,
     league,
     challengeProgress,
     collegeArena,
@@ -874,6 +925,16 @@ export default function App() {
     const id = setInterval(() => {
       setRushTimeLeft((t) => {
         if (t <= 1) {
+          if (adSurvivalLives > 0) {
+            setAdSurvivalLives((n) => Math.max(0, n - 1));
+            showCoachPopup({
+              title: "Vie de survie utilisee",
+              lines: ["Rush relance avec +15 secondes."],
+              hint: "La reserve de survie est consommee automatiquement.",
+            });
+            playBeep("ok", audioOn);
+            return 15;
+          }
           setRushOn(false);
           return 0;
         }
@@ -881,7 +942,7 @@ export default function App() {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [rushOn]);
+  }, [rushOn, adSurvivalLives, audioOn]);
 
   useEffect(() => {
     if (rushOn) {
@@ -900,6 +961,16 @@ export default function App() {
     const id = setInterval(() => {
       setStudy5TimeLeft((t) => {
         if (t <= 1) {
+          if (adSurvivalLives > 0) {
+            setAdSurvivalLives((n) => Math.max(0, n - 1));
+            showCoachPopup({
+              title: "Vie de survie utilisee",
+              lines: ["Defi 5 minutes prolonge de 30 secondes."],
+              hint: "La reserve de survie est consommee automatiquement.",
+            });
+            playBeep("ok", audioOn);
+            return 30;
+          }
           setStudy5On(false);
           return 0;
         }
@@ -907,7 +978,7 @@ export default function App() {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [study5On]);
+  }, [study5On, adSurvivalLives, audioOn]);
 
   useEffect(() => {
     if (study5On) {
@@ -1462,32 +1533,63 @@ export default function App() {
   }
 
   function watchAdDoubleReward() {
-    if (isPremium) return;
-    setAdBoostNext(true);
-    showCoachPopup({
-      title: "Pub optionnelle",
-      lines: ["Prochaine bonne reponse: recompense x2 activee."],
-      hint: "Aucune pub forcee.",
-    });
+    startOptionalAd(
+      "double_reward",
+      () => {
+        setAdBoostNext(true);
+        showCoachPopup({
+          title: "Pub optionnelle",
+          lines: ["Prochaine bonne reponse: pieces + XP x2 actives."],
+          hint: "Aucune pub forcee.",
+        });
+        logAdEvent("double_reward");
+      },
+      {
+        title: "Publicite en cours",
+        lines: ["Deblocage du bonus x2.", "Fin de la simulation dans 3 secondes."],
+      }
+    );
   }
 
-  function watchAdChestBoost() {
-    if (isPremium) return;
-    setChestProgress((p) => {
-      const next = (p ?? 0) + 5;
-      if (next >= 15) {
+  function watchAdInstantChest() {
+    startOptionalAd(
+      "instant_chest",
+      () => {
         const t = chestTypeFromRoll();
         setChestPending((v) => v + 1);
         setChestQueue((prev) => [...(prev ?? []), t]);
-        return next - 15;
+        showCoachPopup({
+          title: "Pub optionnelle",
+          lines: [`${CHEST_TYPES[t]?.label ?? "Coffre"} ajoute instantanement.`],
+          hint: "Aucune pub forcee.",
+        });
+        logAdEvent("instant_chest", { chestType: t });
+      },
+      {
+        title: "Publicite en cours",
+        lines: ["Deblocage d'un coffre immediat.", "Fin de la simulation dans 3 secondes."],
       }
-      return next;
-    });
-    showCoachPopup({
-      title: "Pub optionnelle",
-      lines: ["Progression coffre +5."],
-      hint: "Aucune pub forcee.",
-    });
+    );
+  }
+
+  function watchAdSurvivalLife() {
+    if (adSurvivalLives >= 3) return;
+    startOptionalAd(
+      "survival_life",
+      () => {
+        setAdSurvivalLives((n) => Math.min(3, n + 1));
+        showCoachPopup({
+          title: "Pub optionnelle",
+          lines: ["1 vie de survie stockee."],
+          hint: "Elle sera consommee si un chrono Rush ou Defi 5 minutes tombe a 0.",
+        });
+        logAdEvent("survival_life");
+      },
+      {
+        title: "Publicite en cours",
+        lines: ["Preparation d'une vie de survie.", "Fin de la simulation dans 3 secondes."],
+      }
+    );
   }
 
   function activatePremium(plan) {
@@ -1809,7 +1911,8 @@ export default function App() {
       vibrate(20);
       triggerFx("ok");
 
-      const coinReward = adBoostNext ? 6 : 3;
+      const rewardBoost = adBoostNext ? 2 : 1;
+      const coinReward = 3 * rewardBoost;
       awardCoins(coinReward);
       if (adBoostNext) setAdBoostNext(false);
       setTotalRight((x) => x + 1);
@@ -1822,7 +1925,7 @@ export default function App() {
         return ns;
       });
 
-      awardXp((10 + Math.min(8, streak)) * (isBossNow || isWorldBossNow ? 3 : 1));
+      awardXp((10 + Math.min(8, streak)) * (isBossNow || isWorldBossNow ? 3 : 1) * rewardBoost);
 
       if (!fastMode) {
         setExplain(q.explain(choice));
@@ -2009,7 +2112,6 @@ export default function App() {
     if (!total) return 0;
     return Math.round((totalRight / total) * 100);
   }, [totalRight, totalWrong]);
-  const isPremium = premiumPlan === "monthly" || premiumPlan === "lifetime";
   const premiumLabel = premiumPlan === "lifetime" ? "Lifetime" : premiumPlan === "monthly" ? "Mensuel" : "Gratuit";
   const isCollegeNow = isCollegeGrade(gradeId);
   const collegeArenaToday = useMemo(() => {
@@ -2212,8 +2314,13 @@ export default function App() {
       xpBoostUntilTs: 0,
       premiumPlan: "free",
       premiumSinceTs: 0,
+      adDayKey: parisDayKey(),
+      adTodayCount: 0,
+      adUsageByKind: emptyAdUsageByKind(),
+      adCooldownUntilTs: 0,
       rushDayKey: parisDayKey(),
       rushTodayCount: 0,
+      adSurvivalLives: 0,
       league: freshSeasonState(),
       challengeProgress: createChallengeProgress(null),
       collegeArena: { dayKey: parisDayKey(), hardRight: 0, claimed: false },
@@ -2686,6 +2793,51 @@ export default function App() {
         </div>
       )}
 
+      {adSim && (
+        <div className="overlay" role="dialog" aria-modal="true">
+          <div className="modal" style={{ width: "min(560px, 100%)" }}>
+            <div className="modalHead">
+              <div className="modalTitle">Publicite optionnelle</div>
+              <span className="pill">{adSim.provider === "regie_externe" ? "regie externe" : "video sponsorisee"}</span>
+            </div>
+            <div className="modalBody">
+              <div className="toast" style={{ marginTop: 0 }}>
+                <div style={{ width: "100%" }}>
+                  <strong>{adSim.title}</strong>
+                  <div className="small" style={{ marginTop: 6 }}>
+                    Source: <b>{adSim.provider === "regie_externe" ? "Regie configuree" : "Simulation locale"}</b> • Format:{" "}
+                    <b>{adSim.provider === "regie_externe" ? "rewarded" : "3s"}</b>
+                  </div>
+                  <div className="small" style={{ marginTop: 8 }}>
+                    {adSim.lines?.map((line, i) => (
+                      <div key={i}>{line}</div>
+                    ))}
+                  </div>
+                  <div className="barWrap" style={{ marginTop: 12 }}>
+                    <div className="bar" style={{ width: `${((3 - (adSim.secondsLeft ?? 0)) / 3) * 100}%` }} />
+                  </div>
+                  <div className="small" style={{ marginTop: 8 }}>
+                    Recompense accordee dans <b>{adSim.secondsLeft}</b>s.
+                  </div>
+                  {!isPremium && (
+                    <div className="small" style={{ marginTop: 6 }}>
+                      Quota du jour: <b>{adSim.usedAfterStart}/6</b>
+                    </div>
+                  )}
+                  {isPremium && (
+                    <div style={{ marginTop: 12 }}>
+                      <button className="btn btnPrimary smooth hover-lift press" onClick={skipOptionalAd}>
+                        Passer
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {badgePop && (
         <div className="badgePop">
           <div className="badgePopInner smooth">
@@ -3078,11 +3230,13 @@ export default function App() {
                 <button className="btn smooth hover-lift press" onClick={() => openChestBatch(chestPending)} disabled={chestPending < 5}>
                   Ouvrir tout
                 </button>
-                {!isPremium && (
-                  <button className="btn smooth hover-lift press" onClick={watchAdChestBoost}>
-                    Pub optionnelle: +5 coffre
-                  </button>
-                )}
+                <button
+                  className="btn smooth hover-lift press"
+                  onClick={watchAdInstantChest}
+                  disabled={adLocked || (!isPremium && (adUsageToday.instant_chest ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0))}
+                >
+                  Pub: coffre instantane
+                </button>
               </div>
             </div>
           </div>
@@ -3135,20 +3289,57 @@ export default function App() {
             </div>
           </div>
 
-          {!isPremium && (
-            <div className="toast" style={{ marginTop: 12 }}>
-              <div style={{ width: "100%" }}>
-                <strong>Publicite intelligente (optionnelle)</strong>
-                <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcee apres une question.</div>
-                <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <button className="btn smooth hover-lift press" onClick={watchAdDoubleReward}>
-                    Pub: doubler prochaine recompense
-                  </button>
-                </div>
-                {adBoostNext && <div className="small" style={{ marginTop: 8 }}>Boost actif: prochaine bonne reponse x2.</div>}
+          <div className="toast" style={{ marginTop: 12 }}>
+            <div style={{ width: "100%" }}>
+              <strong>Publicite intelligente (optionnelle)</strong>
+              <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcee apres une question.</div>
+              <div className="small" style={{ marginTop: 6 }}>
+                {isPremium
+                  ? "Premium: pas de quota journalier, mais cooldown conserve pour equilibrer."
+                  : `Quota gratuit: ${Math.max(0, OPTIONAL_AD_LIMITS.total - adTodayUsed)} restantes aujourd'hui.`}
               </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Coffre: <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0) - (adUsageToday.instant_chest ?? 0))}</b> • Bonus x2:{" "}
+                <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0) - (adUsageToday.double_reward ?? 0))}</b> • Vie:{" "}
+                <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.survival_life ?? 0) - (adUsageToday.survival_life ?? 0))}</b>
+              </div>
+              {adCooldownLeftSec > 0 && (
+                <div className="small" style={{ marginTop: 6 }}>
+                  Cooldown actif: <b>{adCooldownLeftSec}s</b>
+                </div>
+              )}
+              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button
+                  className="btn smooth hover-lift press"
+                  onClick={watchAdInstantChest}
+                  disabled={adLocked || (!isPremium && (adUsageToday.instant_chest ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0))}
+                >
+                  Pub: ouvrir 1 coffre
+                </button>
+                <button
+                  className="btn smooth hover-lift press"
+                  onClick={watchAdDoubleReward}
+                  disabled={adLocked || (!isPremium && (adUsageToday.double_reward ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0))}
+                >
+                  Pub: doubler recompense
+                </button>
+                <button
+                  className="btn smooth hover-lift press"
+                  onClick={watchAdSurvivalLife}
+                  disabled={
+                    adSurvivalLives >= 3 ||
+                    adLocked ||
+                    (!isPremium && (adUsageToday.survival_life ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.survival_life ?? 0))
+                  }
+                >
+                  Pub: +1 vie en survie
+                </button>
+              </div>
+              {adBoostNext && <div className="small" style={{ marginTop: 8 }}>Boost actif: prochaine bonne reponse x2 (pieces + XP).</div>}
+              <div className="small" style={{ marginTop: 6 }}>Vies de survie stockees: <b>{adSurvivalLives}/3</b></div>
+              {isPremium && <div className="small" style={{ marginTop: 6 }}>Premium peut passer la simulation instantanement.</div>}
             </div>
-          )}
+          </div>
 
 
           <div className="toast" style={{ marginTop: 12 }}>
