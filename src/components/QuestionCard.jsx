@@ -44,6 +44,7 @@ export default function QuestionCard({
   rushTimeLeft,
   rushDanger,
   rushMultNow,
+  rushFeedback,
   arenaOn,
   arenaMultNow,
   bossActive,
@@ -153,7 +154,13 @@ export default function QuestionCard({
             </span>
             {rushOn && (
               <span className="metaPill">
-                <span className="metaIcon">Rush</span> <b>{rushTimeLeft}s</b> <b>x{rushMultNow}</b>
+                <span className="metaIcon">Rush</span> <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> <b>x{rushMultNow}</b>
+              </span>
+            )}
+            {rushOn && rushFeedback && (
+              <span className={`metaPill rushFeedbackPill ${rushFeedback.tone}`}>
+                <span className="metaIcon">{rushFeedback.label}</span>
+                {rushFeedback.bonus > 0 ? <b>+{rushFeedback.bonus}</b> : null}
               </span>
             )}
             {bossActive && (

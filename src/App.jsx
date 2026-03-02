@@ -49,6 +49,7 @@ import {
 import { SKINS, AVATARS, ACHIEVEMENTS } from "./config/gameData";
 import TopBar from "./components/TopBar";
 import QuestionCard from "./components/QuestionCard";
+import RushScreen from "./components/RushScreen";
 import Shop from "./components/Shop";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
@@ -87,12 +88,24 @@ function rewardRoll(streakDay, ownedAvatars) {
   return { kind: "coins", coins: coinReward, label: `Pieces : +${coinReward}` };
 }
 
+const LEAGUES = [
+  { id: "bronze", name: "Bronze", icon: "🥉", min: 0 },
+  { id: "silver", name: "Argent", icon: "🥈", min: 1200 },
+  { id: "gold", name: "Or", icon: "🥇", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "💎", min: 4200 },
+];
+
+function leagueFromScore(score) {
+  let cur = LEAGUES[0];
+  for (const league of LEAGUES) {
+    if (score >= league.min) cur = league;
+  }
+  return cur;
+}
+
 function leagueTierFromPoints(points) {
-  if (points >= 520) return { id: "master", label: "Maitre", icon: "👑" };
-  if (points >= 390) return { id: "diamond", label: "Diamant", icon: "💎" };
-  if (points >= 270) return { id: "gold", label: "Or", icon: "🥇" };
-  if (points >= 160) return { id: "silver", label: "Argent", icon: "🥈" };
-  return { id: "bronze", label: "Bronze", icon: "🥉" };
+  const league = leagueFromScore(points);
+  return { id: league.id, label: league.name, icon: league.icon };
 }
 
 function freshSeasonState(now = Date.now()) {
@@ -147,12 +160,18 @@ const ANSWER_EFFECTS = [
   { id: "prism-particles", label: "Particules spec", desc: "Particules multicolores.", dustCost: 260 },
 ];
 
-function chestTypeFromRoll() {
+function rollChestRarity(score) {
+  const base = clamp((Number(score) || 0) / 5000, 0, 1);
   const r = Math.random();
-  if (r < 0.55) return "common";
-  if (r < 0.83) return "rare";
-  if (r < 0.96) return "epic";
-  return "legendary";
+  const epicChance = 0.06 + base * 0.06;
+  const rareChance = 0.22 + base * 0.1;
+  if (r < epicChance) return "epic";
+  if (r < epicChance + rareChance) return "rare";
+  return "common";
+}
+
+function chestTypeFromRoll(score = 0) {
+  return rollChestRarity(score);
 }
 
 function rarityRank(raw) {
@@ -163,7 +182,58 @@ function rarityRank(raw) {
   return 1;
 }
 
-function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffects }) {
+function coinsForChest(rarity) {
+  if (rarity === "epic") return randInt(140, 220);
+  if (rarity === "rare") return randInt(70, 120);
+  return randInt(25, 55);
+}
+
+function pickSkinReward(rarity, ownedSkins) {
+  const pool =
+    rarity === "epic"
+      ? SKINS.filter((s) => s.price >= 180)
+      : rarity === "rare"
+        ? SKINS.filter((s) => s.price >= 120)
+        : SKINS.filter((s) => s.price >= 0);
+
+  const notOwned = pool.filter((s) => !ownedSkins.includes(s.id));
+  if (!notOwned.length) return null;
+  return notOwned[randInt(0, notOwned.length - 1)];
+}
+
+function pickAvatarReward(rarity, ownedAvatars) {
+  const pool =
+    rarity === "epic"
+      ? AVATARS.filter((a) => a.rarity === "Épique" || a.rarity === "Exclusif")
+      : rarity === "rare"
+        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Épique")
+        : AVATARS.filter((a) => a.rarity === "Commun" || a.rarity === "Rare");
+
+  const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
+  if (!notOwned.length) return null;
+  return notOwned[randInt(0, notOwned.length - 1)];
+}
+
+function rollChestReward({ score, ownedSkins, ownedAvatars }) {
+  const rarity = rollChestRarity(score);
+  const skinChance = rarity === "epic" ? 0.4 : rarity === "rare" ? 0.26 : 0.12;
+  const avatarChance = rarity === "epic" ? 0.45 : rarity === "rare" ? 0.28 : 0.14;
+
+  const r = Math.random();
+  if (r < skinChance) {
+    const skin = pickSkinReward(rarity, ownedSkins);
+    if (skin) return { rarity, kind: "skin", skinId: skin.id, text: `Skin: ${skin.name}` };
+  }
+  if (r < skinChance + avatarChance) {
+    const avatar = pickAvatarReward(rarity, ownedAvatars);
+    if (avatar) return { rarity, kind: "avatar", avatarId: avatar.id, text: `Avatar: ${avatar.emoji} ${avatar.name}` };
+  }
+
+  const coins = coinsForChest(rarity);
+  return { rarity, kind: "coins", coins, text: `+${coins} pieces` };
+}
+
+function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffects, score = 0 }) {
   const type = CHEST_TYPES[chestType] ? chestType : "common";
   const effectsPool = ANSWER_EFFECTS.filter((e) => e.id !== "default" && !ownedEffects.includes(e.id));
   const commonSkins = SKINS.filter((s) => !ownedSkins.includes(s.id) && s.price > 0 && s.price <= 170);
@@ -193,36 +263,8 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
     return { kind: "coins", coins, text: `+${coins} pieces` };
   }
 
-  if (type === "epic") {
-    if (effectsPool.length && r < 0.23) {
-      const fx = pick(effectsPool);
-      return { kind: "effect", effectId: fx.id, text: `Effet special: ${fx.label}` };
-    }
-    if (premiumSkins.length && r < 0.42) {
-      const s = pick(premiumSkins);
-      return { kind: "skin", skinId: s.id, text: `Skin: ${s.name}` };
-    }
-    if (rareAvatars.length && r < 0.68) {
-      const a = pick(rareAvatars);
-      return { kind: "avatar", avatarId: a.id, text: `Avatar: ${a.emoji} ${a.name}` };
-    }
-    if (r < 0.8) return { kind: "xpBoost", minutes: 30, text: "Boost XP x2 (30 min)" };
-    const coins = randInt(140, 300);
-    return { kind: "coins", coins, text: `+${coins} pieces` };
-  }
-
-  if (type === "rare") {
-    if (commonSkins.length && r < 0.2) {
-      const s = pick(commonSkins);
-      return { kind: "skin", skinId: s.id, text: `Skin: ${s.name}` };
-    }
-    if (rareAvatars.length && r < 0.46) {
-      const a = pick(rareAvatars);
-      return { kind: "avatar", avatarId: a.id, text: `Avatar: ${a.emoji} ${a.name}` };
-    }
-    if (r < 0.64) return { kind: "xpBoost", minutes: 20, text: "Boost XP x2 (20 min)" };
-    const coins = randInt(80, 180);
-    return { kind: "coins", coins, text: `+${coins} pieces` };
+  if (type === "epic" || type === "rare" || type === "common") {
+    return rollChestReward({ score, ownedSkins, ownedAvatars });
   }
 
   if (commonAvatars.length && r < 0.18) {
@@ -275,12 +317,25 @@ function arenaComboMultiplier(combo) {
   return 1;
 }
 
-function rushComboMultiplier(combo) {
+function getRushMultiplier(combo) {
   const c = Math.max(0, Number(combo) || 0);
-  if (c >= 18) return 4;
-  if (c >= 12) return 3;
-  if (c >= 6) return 2;
+  if (c >= 15) return 5;
+  if (c >= 10) return 4;
+  if (c >= 6) return 3;
+  if (c >= 3) return 2;
   return 1;
+}
+
+function basePoints(diffId) {
+  if (diffId === "facile") return 10;
+  if (diffId === "moyen") return 14;
+  return 18;
+}
+
+function speedBonus(rtMs) {
+  if (rtMs < 1200) return 6;
+  if (rtMs < 2000) return 3;
+  return 0;
 }
 
 function rewardVisualMeta(reward, chestType) {
@@ -365,6 +420,7 @@ export default function App() {
   const chestTimerRef = useRef(null);
   const chestRevealTimerRef = useRef(null);
   const rushWasOnRef = useRef(false);
+  const rushQuestionStartTsRef = useRef(Date.now());
   const study5WasOnRef = useRef(false);
   const study5StartTsRef = useRef(0);
   const cloudHydrateRef = useRef(false);
@@ -430,6 +486,8 @@ export default function App() {
         lastLoginDayKey: null,
         loginStreak: 0,
         activityMap: {},
+        rushBest: 0,
+        rushLeague: "bronze",
         rushBestScore: 0,
         rushLeaderboard: [],
         ownedEffects: ["default"],
@@ -487,6 +545,8 @@ export default function App() {
       lastLoginDayKey: saved?.lastLoginDayKey ?? null,
       loginStreak: saved?.loginStreak ?? 0,
       activityMap: saved?.activityMap ?? {},
+      rushBest: saved?.rushBest ?? saved?.rushBestScore ?? 0,
+      rushLeague: saved?.rushLeague ?? "bronze",
       rushBestScore: saved?.rushBestScore ?? 0,
       rushLeaderboard: saved?.rushLeaderboard ?? [],
       ownedEffects: saved?.ownedEffects ?? ["default"],
@@ -557,6 +617,8 @@ export default function App() {
   const [lastLoginDayKey, setLastLoginDayKey] = useState(initial.lastLoginDayKey);
   const [loginStreak, setLoginStreak] = useState(initial.loginStreak);
   const [activityMap, setActivityMap] = useState(initial.activityMap);
+  const [rushBest, setRushBest] = useState(initial.rushBest ?? 0);
+  const [rushLeague, setRushLeague] = useState(initial.rushLeague ?? "bronze");
   const [rushBestScore, setRushBestScore] = useState(initial.rushBestScore);
   const [rushLeaderboard, setRushLeaderboard] = useState(initial.rushLeaderboard);
   const [ownedEffects, setOwnedEffects] = useState(initial.ownedEffects);
@@ -580,6 +642,7 @@ export default function App() {
   );
 
   // Session
+  const [screen, setScreen] = useState("classic"); // "classic" | "rush"
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(1);
@@ -594,9 +657,11 @@ export default function App() {
   const [hintMsg, setHintMsg] = useState("");
   const [adaptiveAction, setAdaptiveAction] = useState(null);
   const [rushOn, setRushOn] = useState(false);
-  const [rushTimeLeft, setRushTimeLeft] = useState(60);
+  const [rushTimeLeft, setRushTimeLeft] = useState(60000);
   const [rushScore, setRushScore] = useState(0);
   const [rushCombo, setRushCombo] = useState(0);
+  const [rushBestCombo, setRushBestCombo] = useState(0);
+  const [rushFeedback, setRushFeedback] = useState(null);
   const [study5On, setStudy5On] = useState(false);
   const [study5TimeLeft, setStudy5TimeLeft] = useState(STUDY5_DURATION);
   const [study5Answered, setStudy5Answered] = useState(0);
@@ -755,6 +820,8 @@ export default function App() {
       lastLoginDayKey,
       loginStreak,
       activityMap,
+      rushBest,
+      rushLeague,
       rushBestScore,
       rushLeaderboard,
       ownedEffects,
@@ -821,6 +888,8 @@ export default function App() {
     lastLoginDayKey,
     loginStreak,
     activityMap,
+    rushBest,
+    rushLeague,
     rushBestScore,
     rushLeaderboard,
     ownedEffects,
@@ -926,9 +995,14 @@ export default function App() {
 
   useEffect(() => {
     if (!rushOn) return undefined;
+    let lastTick = Date.now();
     const id = setInterval(() => {
+      const nowTick = Date.now();
+      const dtMs = Math.max(10, nowTick - lastTick);
+      lastTick = nowTick;
       setRushTimeLeft((t) => {
-        if (t <= 1) {
+        const next = Math.max(0, t - dtMs);
+        if (next <= 0) {
           if (adSurvivalLives > 0) {
             setAdSurvivalLives((n) => Math.max(0, n - 1));
             showCoachPopup({
@@ -937,14 +1011,15 @@ export default function App() {
               hint: "La reserve de survie est consommee automatiquement.",
             });
             playBeep("ok", audioOn);
-            return 15;
+            rushQuestionStartTsRef.current = Date.now();
+            return 15000;
           }
           setRushOn(false);
           return 0;
         }
-        return t - 1;
+        return next;
       });
-    }, 1000);
+    }, 50);
     return () => clearInterval(id);
   }, [rushOn, adSurvivalLives, audioOn]);
 
@@ -1061,6 +1136,12 @@ export default function App() {
     const t = setTimeout(() => setErrorShakeFx(false), 360);
     return () => clearTimeout(t);
   }, [errorShakeFx]);
+
+  useEffect(() => {
+    if (!rushFeedback) return undefined;
+    const t = setTimeout(() => setRushFeedback(null), 650);
+    return () => clearTimeout(t);
+  }, [rushFeedback]);
 
   function vibrate(ms) {
     if (!vibrateOn) return;
@@ -1213,6 +1294,7 @@ export default function App() {
     const liveDiff = bossActive || worldBossActive ? "difficile" : diffId;
     const qNew = makeQuestion(modeId, gradeId, liveDiff, qHistoryRef);
     pushHistory(qNew, liveDiff);
+    if (rushOn) rushQuestionStartTsRef.current = Date.now();
 
     setQ(qNew);
     setStatus("idle");
@@ -1231,6 +1313,7 @@ export default function App() {
 
   function resetSession() {
     clearAutoTimer();
+    setScreen("classic");
     setStudy5On(false);
     setStudy5TimeLeft(STUDY5_DURATION);
     setStudy5Answered(0);
@@ -1238,9 +1321,11 @@ export default function App() {
     setStudy5Wrong(0);
     setStudy5BestStreak(0);
     setRushOn(false);
-    setRushTimeLeft(60);
+    setRushTimeLeft(60000);
     setRushScore(0);
     setRushCombo(0);
+    setRushBestCombo(0);
+    setRushFeedback(null);
     setAdBoostNext(false);
     setBossActive(false);
     setBossRemaining(0);
@@ -1389,10 +1474,14 @@ export default function App() {
       setRushTodayCount(0);
     }
     if (!isPremium) setRushTodayCount((n) => n + 1);
+    setScreen("rush");
     setRushOn(true);
-    setRushTimeLeft(60);
+    setRushTimeLeft(60000);
     setRushScore(0);
     setRushCombo(0);
+    setRushBestCombo(0);
+    setRushFeedback(null);
+    rushQuestionStartTsRef.current = Date.now();
     setScore(0);
     setStreak(0);
     setQuestionIndex(1);
@@ -1408,6 +1497,7 @@ export default function App() {
 
   function endRush(force = false) {
     if (!rushOn && !force) return;
+    setScreen("classic");
     setRushOn(false);
     setRushTimeLeft((t) => (force ? t : Math.max(0, t)));
     setRushBestScore((prev) => Math.max(prev ?? 0, rushScore));
@@ -1442,6 +1532,7 @@ export default function App() {
   function openChestBatch(count = 1) {
     const openCount = clamp(Number(count) || 1, 1, Math.max(1, chestPending));
     if (chestPending <= 0) return;
+    const chestScoreSeed = Math.max(score ?? 0, rushScore ?? 0);
 
     const availableTypes = Array.isArray(chestQueue) ? [...chestQueue] : [];
     const opened = [];
@@ -1450,12 +1541,13 @@ export default function App() {
     const tempOwnedEffects = new Set(ownedEffects);
 
     for (let i = 0; i < openCount; i++) {
-      const chestType = availableTypes.shift() ?? chestTypeFromRoll();
+      const chestType = availableTypes.shift() ?? chestTypeFromRoll(chestScoreSeed);
       const reward = rollChestRewardByType({
         chestType,
         ownedAvatars: [...tempOwnedAvatars],
         ownedSkins: [...tempOwnedSkins],
         ownedEffects: [...tempOwnedEffects],
+        score: chestScoreSeed,
       });
       let finalReward = reward;
 
@@ -1586,7 +1678,7 @@ export default function App() {
     startOptionalAd(
       "instant_chest",
       () => {
-        const t = chestTypeFromRoll();
+        const t = chestTypeFromRoll(Math.max(score ?? 0, rushScore ?? 0));
         setChestPending((v) => v + 1);
         setChestQueue((prev) => [...(prev ?? []), t]);
         showCoachPopup({
@@ -1763,9 +1855,10 @@ export default function App() {
     const nextTotalWrong = totalWrong + (isCorrect ? 0 : 1);
     const nextStreak = isCorrect ? streak + 1 : 0;
     const baseScoreAdd = isCorrect ? 10 + Math.min(18, streak * 2) : 0;
-    const rushMult = isRushNow ? rushComboMultiplier(isCorrect ? rushCombo + 1 : rushCombo) : 1;
+    const rushMult = isRushNow ? getRushMultiplier(isCorrect ? rushCombo + 1 : 0) : 1;
     const arenaMult = isArenaNow ? arenaComboMultiplier(isCorrect ? streak + 1 : streak) : 1;
     const nextScoreAdd = Math.round(baseScoreAdd * (isRushNow ? rushMult : arenaMult));
+    let rushScoreAdd = 0;
 
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
     const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
@@ -1852,7 +1945,8 @@ export default function App() {
       return next;
     });
 
-    setLeague((prev) => updateLeagueAfterAnswer(prev, { isCorrect, scoreAdd: nextScoreAdd, nextStreak }));
+    const effectiveScoreAdd = isRushNow ? rushScoreAdd : nextScoreAdd;
+    setLeague((prev) => updateLeagueAfterAnswer(prev, { isCorrect, scoreAdd: effectiveScoreAdd, nextStreak }));
 
     if (isWorldBossNow) {
       if (isCorrect) {
@@ -1910,7 +2004,7 @@ export default function App() {
       setChestProgress((p) => {
         const next = (p ?? 0) + 1;
         if (next >= 15) {
-          const t = chestTypeFromRoll();
+          const t = chestTypeFromRoll(Math.max(score ?? 0, rushScore ?? 0));
           setChestPending((v) => v + 1);
           setChestQueue((prev) => [...(prev ?? []), t]);
           showBadgePopup({
@@ -1926,14 +2020,32 @@ export default function App() {
     }
 
     if (isRushNow) {
+      const nowMs = Date.now();
+      const rt = Math.max(0, nowMs - rushQuestionStartTsRef.current);
       if (isCorrect) {
-        setRushTimeLeft((t) => Math.min(120, t + 1));
-        setRushCombo((c) => c + 1);
-        setRushScore((s) => s + nextScoreAdd);
+        const nextRushCombo = rushCombo + 1;
+        const nextRushMult = getRushMultiplier(nextRushCombo);
+        const base = basePoints(diffId);
+        const speedPts = speedBonus(rt);
+        rushScoreAdd = (base + speedPts) * nextRushMult;
+        setRushFeedback(
+          speedPts >= 6
+            ? { tone: "fast", label: "RAPIDE", bonus: speedPts, rtMs: rt }
+            : speedPts >= 3
+              ? { tone: "good", label: "BON", bonus: speedPts, rtMs: rt }
+              : { tone: "base", label: "OK", bonus: 0, rtMs: rt }
+        );
+
+        setRushCombo(nextRushCombo);
+        setRushBestCombo((best) => Math.max(best, nextRushCombo));
+        setRushScore((s) => s + rushScoreAdd);
+        setRushTimeLeft((t) => Math.min(75000, t + 900));
       } else {
-        setRushTimeLeft((t) => Math.max(0, t - 2));
         setRushCombo(0);
+        setRushTimeLeft((t) => Math.max(0, t - 1400));
+        setRushFeedback({ tone: "miss", label: "-1.4s", bonus: 0, rtMs: rt });
       }
+      rushQuestionStartTsRef.current = nowMs;
     }
 
     if (isCorrect) {
@@ -1948,7 +2060,7 @@ export default function App() {
       if (adBoostNext) setAdBoostNext(false);
       setTotalRight((x) => x + 1);
 
-      setScore((s) => s + nextScoreAdd);
+      setScore((s) => s + effectiveScoreAdd);
 
       setStreak((st) => {
         const ns = st + 1;
@@ -1966,7 +2078,7 @@ export default function App() {
         setShowExplain(false);
       }
 
-      updateRecordIfNeeded(score + nextScoreAdd);
+      updateRecordIfNeeded(score + effectiveScoreAdd);
     } else {
       setStatus("bad");
       playBeep("bad", audioOn);
@@ -2015,7 +2127,7 @@ export default function App() {
       totalQuestions: nextTotalQuestions,
       totalAnswers: nextTotalAnswers,
       accuracy: nextAccuracy,
-      rushBest: Math.max(rushBestScore, rushScore + (isCorrect ? nextScoreAdd : 0)),
+      rushBest: Math.max(rushBestScore, rushScore + (isCorrect ? rushScoreAdd : 0)),
     });
 
     if (fastMode) {
@@ -2221,8 +2333,8 @@ export default function App() {
     return st;
   }, [activityDays]);
 
-  const rushDanger = rushOn && rushTimeLeft <= 10;
-  const rushMultNow = rushOn ? rushComboMultiplier(rushCombo + 1) : 1;
+  const rushDanger = rushOn && rushTimeLeft <= 10000;
+  const rushMultNow = rushOn ? getRushMultiplier(rushCombo) : 1;
   const arenaMultNow = arenaOn && !rushOn ? arenaComboMultiplier(streak + 1) : 1;
   const bossHpPct = clamp(bossRemaining, 0, 100);
   const chestTypeCounts = useMemo(() => {
@@ -2343,6 +2455,8 @@ export default function App() {
       lastLoginDayKey: null,
       loginStreak: 0,
       activityMap: {},
+      rushBest: 0,
+      rushLeague: "bronze",
       rushBestScore: 0,
       rushLeaderboard: [],
       ownedEffects: ["default"],
@@ -2738,6 +2852,90 @@ export default function App() {
     );
   }
 
+  const questionCardProps = {
+    status,
+    fx,
+    spark,
+    modeId,
+    setModeId,
+    selectedWorldId,
+    setSelectedWorldId,
+    worlds: WORLDS,
+    worldLevel,
+    worldBossReady,
+    worldBossDone,
+    diffId,
+    setDiffId,
+    DIFFS,
+    MODES,
+    resetSession,
+    adaptiveOn,
+    xpPct,
+    sessionAnswered,
+    lastAnswers,
+    q,
+    streak,
+    accuracy,
+    hintLevel,
+    hintList,
+    canAskHint,
+    getHintCost,
+    useHint,
+    hintMsg,
+    visibleHints,
+    picked,
+    showExplain,
+    submit,
+    disableChoices,
+    goNext,
+    explain,
+    methodSteps,
+    showMethod,
+    setShowMethod,
+    rushOn,
+    rushTimeLeft,
+    rushDanger,
+    rushMultNow,
+    rushFeedback,
+    arenaOn,
+    arenaMultNow,
+    bossActive,
+    bossTimeLeft,
+    bossRemaining,
+    bossHpPct,
+    bossProfile,
+    bossHitFx,
+    bossAttackFx,
+    bossImpactRingFx,
+    bossAttackFlashFx,
+    bossCalloutText,
+    errorShakeFx,
+    answerEffectId,
+  };
+
+  if (screen === "rush") {
+    return (
+      <RushScreen
+        onExit={() => setScreen("classic")}
+        gradeId={gradeId}
+        diffId={diffId}
+        modeId={modeId}
+        setModeId={setModeId}
+        setGradeId={setGradeId}
+        setDiffId={setDiffId}
+        audioOn={audioOn}
+        vibrateOn={vibrateOn}
+        reduceMotion={reduceMotion}
+        setCoins={setCoins}
+        setOwnedSkins={setOwnedSkins}
+        setOwnedAvatars={setOwnedAvatars}
+        ownedSkins={ownedSkins}
+        ownedAvatars={ownedAvatars}
+        makeQuestionFn={(m, g, d, h) => makeQuestion(m, g, d, h)}
+      />
+    );
+  }
+
   /* ------------------------ Main app render ------------------------ */
   return (
     <div className="shell">
@@ -2986,65 +3184,7 @@ export default function App() {
       />
 
       <div className="grid">
-        <QuestionCard
-          status={status}
-          fx={fx}
-          spark={spark}
-          modeId={modeId}
-          setModeId={setModeId}
-          selectedWorldId={selectedWorldId}
-          setSelectedWorldId={setSelectedWorldId}
-          worlds={WORLDS}
-          worldLevel={worldLevel}
-          worldBossReady={worldBossReady}
-          worldBossDone={worldBossDone}
-          diffId={diffId}
-          setDiffId={setDiffId}
-          DIFFS={DIFFS}
-          MODES={MODES}
-          resetSession={resetSession}
-          adaptiveOn={adaptiveOn}
-          xpPct={xpPct}
-          sessionAnswered={sessionAnswered}
-          lastAnswers={lastAnswers}
-          q={q}
-          streak={streak}
-          accuracy={accuracy}
-          hintLevel={hintLevel}
-          hintList={hintList}
-          canAskHint={canAskHint}
-          getHintCost={getHintCost}
-          useHint={useHint}
-          hintMsg={hintMsg}
-          visibleHints={visibleHints}
-          picked={picked}
-          showExplain={showExplain}
-          submit={submit}
-          disableChoices={disableChoices}
-          goNext={goNext}
-          explain={explain}
-          methodSteps={methodSteps}
-          showMethod={showMethod}
-          setShowMethod={setShowMethod}
-          rushOn={rushOn}
-          rushTimeLeft={rushTimeLeft}
-          rushDanger={rushDanger}
-          rushMultNow={rushMultNow}
-          arenaOn={arenaOn}
-          arenaMultNow={arenaMultNow}
-          bossActive={bossActive}
-          bossTimeLeft={bossTimeLeft}
-          bossRemaining={bossRemaining}
-          bossHpPct={bossHpPct}
-          bossProfile={bossProfile}
-          bossHitFx={bossHitFx}
-          bossAttackFx={bossAttackFx}
-          bossImpactRingFx={bossImpactRingFx}
-          bossAttackFlashFx={bossAttackFlashFx}
-          bossCalloutText={bossCalloutText}
-          errorShakeFx={errorShakeFx}
-          answerEffectId={answerEffectId}
-        />
+        <QuestionCard {...questionCardProps} />
         <div className="card smooth">
           <div className="cardTitle">
             <span>Tableau de bord</span>
@@ -3156,11 +3296,18 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Rush 60s</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Temps: <b>{rushTimeLeft}s</b> • Score: <b>{rushScore}</b> • Combo: <b>{rushCombo}</b> • Record: <b>{rushBestScore}</b>
+                Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> • Score: <b>{rushScore}</b> • Combo: <b>{rushCombo}</b> • Record: <b>{rushBestScore}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Multiplicateur rush: <b>x{rushMultNow}</b> (x2/x3/x4 selon combo)
+                Multiplicateur rush: <b>x{rushMultNow}</b> • Meilleur combo: <b>{rushBestCombo}</b> (x2/x3/x4/x5)
               </div>
+              {rushFeedback && (
+                <div className="small" style={{ marginTop: 6 }}>
+                  Feedback vitesse: <b>{rushFeedback.label}</b>
+                  {rushFeedback.bonus > 0 ? ` • +${rushFeedback.bonus} bonus vitesse` : ""}
+                  {typeof rushFeedback.rtMs === "number" ? ` • ${rushFeedback.rtMs}ms` : ""}
+                </div>
+              )}
               {rushDanger && (
                 <div className="small" style={{ marginTop: 6, color: "rgba(255,170,170,.95)", fontWeight: 1100 }}>
                   Zone critique: moins de 10 secondes.
@@ -3171,14 +3318,17 @@ export default function App() {
                   Limite gratuite: <b>{Math.max(0, 3 - rushTodayCount)}/3</b> rush restants aujourd'hui.
                 </div>
               )}
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {!rushOn ? (
-                  <button className="btn btnPrimary smooth hover-lift press" onClick={startRush}>
-                    Lancer Rush
-                  </button>
-                ) : (
-                  <button className="btn smooth hover-lift press" onClick={() => setRushOn(false)}>
-                    Stop Rush
+                <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  {!rushOn ? (
+                    <button
+                      className="btn btnPrimary smooth hover-lift press"
+                      onClick={() => setScreen("rush")}
+                    >
+                      ⚡ Rush 60s
+                    </button>
+                  ) : (
+                    <button className="btn smooth hover-lift press" onClick={() => setRushOn(false)}>
+                      Stop Rush
                   </button>
                 )}
               </div>

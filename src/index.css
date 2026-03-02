@@ -657,6 +657,21 @@ body.reduce-motion .bossCallout{ animation:none !important; opacity:0; }
   align-items:center;
   gap: 8px;
 }
+.rushFeedbackPill.fast{
+  border-color: color-mix(in srgb, var(--accent2) 52%, rgba(255,255,255,.12));
+  background: color-mix(in srgb, var(--accent2) 16%, rgba(0,0,0,.18));
+}
+.rushFeedbackPill.good{
+  border-color: color-mix(in srgb, var(--good) 46%, rgba(255,255,255,.12));
+  background: color-mix(in srgb, var(--good) 14%, rgba(0,0,0,.18));
+}
+.rushFeedbackPill.base{
+  border-color: rgba(255,255,255,.18);
+}
+.rushFeedbackPill.miss{
+  border-color: color-mix(in srgb, var(--danger) 46%, rgba(255,255,255,.12));
+  background: color-mix(in srgb, var(--danger) 12%, rgba(0,0,0,.18));
+}
 .metaIcon{ opacity:.9; }
 .qPrompt{ text-align:left; font-weight: 1100; letter-spacing:.2px; }
 
@@ -701,6 +716,133 @@ body.reduce-motion .bossCallout{ animation:none !important; opacity:0; }
   margin-top: 14px;
 }
 @media (max-width: 520px){ .controls{ grid-template-columns: 1fr; } }
+
+.rushHud{
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+  justify-content:space-between;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+
+.rushHudLeft{ flex: 1; min-width: 220px; }
+.rushTime{
+  font-weight: 1200;
+  font-size: 18px;
+  letter-spacing: .2px;
+}
+.rushTime.danger{ color: #ffb4b4; text-shadow: 0 10px 24px rgba(239,68,68,.18); }
+
+.rushBarWrap{
+  margin-top: 8px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  overflow:hidden;
+}
+.rushBarWrap.danger{ border-color: rgba(239,68,68,.25); }
+.rushBar{
+  height: 10px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  transition: width 90ms linear;
+}
+
+.rushHudMid{
+  display:flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items:center;
+  justify-content:center;
+  min-width: 120px;
+}
+.rushCombo{ font-weight: 1100; }
+.rushMult{ font-weight: 1200; font-size: 20px; }
+
+.rushHudRight{
+  display:flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items:flex-end;
+  min-width: 150px;
+}
+.rushScore{ font-size: 22px; font-weight: 1200; }
+
+.rushFloat{
+  margin: 10px auto 0;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.22);
+  font-weight: 1200;
+  animation: rushPop 260ms var(--ease-out) 1;
+}
+.rushFloat.ok{ border-color: rgba(34,197,94,.30); }
+.rushFloat.bad{ border-color: rgba(239,68,68,.30); }
+
+@keyframes rushPop{
+  0%{ transform: translateY(6px) scale(.96); opacity:.0; }
+  100%{ transform: translateY(0) scale(1); opacity:1; }
+}
+
+.chestCard{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  padding: 12px;
+}
+.chestTop{
+  display:flex;
+  justify-content:space-between;
+  gap: 10px;
+  align-items:flex-start;
+}
+.chestBox{
+  margin-top: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.18);
+  padding: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+}
+.chestBox.opening{ animation: chestShake 520ms var(--ease-out) 1; }
+.chestBox.opened{
+  border-color: rgba(34,197,94,.26);
+  background: rgba(34,197,94,.08);
+}
+.chestEmoji{
+  font-size: 34px;
+  line-height: 1;
+  width: 54px;
+  height: 54px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.18);
+}
+.chestReward{
+  flex: 1;
+  padding-left: 6px;
+}
+@keyframes chestShake{
+  0%{ transform: translateX(0); }
+  15%{ transform: translateX(-4px) rotate(-1deg); }
+  35%{ transform: translateX(4px) rotate(1deg); }
+  55%{ transform: translateX(-3px) rotate(-.8deg); }
+  75%{ transform: translateX(3px) rotate(.8deg); }
+  100%{ transform: translateX(0); }
+}
 
 .learningRow{
   margin-top: 12px;
