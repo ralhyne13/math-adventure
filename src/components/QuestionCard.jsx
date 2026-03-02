@@ -53,10 +53,23 @@ export default function QuestionCard({
   bossProfile,
   bossHitFx,
   bossAttackFx,
+  bossImpactRingFx,
+  bossAttackFlashFx,
+  bossCalloutText,
+  errorShakeFx,
   answerEffectId,
 }) {
+  const bossPhaseClass = bossRemaining <= 30 ? "phase-final" : bossRemaining <= 60 ? "phase-mid" : "phase-open";
+
   return (
-    <div className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${bossHitFx ? "bossHitFx" : ""}`}>
+    <div
+      className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${
+        bossHitFx ? "bossHitFx" : ""
+      } ${errorShakeFx ? "screenShakeFx" : ""}`}
+    >
+      {bossAttackFlashFx && <div className="bossAttackFlashLayer" aria-hidden="true" />}
+      {bossImpactRingFx && <div className="bossImpactRingLayer" aria-hidden="true" />}
+      {bossCalloutText && <div className={`bossCallout ${bossAttackFx ? "attack" : "hit"}`}>{bossCalloutText}</div>}
       <div className={`fx effect-${answerEffectId} ${fx === "ok" ? "fxOk" : fx === "bad" ? "fxBad" : ""}`} />
       <div className={`sparkles effect-${answerEffectId} ${spark ? "on" : ""}`}>
         {[...Array(10)].map((_, i) => (
@@ -153,7 +166,7 @@ export default function QuestionCard({
 
         {bossActive && (
           <>
-            <div className={`bossPanel ${bossHitFx ? "hit" : ""} ${bossAttackFx ? "attack" : ""}`}>
+            <div className={`bossPanel ${bossPhaseClass} ${bossHitFx ? "hit" : ""} ${bossAttackFx ? "attack" : ""}`}>
               <div className="bossAvatar" aria-hidden="true">{bossProfile?.emoji ?? "👹"}</div>
               <div style={{ flex: 1 }}>
                 <div className="small" style={{ color: "rgba(234,240,255,.92)" }}>

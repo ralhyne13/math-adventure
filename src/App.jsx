@@ -610,6 +610,10 @@ export default function App() {
   const [bossProfile, setBossProfile] = useState(ARENA_BOSSES[0]);
   const [bossHitFx, setBossHitFx] = useState(false);
   const [bossAttackFx, setBossAttackFx] = useState(false);
+  const [bossImpactRingFx, setBossImpactRingFx] = useState(false);
+  const [bossAttackFlashFx, setBossAttackFlashFx] = useState(false);
+  const [bossCalloutText, setBossCalloutText] = useState("");
+  const [errorShakeFx, setErrorShakeFx] = useState(false);
   const [worldBossActive, setWorldBossActive] = useState(false);
   const [worldBossRemaining, setWorldBossRemaining] = useState(0);
 
@@ -1010,6 +1014,8 @@ export default function App() {
 
   useEffect(() => {
     if (bossActive && bossRemaining <= 0) {
+      playBeep("boss_win", audioOn);
+      vibrate([24, 18, 34, 18, 52]);
       setBossActive(false);
       setBossTimeLeft(0);
       showCoachPopup({
@@ -1018,7 +1024,7 @@ export default function App() {
         hint: "Le prochain boss arrive dans 10 questions.",
       });
     }
-  }, [bossActive, bossRemaining]);
+  }, [bossActive, bossRemaining, audioOn]);
 
   useEffect(() => {
     if (!bossAttackFx) return undefined;
@@ -1027,15 +1033,40 @@ export default function App() {
   }, [bossAttackFx]);
 
   useEffect(() => {
+    if (!bossAttackFlashFx) return undefined;
+    const t = setTimeout(() => setBossAttackFlashFx(false), 260);
+    return () => clearTimeout(t);
+  }, [bossAttackFlashFx]);
+
+  useEffect(() => {
     if (!bossHitFx) return undefined;
     const t = setTimeout(() => setBossHitFx(false), 280);
     return () => clearTimeout(t);
   }, [bossHitFx]);
 
+  useEffect(() => {
+    if (!bossImpactRingFx) return undefined;
+    const t = setTimeout(() => setBossImpactRingFx(false), 360);
+    return () => clearTimeout(t);
+  }, [bossImpactRingFx]);
+
+  useEffect(() => {
+    if (!bossCalloutText) return undefined;
+    const t = setTimeout(() => setBossCalloutText(""), 520);
+    return () => clearTimeout(t);
+  }, [bossCalloutText]);
+
+  useEffect(() => {
+    if (!errorShakeFx) return undefined;
+    const t = setTimeout(() => setErrorShakeFx(false), 360);
+    return () => clearTimeout(t);
+  }, [errorShakeFx]);
+
   function vibrate(ms) {
     if (!vibrateOn) return;
     try {
-      navigator.vibrate?.(ms);
+      const pattern = Array.isArray(ms) ? ms : [ms];
+      navigator.vibrate?.(pattern);
     } catch {}
   }
 
@@ -1136,7 +1167,7 @@ export default function App() {
     setXp(xpNow);
 
     if (lvl > startLevel) {
-      vibrate(30);
+      vibrate([28, 18, 46]);
       playBeep("level", audioOn);
       showLevelPopup({
         toLevel: lvl,
@@ -1240,7 +1271,7 @@ export default function App() {
     setWorldBossActive(true);
     setWorldBossRemaining(3);
     playBeep("level", audioOn);
-    vibrate(35);
+    vibrate([24, 20, 34]);
     showCoachPopup({
       title: `${currentWorld.icon} Boss final`,
       lines: [`${currentWorld.name}`, "3 questions difficiles pour valider le monde."],
@@ -1491,7 +1522,7 @@ export default function App() {
     });
 
     playBeep("chest", audioOn);
-    vibrate(24);
+    vibrate([18, 16, 26]);
 
     if (chestRevealTimerRef.current) clearTimeout(chestRevealTimerRef.current);
     showChestPopup({
@@ -1771,7 +1802,7 @@ export default function App() {
       setBossRemaining(100);
       setBossTimeLeft(12);
       playBeep("level", audioOn);
-      vibrate(35);
+      vibrate([22, 16, 30]);
       showCoachPopup({
         title: "Boss Fight",
         lines: [`${bossPick.emoji} ${bossPick.name}`, "Boss enrage: 100 HP", "Chaque bonne reponse: -20% HP"],
@@ -1908,7 +1939,7 @@ export default function App() {
     if (isCorrect) {
       setStatus("ok");
       playBeep("ok", audioOn);
-      vibrate(20);
+      vibrate([14, 18]);
       triggerFx("ok");
 
       const rewardBoost = adBoostNext ? 2 : 1;
@@ -1939,8 +1970,9 @@ export default function App() {
     } else {
       setStatus("bad");
       playBeep("bad", audioOn);
-      vibrate(60);
+      vibrate([70, 36, 90]);
       triggerFx("bad");
+      setErrorShakeFx(true);
 
       if (!noPenaltyOnWrong) {
         setCoins((c) => Math.max(0, c - 1));
@@ -1962,10 +1994,17 @@ export default function App() {
 
     if (isBossNow) {
       if (isCorrect) {
+        const nextBossRemaining = Math.max(0, bossRemaining - 20);
+        playBeep("boss_hit", audioOn);
         setBossHitFx(true);
+        setBossImpactRingFx(true);
+        setBossCalloutText(nextBossRemaining <= 30 ? "CRITIQUE" : "BOSS HIT");
         setBossRemaining((n) => Math.max(0, n - 20));
       } else {
+        playBeep("boss_attack", audioOn);
         setBossAttackFx(true);
+        setBossAttackFlashFx(true);
+        setBossCalloutText("BOSS ATTAQUE");
       }
       setBossTimeLeft(10);
     }
@@ -2261,7 +2300,7 @@ export default function App() {
     });
 
     playBeep("ok", saved?.audioOn ?? true);
-    vibrate(18);
+    vibrate([14, 16, 20]);
   }
 
   /* ------------------------ Auth actions ------------------------ */
@@ -3000,6 +3039,10 @@ export default function App() {
           bossProfile={bossProfile}
           bossHitFx={bossHitFx}
           bossAttackFx={bossAttackFx}
+          bossImpactRingFx={bossImpactRingFx}
+          bossAttackFlashFx={bossAttackFlashFx}
+          bossCalloutText={bossCalloutText}
+          errorShakeFx={errorShakeFx}
           answerEffectId={answerEffectId}
         />
         <div className="card smooth">
