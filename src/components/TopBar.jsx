@@ -17,7 +17,32 @@ export default function TopBar({
   canInstallApp,
   onInstallApp,
   onLogout,
+  compact = false,
 }) {
+  if (compact) {
+    return (
+      <div className="topbar topbarCompact">
+        <div className="topbarCompactLeft">
+          <div className="mobileAvatar topbarCompactAvatar">{avatar.emoji}</div>
+          <div>
+            <div className="topbarCompactTitle">Math Royale</div>
+            <div className="small">
+              <b>{authUser.pseudoDisplay}</b> • {profileRank.icon} {profileRank.label}
+            </div>
+          </div>
+        </div>
+
+        <div className="topbarCompactRight">
+          <div className="mobileStatPill">🪙 {coins}</div>
+          <div className="mobileStatPill">⬆️ {level}</div>
+          <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Reglages">
+            ⚙️
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="topbar">
       <div className="brand">

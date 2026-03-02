@@ -4,6 +4,7 @@ export default function QuestionCard({
   status,
   fx,
   spark,
+  compact = false,
   modeId,
   setModeId,
   selectedWorldId,
@@ -64,7 +65,7 @@ export default function QuestionCard({
 
   return (
     <div
-      className={`card smooth ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${
+      className={`card smooth questionCard ${compact ? "questionCardCompact" : ""} ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${
         bossHitFx ? "bossHitFx" : ""
       } ${errorShakeFx ? "screenShakeFx" : ""}`}
     >
@@ -85,46 +86,54 @@ export default function QuestionCard({
         ))}
       </div>
 
-      <div className="cardTitle">
+      <div className={`cardTitle ${compact ? "cardTitleCompact" : ""}`}>
         <span>Choisis la bonne reponse</span>
-        <span className="pill">explication puis Suivant</span>
+        {!compact && <span className="pill">explication puis Suivant</span>}
       </div>
 
-      <div className="filters" style={{ marginTop: 10 }}>
-        <select className="select smooth" value={modeId} onChange={(e) => setModeId(e.target.value)}>
-          {MODES.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.icon} {m.label}
-            </option>
-          ))}
-        </select>
-        <select className="select smooth" value={selectedWorldId} onChange={(e) => setSelectedWorldId(e.target.value)}>
-          {worlds.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.icon} {w.name}
-            </option>
-          ))}
-        </select>
-        <select className="select smooth" value={diffId} onChange={(e) => setDiffId(e.target.value)}>
-          {DIFFS.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.label}
-            </option>
-          ))}
-        </select>
-        <button className="btn smooth hover-lift press" onClick={resetSession}>
-          Reset session
-        </button>
-        <span className="pill">Adaptatif: {adaptiveOn ? "ON" : "OFF"}</span>
-        <span className="pill">Niveau monde: {worldLevel}/30</span>
-        {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final pret</span> : null}
-      </div>
+      {!compact ? (
+        <div className="filters" style={{ marginTop: 10 }}>
+          <select className="select smooth" value={modeId} onChange={(e) => setModeId(e.target.value)}>
+            {MODES.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.icon} {m.label}
+              </option>
+            ))}
+          </select>
+          <select className="select smooth" value={selectedWorldId} onChange={(e) => setSelectedWorldId(e.target.value)}>
+            {worlds.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.icon} {w.name}
+              </option>
+            ))}
+          </select>
+          <select className="select smooth" value={diffId} onChange={(e) => setDiffId(e.target.value)}>
+            {DIFFS.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+          <button className="btn smooth hover-lift press" onClick={resetSession}>
+            Reset session
+          </button>
+          <span className="pill">Adaptatif: {adaptiveOn ? "ON" : "OFF"}</span>
+          <span className="pill">Niveau monde: {worldLevel}/30</span>
+          {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final pret</span> : null}
+        </div>
+      ) : (
+        <div className="questionCompactTop">
+          <span className="pill">{MODES.find((m) => m.id === modeId)?.label ?? modeId}</span>
+          <span className="pill">{worlds.find((w) => w.id === selectedWorldId)?.icon} {worldLevel}/30</span>
+          <span className="pill">{DIFFS.find((d) => d.id === diffId)?.label ?? diffId}</span>
+        </div>
+      )}
 
-      <div className="barWrap" aria-label="xp">
+      <div className={`barWrap ${compact ? "barWrapCompact" : ""}`} aria-label="xp">
         <div className="bar" style={{ width: `${xpPct}%` }} />
       </div>
 
-      <div className="miniHistoryWrap" aria-label="historique des 10 dernieres reponses">
+      <div className={`miniHistoryWrap ${compact ? "miniHistoryCompact" : ""}`} aria-label="historique des 10 dernieres reponses">
         <div className="miniHistoryLabel">
           10 dernieres : <span className="miniHistoryCount">{sessionAnswered}/10</span>
         </div>
@@ -137,7 +146,7 @@ export default function QuestionCard({
         </div>
       </div>
 
-      <div className={`heroQuestion ${rushDanger ? "rushDanger" : ""}`} data-status={status}>
+      <div className={`heroQuestion ${compact ? "heroQuestionCompact" : ""} ${rushDanger ? "rushDanger" : ""}`} data-status={status}>
         <div className="heroTop">
           <div className="qPrompt">{q.prompt}</div>
           <div className="heroMeta">
@@ -242,12 +251,12 @@ export default function QuestionCard({
           )}
         </div>
 
-        <div className="learningRow">
+        <div className={`learningRow ${compact ? "learningRowCompact" : ""}`}>
           <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
             Indice {hintLevel + 1}/{hintList.length}
             {canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} piece${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
           </button>
-          <span className="small">Les indices aident, mais coutent des pieces (sauf le 1er en facile).</span>
+          {!compact && <span className="small">Les indices aident, mais coutent des pieces (sauf le 1er en facile).</span>}
         </div>
         {hintMsg && !visibleHints.length && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
 
@@ -262,7 +271,7 @@ export default function QuestionCard({
           </div>
         )}
 
-        <div className="controls">
+        <div className={`controls ${compact ? "controlsCompact" : ""}`}>
           {q.choices.map((c) => {
             const isPressed = picked === c;
             const stateCls = showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";

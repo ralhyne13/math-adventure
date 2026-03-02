@@ -50,6 +50,7 @@ import { SKINS, AVATARS, ACHIEVEMENTS } from "./config/gameData";
 import TopBar from "./components/TopBar";
 import QuestionCard from "./components/QuestionCard";
 import RushScreen from "./components/RushScreen";
+import MobileHomeScreen from "./components/MobileHomeScreen";
 import Shop from "./components/Shop";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
@@ -2894,6 +2895,7 @@ export default function App() {
     status,
     fx,
     spark,
+    compact: isMobileViewport,
     modeId,
     setModeId,
     selectedWorldId,
@@ -3222,25 +3224,57 @@ export default function App() {
         canInstallApp={!isInstalledPwa && !!installPromptEvent}
         onInstallApp={installPwaApp}
         onLogout={doLogout}
+        compact={isMobileViewport}
       />
 
       {activeMobilePage === "home" && (
         <>
-          <div className="mobileHeroStrip">
-            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setScreen("rush")}>
-              ⚡ Rush 60s
-            </button>
-            <button className="btn smooth hover-lift press" onClick={openShopPanel}>
-              🛍 Boutique
-            </button>
-            <button className="btn smooth hover-lift press" onClick={openProfilePanel}>
-              👤 Profil
-            </button>
-          </div>
+          {useMobilePages ? (
+            <div className="appFrame">
+              <MobileHomeScreen
+                avatar={avatar}
+                authUser={authUser}
+                profileRank={profileRank}
+                coins={coins}
+                level={level}
+                xp={`${xp}/${xpNeed}`}
+                streak={streak}
+                accuracy={accuracy}
+                loginStreak={loginStreak}
+                currentWorld={currentWorld}
+                worldLevel={worldLevel}
+                worldBossReady={worldBossReady}
+                worldBossDone={worldBossDone}
+                chestPending={chestPending}
+                chestProgress={chestProgress}
+                dailyChallenge={dailyChallenge}
+                dailyProgress={dailyProgress}
+                onOpenRush={() => setScreen("rush")}
+                onOpenShop={openShopPanel}
+                onOpenProfile={openProfilePanel}
+                onOpenSettings={openSettingsPanel}
+                onStartStudy5={startStudy5}
+                onOpenChest={openChest}
+              />
+              <QuestionCard {...questionCardProps} />
+            </div>
+          ) : (
+            <>
+              <div className="mobileHeroStrip">
+                <button className="btn btnPrimary smooth hover-lift press" onClick={() => setScreen("rush")}>
+                  ⚡ Rush 60s
+                </button>
+                <button className="btn smooth hover-lift press" onClick={openShopPanel}>
+                  🛍 Boutique
+                </button>
+                <button className="btn smooth hover-lift press" onClick={openProfilePanel}>
+                  👤 Profil
+                </button>
+              </div>
 
-          <div className="grid appFrame">
-            <QuestionCard {...questionCardProps} />
-            <div className="card smooth">
+              <div className="grid appFrame">
+                <QuestionCard {...questionCardProps} />
+                <div className="card smooth">
           <div className="cardTitle">
             <span>Tableau de bord</span>
             <span className="pill">
@@ -3717,8 +3751,10 @@ export default function App() {
               Reset profil
             </button>
           </div>
-            </div>
-          </div>
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
 
