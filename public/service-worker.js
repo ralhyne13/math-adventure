@@ -1,9 +1,11 @@
-const CACHE_VERSION = "v5";
+const CACHE_VERSION = "v6";
 const CACHE_NAME = `math-adventure-${CACHE_VERSION}`;
 const CORE_ASSETS = [
   "/",
   "/index.html",
   "/manifest.json",
+  "/icon-192.png",
+  "/icon-512.png",
   "/icon-app.svg",
   "/icon-maskable.svg",
   "/vite.svg",

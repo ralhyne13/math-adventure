@@ -1,0 +1,25 @@
+{
+  "appId": "com.mathroyale.app",
+  "appName": "Math Royale",
+  "brandColor": "#0b1020",
+  "sourceAssets": {
+    "iconPng192": "public/icon-192.png",
+    "iconPng512": "public/icon-512.png",
+    "iconSvg": "public/icon-app.svg",
+    "iconMaskable": "public/icon-maskable.svg"
+  },
+  "android": {
+    "adaptiveIconBackground": "#0b1020",
+    "adaptiveIconForeground": "public/icon-512.png",
+    "splashBackground": "#0b1020"
+  },
+  "ios": {
+    "appIconSource": "public/icon-512.png",
+    "launchBackground": "#0b1020"
+  },
+  "notes": [
+    "Use icon-512.png as the master export for native icon generation.",
+    "Keep brand color aligned with the in-app shell background.",
+    "Replace temporary icons with final store artwork before release."
+  ]
+}

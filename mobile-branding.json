@@ -1,0 +1,45 @@
+{
+  "appName": "Math Royale",
+  "packageId": "com.mathroyale.app",
+  "tagline": "Jeu de maths mobile fun et competitif",
+  "theme": {
+    "background": "#0b1020",
+    "surface": "#101935",
+    "primary": "#5b7cfa",
+    "secondary": "#f59e0b",
+    "success": "#22c55e",
+    "danger": "#ef4444",
+    "text": "#eaf0ff"
+  },
+  "pwa": {
+    "manifestName": "Math Royale",
+    "shortName": "Royale",
+    "orientation": "portrait",
+    "display": "standalone"
+  },
+  "native": {
+    "statusBarStyle": "dark",
+    "splashBackground": "#0b1020",
+    "androidAdaptiveBackground": "#0b1020",
+    "iosLaunchBackground": "#0b1020"
+  },
+  "assets": {
+    "masterPng": "public/icon-512.png",
+    "icon192": "public/icon-192.png",
+    "icon512": "public/icon-512.png",
+    "iconSvg": "public/icon-app.svg",
+    "maskableSvg": "public/icon-maskable.svg"
+  },
+  "storeDraft": {
+    "androidTitle": "Math Royale",
+    "iosTitle": "Math Royale",
+    "shortDescription": "Rush, arena, boss et progression mobile.",
+    "keywords": [
+      "maths",
+      "education",
+      "jeu mobile",
+      "calcul mental",
+      "fractions"
+    ]
+  }
+}
