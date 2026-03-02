@@ -26,10 +26,10 @@ function speedBonus(rtMs) {
 }
 
 const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "??", min: 0 },
-  { id: "silver", name: "Argent", icon: "??", min: 1200 },
-  { id: "gold", name: "Or", icon: "??", min: 2600 },
-  { id: "diamond", name: "Diamant", icon: "??", min: 4200 },
+  { id: "bronze", name: "Bronze", icon: "B", min: 0 },
+  { id: "silver", name: "Argent", icon: "A", min: 1200 },
+  { id: "gold", name: "Or", icon: "O", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "D", min: 4200 },
 ];
 
 function leagueFromScore(score) {
@@ -183,6 +183,7 @@ export default function RushScreen({
   ownedSkins,
   ownedAvatars,
   makeQuestionFn,
+  embedded = false,
 }) {
   const qHistoryRef = useRef([]);
   const rafRef = useRef(null);
@@ -392,26 +393,43 @@ export default function RushScreen({
 
   const timePct = Math.round((timeLeft / 60000) * 100);
 
-  return (
-    <div className="shell rushScreen">
-      <div className="topbar rushTopbar">
-        <div className="brand">
-          <div className="logo smooth" />
-          <div>
-            <div className="h1">Rush 60s</div>
-            <div className="sub">Score max, combo et multiplicateur</div>
-          </div>
-        </div>
-
-        <div className="hudRight rushTopbarActions">
+  const body = (
+    <>
+      {embedded && (
+        <div className="classicPlayTopbar rushEmbeddedActions">
           <button className="btn smooth hover-lift press" onClick={onExit}>
-            Retour
+            Accueil
           </button>
+          <div className="classicPlayTitleWrap">
+            <div className="classicPlayTitle">Rush 60s</div>
+            <div className="small">Score max, combo et multiplicateur</div>
+          </div>
           <button className="btn smooth hover-lift press" onClick={resetRush}>
             Reset
           </button>
         </div>
-      </div>
+      )}
+
+      {!embedded && (
+        <div className="topbar rushTopbar">
+          <div className="brand">
+            <div className="logo smooth" />
+            <div>
+              <div className="h1">Rush 60s</div>
+              <div className="sub">Score max, combo et multiplicateur</div>
+            </div>
+          </div>
+
+          <div className="hudRight rushTopbarActions">
+            <button className="btn smooth hover-lift press" onClick={onExit}>
+              Retour
+            </button>
+            <button className="btn smooth hover-lift press" onClick={resetRush}>
+              Reset
+            </button>
+          </div>
+        </div>
+      )}
 
       {phase === "start" && (
         <div className="card smooth rushStartCard rushPhasePanel">
@@ -472,7 +490,7 @@ export default function RushScreen({
         <div className="card smooth rushPlayCard rushPhasePanel">
           <div className="rushHud">
             <div className="rushHudLeft">
-              <div className={`rushTime ${dangerTime ? "danger" : ""}`}>? {(timeLeft / 1000).toFixed(1)}s</div>
+              <div className={`rushTime ${dangerTime ? "danger" : ""}`}>Time {(timeLeft / 1000).toFixed(1)}s</div>
               <div className={`rushBarWrap ${dangerTime ? "danger" : ""}`}>
                 <div
                   className="rushBar"
@@ -551,18 +569,18 @@ export default function RushScreen({
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div>
-              <strong>?? Record Rush</strong>
+              <strong>Record Rush</strong>
               <div className="sub" style={{ marginTop: 8 }}>
                 Record : <b>{rushBest}</b>
                 {newBest && <span className="pill" style={{ marginLeft: 8 }}>NOUVEAU !</span>}
               </div>
             </div>
-            <span className="pill">? Rush</span>
+            <span className="pill">Rush</span>
           </div>
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div>
-              <strong>?? Ligue</strong>
+              <strong>Ligue</strong>
               <div className="sub" style={{ marginTop: 8 }}>
                 Actuelle :{" "}
                 <b>
@@ -570,7 +588,7 @@ export default function RushScreen({
                 </b>
                 {leagueUp && (
                   <div className="small" style={{ marginTop: 6 }}>
-                    Promotion : {LEAGUES.find((l) => l.id === leagueUp.from)?.icon} ? {LEAGUES.find((l) => l.id === leagueUp.to)?.icon}
+                    Promotion : {LEAGUES.find((l) => l.id === leagueUp.from)?.icon} {"->"} {LEAGUES.find((l) => l.id === leagueUp.to)?.icon}
                   </div>
                 )}
               </div>
@@ -583,21 +601,21 @@ export default function RushScreen({
               <div className="chestTop">
                 <div>
                   <div style={{ fontWeight: 1100 }}>
-                    ?? Coffre {chest.rarity === "epic" ? "Épique" : chest.rarity === "rare" ? "Rare" : "Commun"}
+                    Coffre {chest.rarity === "epic" ? "Epique" : chest.rarity === "rare" ? "Rare" : "Commun"}
                   </div>
                   <div className="small" style={{ marginTop: 6 }}>
                     Ouvre pour recuperer ta recompense.
                   </div>
                 </div>
-                <span className="pill">{chest.rarity === "epic" ? "?" : chest.rarity === "rare" ? "??" : "??"}</span>
+                <span className="pill">{chest.rarity === "epic" ? "EPIC" : chest.rarity === "rare" ? "RARE" : "COMMUN"}</span>
               </div>
 
               <div className={`chestBox ${chestPhase}`} aria-live="polite">
-                <div className="chestEmoji">??</div>
+                <div className="chestEmoji">BOX</div>
                 {chestPhase === "opened" ? (
                   <div className="chestReward">
                     <div style={{ fontWeight: 1200 }}>{chest.label}</div>
-                    <div className="small" style={{ marginTop: 6 }}>Récompense ajoutée ?</div>
+                    <div className="small" style={{ marginTop: 6 }}>Recompense ajoutee</div>
                   </div>
                 ) : (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={openChest} disabled={chestPhase !== "closed"}>
@@ -618,7 +636,14 @@ export default function RushScreen({
           </div>
         </div>
       )}
-    </div>
+
+    </>
   );
+
+  if (embedded) {
+    return <div className="appFrame rushScreen rushEmbedded">{body}</div>;
+  }
+
+  return <div className="shell rushScreen">{body}</div>;
 }
 

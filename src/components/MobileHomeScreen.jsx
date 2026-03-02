@@ -17,6 +17,7 @@
   dailyChallenge,
   dailyProgress,
   onOpenPlay,
+  onOpenArena,
   onOpenRush,
   onOpenShop,
   onOpenProfile,
@@ -56,6 +57,9 @@
         <div className="mobileActionRow">
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenPlay}>
             ▶ Jouer
+          </button>
+          <button className="btn smooth hover-lift press" onClick={onOpenArena}>
+            🏟 Arena
           </button>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
             ⚡ Rush

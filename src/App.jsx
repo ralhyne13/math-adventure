@@ -52,6 +52,8 @@ import QuestionCard from "./components/QuestionCard";
 import RushScreen from "./components/RushScreen";
 import MobileHomeScreen from "./components/MobileHomeScreen";
 import ClassicPlayScreen from "./components/ClassicPlayScreen";
+import ArenaScreen from "./components/ArenaScreen";
+import MobileGameShell from "./components/MobileGameShell";
 import Shop from "./components/Shop";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
@@ -695,7 +697,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [shopTab, setShopTab] = useState("skins");
   const [profileTab, setProfileTab] = useState("stats");
-  const [mobileTab, setMobileTab] = useState("home");
+  const [mobileRoute, setMobileRoute] = useState("home");
   const [isMobileViewport, setIsMobileViewport] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 820 : false));
   const [activitySpan, setActivitySpan] = useState(7);
 
@@ -2199,34 +2201,64 @@ export default function App() {
     setAvatarId(aid);
   }
 
+  function navigateMobile(route) {
+    setMobileRoute(route);
+    if (isMobileViewport) {
+      return;
+    }
+    if (route === "classic-play" || route === "arena" || route === "rush") {
+      setScreen(route);
+      return;
+    }
+    setScreen("classic");
+  }
+
   function openShopPanel() {
-    setMobileTab("shop");
+    if (isMobileViewport) {
+      navigateMobile("shop");
+      return;
+    }
     setShowShop(true);
   }
 
   function closeShopPanel() {
+    if (isMobileViewport) {
+      if (mobileRoute === "shop") navigateMobile("home");
+      return;
+    }
     setShowShop(false);
-    setMobileTab("home");
   }
 
   function openProfilePanel() {
-    setMobileTab("profile");
+    if (isMobileViewport) {
+      navigateMobile("profile");
+      return;
+    }
     setShowProfile(true);
   }
 
   function closeProfilePanel() {
+    if (isMobileViewport) {
+      if (mobileRoute === "profile") navigateMobile("home");
+      return;
+    }
     setShowProfile(false);
-    setMobileTab("home");
   }
 
   function openSettingsPanel() {
-    setMobileTab("settings");
+    if (isMobileViewport) {
+      navigateMobile("settings");
+      return;
+    }
     setShowSettings(true);
   }
 
   function closeSettingsPanel() {
+    if (isMobileViewport) {
+      if (mobileRoute === "settings") navigateMobile("home");
+      return;
+    }
     setShowSettings(false);
-    setMobileTab("home");
   }
 
   const bestScore = getBestScoreFor(modeId, gradeId, diffId);
@@ -2954,6 +2986,72 @@ export default function App() {
     answerEffectId,
   };
 
+  const mobileGameTopBarProps = {
+    authUser,
+    avatar,
+    coins,
+    level,
+    xp,
+    xpNeed,
+    questionIndex,
+    bestScore,
+    unlockedCount,
+    achievementsCount: ACHIEVEMENTS.length,
+    loginStreak,
+    profileRank,
+    onOpenSettings: openSettingsPanel,
+    onOpenProfile: openProfilePanel,
+    onOpenShop: openShopPanel,
+    onLogout: doLogout,
+  };
+
+  function openArenaScreen() {
+    setArenaOn(true);
+    if (isMobileViewport) {
+      navigateMobile("arena");
+      return;
+    }
+    setScreen("arena");
+  }
+
+  if (isMobileViewport && mobileRoute === "rush") {
+    return (
+      <MobileGameShell
+        floaters={FLOATERS}
+        topBarProps={mobileGameTopBarProps}
+        activeRoute={mobileRoute}
+        onGoHome={() => navigateMobile("home")}
+        onGoPlay={() => navigateMobile("classic-play")}
+        onGoRush={() => navigateMobile("rush")}
+        onGoArena={openArenaScreen}
+        onOpenShop={openShopPanel}
+        onOpenProfile={openProfilePanel}
+      >
+        <RushScreen
+          onExit={() => {
+            navigateMobile("home");
+          }}
+          gradeId={gradeId}
+          diffId={diffId}
+          modeId={modeId}
+          setModeId={setModeId}
+          setGradeId={setGradeId}
+          setDiffId={setDiffId}
+          audioOn={audioOn}
+          vibrateOn={vibrateOn}
+          reduceMotion={reduceMotion}
+          setCoins={setCoins}
+          setOwnedSkins={setOwnedSkins}
+          setOwnedAvatars={setOwnedAvatars}
+          ownedSkins={ownedSkins}
+          ownedAvatars={ownedAvatars}
+          makeQuestionFn={(m, g, d, h) => makeQuestion(m, g, d, h)}
+          embedded
+        />
+      </MobileGameShell>
+    );
+  }
+
   if (screen === "rush") {
     return (
       <RushScreen
@@ -2977,104 +3075,57 @@ export default function App() {
     );
   }
 
-  if (screen === "classic-play" && isMobileViewport) {
+  if (isMobileViewport && mobileRoute === "classic-play") {
     return (
-      <div className="shell">
-        <div className="mathBg" aria-hidden="true">
-          {FLOATERS.map((t, i) => (
-            <span
-              key={i}
-              style={{
-                left: `${(i * 37) % 100}%`,
-                top: `${(i * 19) % 100}%`,
-                fontSize: `${14 + (i % 8) * 6}px`,
-                animationDuration: `${10 + (i % 10) * 2.2}s`,
-                animationDelay: `${-(i % 10) * 1.1}s`,
-              }}
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-
-        <TopBar
-          authUser={authUser}
-          avatar={avatar}
-          coins={coins}
-          level={level}
-          xp={xp}
-          xpNeed={xpNeed}
-          questionIndex={questionIndex}
-          bestScore={bestScore}
-          unlockedCount={unlockedCount}
-          achievementsCount={ACHIEVEMENTS.length}
-          loginStreak={loginStreak}
-          profileRank={profileRank}
-          onOpenSettings={() => {
-            setScreen("classic");
-            openSettingsPanel();
-          }}
-          onOpenProfile={openProfilePanel}
-          onOpenShop={openShopPanel}
-          onLogout={doLogout}
-          compact
-        />
-
+      <MobileGameShell
+        floaters={FLOATERS}
+        topBarProps={mobileGameTopBarProps}
+        activeRoute={mobileRoute}
+        onGoHome={() => navigateMobile("home")}
+        onGoPlay={() => navigateMobile("classic-play")}
+        onGoRush={() => navigateMobile("rush")}
+        onGoArena={openArenaScreen}
+        onOpenShop={openShopPanel}
+        onOpenProfile={openProfilePanel}
+      >
         <ClassicPlayScreen
           onBack={() => {
-            setScreen("classic");
-            setMobileTab("home");
+            navigateMobile("home");
           }}
-          onOpenRush={() => setScreen("rush")}
+          onOpenArena={openArenaScreen}
+          onOpenRush={() => navigateMobile("rush")}
           questionCardProps={questionCardProps}
         />
-
-        <div className="mobileDock" aria-label="Navigation mobile">
-          <button
-            className={`mobileDockBtn ${screen === "classic" ? "isActive" : ""}`}
-            onClick={() => {
-              setScreen("classic");
-              setMobileTab("home");
-            }}
-          >
-            <span className="mobileDockIcon">🏠</span>
-            <span>Accueil</span>
-          </button>
-          <button className={`mobileDockBtn ${screen === "classic-play" ? "isActive" : ""}`} onClick={() => setScreen("classic-play")}>
-            <span className="mobileDockIcon">▶</span>
-            <span>Jouer</span>
-          </button>
-          <button className={`mobileDockBtn ${screen === "rush" ? "isActive" : ""}`} onClick={() => setScreen("rush")}>
-            <span className="mobileDockIcon">⚡</span>
-            <span>Rush</span>
-          </button>
-          <button
-            className={`mobileDockBtn ${mobileTab === "shop" ? "isActive" : ""}`}
-            onClick={() => {
-              setScreen("classic");
-              openShopPanel();
-            }}
-          >
-            <span className="mobileDockIcon">🛍</span>
-            <span>Boutique</span>
-          </button>
-          <button
-            className={`mobileDockBtn ${mobileTab === "profile" ? "isActive" : ""}`}
-            onClick={() => {
-              setScreen("classic");
-              openProfilePanel();
-            }}
-          >
-            <span className="mobileDockIcon">👤</span>
-            <span>Profil</span>
-          </button>
-        </div>
-      </div>
+      </MobileGameShell>
     );
   }
 
-  const useMobilePages = isMobileViewport && screen === "classic";
-  const activeMobilePage = useMobilePages ? mobileTab : "home";
+  if (isMobileViewport && mobileRoute === "arena") {
+    return (
+      <MobileGameShell
+        floaters={FLOATERS}
+        topBarProps={mobileGameTopBarProps}
+        activeRoute={mobileRoute}
+        onGoHome={() => navigateMobile("home")}
+        onGoPlay={() => navigateMobile("classic-play")}
+        onGoRush={() => navigateMobile("rush")}
+        onGoArena={openArenaScreen}
+        onOpenShop={openShopPanel}
+        onOpenProfile={openProfilePanel}
+      >
+        <ArenaScreen
+          onBack={() => {
+            navigateMobile("home");
+          }}
+          onOpenRush={() => navigateMobile("rush")}
+          questionCardProps={questionCardProps}
+        />
+      </MobileGameShell>
+    );
+  }
+
+  const useMobilePages = isMobileViewport;
+  const activeMobilePage = useMobilePages ? mobileRoute : "home";
 
   /* ------------------------ Main app render ------------------------ */
   return (
@@ -3346,8 +3397,9 @@ export default function App() {
                 chestProgress={chestProgress}
                 dailyChallenge={dailyChallenge}
                 dailyProgress={dailyProgress}
-                onOpenPlay={() => setScreen("classic-play")}
-                onOpenRush={() => setScreen("rush")}
+                onOpenPlay={() => navigateMobile("classic-play")}
+                onOpenArena={openArenaScreen}
+                onOpenRush={() => navigateMobile("rush")}
                 onOpenShop={openShopPanel}
                 onOpenProfile={openProfilePanel}
                 onOpenSettings={openSettingsPanel}
@@ -3943,44 +3995,45 @@ export default function App() {
 
       <div className="mobileDock" aria-label="Navigation mobile">
         <button
-          className={`mobileDockBtn ${screen === "classic" && mobileTab === "home" ? "isActive" : ""}`}
+          className={`mobileDockBtn ${mobileRoute === "home" ? "isActive" : ""}`}
           onClick={() => {
-            setScreen("classic");
-            setMobileTab("home");
+            navigateMobile("home");
           }}
         >
           <span className="mobileDockIcon">🏠</span>
           <span>Accueil</span>
         </button>
         <button
-          className={`mobileDockBtn ${screen === "classic-play" ? "isActive" : ""}`}
+          className={`mobileDockBtn ${mobileRoute === "classic-play" ? "isActive" : ""}`}
           onClick={() => {
-            setMobileTab("home");
-            setScreen("classic-play");
+            navigateMobile("classic-play");
           }}
         >
           <span className="mobileDockIcon">▶</span>
           <span>Jouer</span>
         </button>
+        <button className={`mobileDockBtn ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={openArenaScreen}>
+          <span className="mobileDockIcon">🏟</span>
+          <span>Arena</span>
+        </button>
         <button
-          className={`mobileDockBtn ${screen === "rush" ? "isActive" : ""}`}
+          className={`mobileDockBtn ${mobileRoute === "rush" ? "isActive" : ""}`}
           onClick={() => {
-            setMobileTab("home");
-            setScreen("rush");
+            navigateMobile("rush");
           }}
         >
           <span className="mobileDockIcon">⚡</span>
           <span>Rush</span>
         </button>
-        <button className={`mobileDockBtn ${mobileTab === "shop" ? "isActive" : ""}`} onClick={openShopPanel}>
+        <button className={`mobileDockBtn ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={openShopPanel}>
           <span className="mobileDockIcon">🛍</span>
           <span>Boutique</span>
         </button>
-        <button className={`mobileDockBtn ${mobileTab === "profile" ? "isActive" : ""}`} onClick={openProfilePanel}>
+        <button className={`mobileDockBtn ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={openProfilePanel}>
           <span className="mobileDockIcon">👤</span>
           <span>Profil</span>
         </button>
-        <button className={`mobileDockBtn ${mobileTab === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
+        <button className={`mobileDockBtn ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
           <span className="mobileDockIcon">⚙️</span>
           <span>Reglages</span>
         </button>
