@@ -545,7 +545,7 @@ export default function App() {
       lastLoginDayKey: saved?.lastLoginDayKey ?? null,
       loginStreak: saved?.loginStreak ?? 0,
       activityMap: saved?.activityMap ?? {},
-      rushBest: saved?.rushBest ?? saved?.rushBestScore ?? 0,
+      rushBest: saved?.rushBest ?? 0,
       rushLeague: saved?.rushLeague ?? "bronze",
       rushBestScore: saved?.rushBestScore ?? 0,
       rushLeaderboard: saved?.rushLeaderboard ?? [],
