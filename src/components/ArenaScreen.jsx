@@ -8,11 +8,11 @@ export default function ArenaScreen({ onBack, onOpenRush, questionCardProps }) {
           Accueil
         </button>
         <div className="classicPlayTitleWrap">
-          <div className="classicPlayTitle">Mode Arena</div>
-          <div className="small">Serie infinie, boss toutes les 10 questions</div>
+          <div className="classicPlayTitle">Mode Arène</div>
+          <div className="small">Série infinie, boss toutes les 10 questions</div>
         </div>
         <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
-          ⚡ Rush
+          Rush
         </button>
       </div>
 

@@ -52,7 +52,7 @@ export default function Profile({
         </button>
         <div className="coins" style={{ marginLeft: "auto" }}>
           <span className="coinDot" />
-          <span>{coins} pieces</span>
+          <span>{coins} pièces</span>
         </div>
         <div className="chip smooth">
           <span className="chipIcon">ðŸ§©</span>
@@ -68,9 +68,9 @@ export default function Profile({
               <div className="sub" style={{ marginTop: 8 }}>
                 Joueur : <b>{authUser.pseudoDisplay}</b>
                 <br />
-                Niveau : <b>{level}</b> - Pieces : <b>{coins}</b> - Diamants : <b>{cosmeticDust}</b> - Streak login : <b>{loginStreak}/7</b>
+                Niveau : <b>{level}</b> - Pièces : <b>{coins}</b> - Diamants : <b>{cosmeticDust}</b> - Série de connexion : <b>{loginStreak}/7</b>
                 <br />
-                Bonnes : <b>{totalRight}</b> - Erreurs : <b>{totalWrong}</b> - Precision : <b>{accuracy}%</b>
+                Bonnes : <b>{totalRight}</b> - Erreurs : <b>{totalWrong}</b> - Précision : <b>{accuracy}%</b>
                 <br />
                 Questions : <b>{totalQuestions}</b> - Meilleur combo : <b>{bestStreak}</b>
               </div>
@@ -78,7 +78,7 @@ export default function Profile({
           </div>
 
           <div className="small" style={{ marginTop: 12 }}>
-            Records par classe {"->"} difficulte {"->"} mode (best score session):
+            Records par classe {"->"} difficulté {"->"} mode (meilleur score de session) :
           </div>
 
           <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
@@ -117,12 +117,12 @@ export default function Profile({
             <div>
               <strong>Badges</strong>
               <div className="sub" style={{ marginTop: 8 }}>
-                Debloques : <b>{unlockedCount}</b> / <b>{ACHIEVEMENTS.length}</b>
+                Débloqués : <b>{unlockedCount}</b> / <b>{ACHIEVEMENTS.length}</b>
                 <br />
-                Astuce : vise les combos et la precision.
+                Astuce : vise les combos et la précision.
               </div>
             </div>
-            <span className="pill">+ pieces</span>
+            <span className="pill">+ pièces</span>
           </div>
 
           <div className="badgeGrid">
@@ -133,10 +133,10 @@ export default function Profile({
                 <div key={a.id} className={`badgeCard smooth hover-lift ${unlocked ? "" : "badgeLocked"}`}>
                   <div className="badgeIcon">{unlocked ? a.icon : "ðŸ”’"}</div>
                   <div style={{ flex: 1 }}>
-                    <div className="badgeTitle">{unlocked ? a.title : "Badge verrouille"}</div>
-                    <div className="badgeDesc">{unlocked ? a.desc : "Continue a jouer pour le debloquer."}</div>
+                    <div className="badgeTitle">{unlocked ? a.title : "Badge verrouillé"}</div>
+                    <div className="badgeDesc">{unlocked ? a.desc : "Continue à jouer pour le débloquer."}</div>
                     <div className="badgeMeta">
-                      <span className="badgeProgress">+{a.reward} pieces</span>
+                      <span className="badgeProgress">+{a.reward} pièces</span>
                       {unlocked && dateIso && <span className="badgeProgress">{formatDateFR(dateIso)}</span>}
                     </div>
                   </div>
@@ -168,8 +168,8 @@ export default function Profile({
               return (
                 <div key={s.id} className={`shopCard ${owned ? "" : "badgeLocked"}`}>
                   <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
-                  <div className="shopTitle">{owned ? s.name : "Skin verrouille"}</div>
-                  <div className="small" style={{ marginTop: 6 }}>{owned ? s.desc : `Prix boutique: ${s.price} pieces`}</div>
+                  <div className="shopTitle">{owned ? s.name : "Skin verrouillé"}</div>
+                  <div className="small" style={{ marginTop: 6 }}>{owned ? s.desc : `Prix boutique : ${s.price} pièces`}</div>
                   {equipped && <div className="badgeMeta"><span className="badgeProgress">Équipé</span></div>}
                 </div>
               );
@@ -184,8 +184,8 @@ export default function Profile({
               return (
                 <div key={a.id} className={`shopCard ${owned ? "" : "badgeLocked"}`}>
                   <div className="avatarBig">{owned ? a.emoji : "ðŸ”’"}</div>
-                  <div className="shopTitle">{owned ? a.name : "Avatar verrouille"}</div>
-                  <div className="small" style={{ marginTop: 6 }}>{owned ? a.rarity : `Prix boutique: ${a.price} pieces`}</div>
+                  <div className="shopTitle">{owned ? a.name : "Avatar verrouillé"}</div>
+                  <div className="small" style={{ marginTop: 6 }}>{owned ? a.rarity : `Prix boutique : ${a.price} pièces`}</div>
                   {equipped && <div className="badgeMeta"><span className="badgeProgress">Équipé</span></div>}
                 </div>
               );

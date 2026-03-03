@@ -86,10 +86,10 @@ function rewardRoll(streakDay, ownedAvatars) {
       const picked = notOwned[randInt(0, notOwned.length - 1)];
       return { kind: "avatar", avatarId: picked.id, label: `Avatar : ${picked.name}` };
     }
-    return { kind: "coins", coins: coinReward + 40, label: `Pieces : +${coinReward + 40}` };
+    return { kind: "coins", coins: coinReward + 40, label: `Pièces : +${coinReward + 40}` };
   }
 
-  return { kind: "coins", coins: coinReward, label: `Pieces : +${coinReward}` };
+  return { kind: "coins", coins: coinReward, label: `Pièces : +${coinReward}` };
 }
 
 const LEAGUES = [
@@ -159,9 +159,9 @@ const CHEST_TYPES = {
 
 const ANSWER_EFFECTS = [
   { id: "default", label: "Classique", desc: "Effet de base.", dustCost: 0 },
-  { id: "gold-burst", label: "Explosion doree", desc: "Explosion doree sur bonne reponse.", dustCost: 120 },
-  { id: "electric-aura", label: "Aura electrique", desc: "Aura bleue electrique.", dustCost: 180 },
-  { id: "prism-particles", label: "Particules spec", desc: "Particules multicolores.", dustCost: 260 },
+  { id: "gold-burst", label: "Explosion dorée", desc: "Explosion dorée sur bonne réponse.", dustCost: 120 },
+  { id: "electric-aura", label: "Aura électrique", desc: "Aura bleue électrique.", dustCost: 180 },
+  { id: "prism-particles", label: "Particules spéciales", desc: "Particules multicolores.", dustCost: 260 },
 ];
 
 function rollChestRarity(score) {
@@ -234,7 +234,7 @@ function rollChestReward({ score, ownedSkins, ownedAvatars }) {
   }
 
   const coins = coinsForChest(rarity);
-  return { rarity, kind: "coins", coins, text: `+${coins} pieces` };
+  return { rarity, kind: "coins", coins, text: `+${coins} pièces` };
 }
 
 function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffects, score = 0 }) {
@@ -252,7 +252,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
   if (type === "legendary") {
     if (effectsPool.length && r < 0.48) {
       const fx = pick(effectsPool);
-      return { kind: "effect", effectId: fx.id, text: `Effet special: ${fx.label}` };
+      return { kind: "effect", effectId: fx.id, text: `Effet spécial: ${fx.label}` };
     }
     if (premiumSkins.length && r < 0.73) {
       const s = pick(premiumSkins);
@@ -264,7 +264,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
     }
     if (r < 0.97) return { kind: "xpBoost", minutes: 45, text: "Boost XP x2 (45 min)" };
     const coins = randInt(260, 520);
-    return { kind: "coins", coins, text: `+${coins} pieces` };
+    return { kind: "coins", coins, text: `+${coins} pièces` };
   }
 
   if (type === "epic" || type === "rare" || type === "common") {
@@ -277,7 +277,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
   }
   if (r < 0.32) return { kind: "xpBoost", minutes: 15, text: "Boost XP x2 (15 min)" };
   const coins = randInt(40, 110);
-  return { kind: "coins", coins, text: `+${coins} pieces` };
+  return { kind: "coins", coins, text: `+${coins} pièces` };
 }
 
 const WORLD_LEVEL_MAX = 30;
@@ -347,7 +347,7 @@ function rewardVisualMeta(reward, chestType) {
     return { icon: "\uD83D\uDC8E", label: `${reward.dust} diamants cosmétiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
   }
   if (reward.kind === "coins") {
-    return { icon: "\uD83E\uDE99", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
+    return { icon: "\uD83E\uDE99", label: `${reward.coins} pièces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
   }
   if (reward.kind === "avatar") {
     const avatar = AVATARS.find((a) => a.id === reward.avatarId);
@@ -401,7 +401,7 @@ const ARENA_BOSSES = [
 
 function evolvedOwlForLevel(level) {
   if (level >= 30) return { emoji: "\uD83D\uDC51", name: "Hibou légendaire" };
-  if (level >= 20) return { emoji: "\uD83E\uDD47", name: "Hibou dore" };
+  if (level >= 20) return { emoji: "\uD83E\uDD47", name: "Hibou doré" };
   if (level >= 10) return { emoji: "\uD83D\uDEE1\uFE0F", name: "Hibou armure" };
   return { emoji: "\uD83E\uDD89", name: "Petit hibou" };
 }
@@ -702,7 +702,7 @@ export default function App() {
   const [isMobileViewport, setIsMobileViewport] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 820 : false));
   const [activitySpan, setActivitySpan] = useState(7);
 
-  // historique reponses
+  // historique réponses
   const [lastAnswers, setLastAnswers] = useState([]);
   const [sessionAnswered, setSessionAnswered] = useState(0);
   const [sessionPerf, setSessionPerf] = useState(() => {
@@ -1013,9 +1013,9 @@ export default function App() {
           if (adSurvivalLives > 0) {
             setAdSurvivalLives((n) => Math.max(0, n - 1));
             showCoachPopup({
-              title: "Vie de survie utilisee",
+              title: "Vie de survie utilisée",
               lines: ["Rush relance avec +15 secondes."],
-              hint: "La reserve de survie est consommee automatiquement.",
+              hint: "La réserve de survie est consommée automatiquement.",
             });
             playBeep("ok", audioOn);
             rushQuestionStartTsRef.current = Date.now();
@@ -1050,9 +1050,9 @@ export default function App() {
           if (adSurvivalLives > 0) {
             setAdSurvivalLives((n) => Math.max(0, n - 1));
             showCoachPopup({
-              title: "Vie de survie utilisee",
+              title: "Vie de survie utilisée",
               lines: ["Défi 5 minutes prolongé de 30 secondes."],
-              hint: "La reserve de survie est consommee automatiquement.",
+              hint: "La réserve de survie est consommée automatiquement.",
             });
             playBeep("ok", audioOn);
             return 30;
@@ -1101,8 +1101,8 @@ export default function App() {
       setBossActive(false);
       setBossTimeLeft(0);
       showCoachPopup({
-        title: "Boss termine",
-        lines: ["Boss KO.", "XP bonus x3 applique pendant le boss."],
+        title: "Boss terminé",
+        lines: ["Boss KO.", "Bonus XP x3 appliqué pendant le boss."],
         hint: "Le prochain boss arrive dans 10 questions.",
       });
     }
@@ -1214,7 +1214,7 @@ export default function App() {
     setAnswerEffectId(effectId);
     showBadgePopup({
       icon: "\u2728",
-      title: "Effet debloque",
+      title: "Effet débloqué",
       desc: `${fx.label} | -${cost} diamants`,
       reward: 0,
     });
@@ -1367,7 +1367,7 @@ export default function App() {
     showCoachPopup({
       title: "Boss final",
       lines: [`${currentWorld.name}`, "3 questions difficiles pour valider le monde."],
-      hint: "Reussis les 3 pour debloquer le badge special.",
+      hint: "Réussis les 3 pour débloquer le badge spécial.",
     });
     newQuestion(true);
   }
@@ -1401,8 +1401,8 @@ export default function App() {
     newQuestion(true);
     showCoachPopup({
       title: "Défi 5 minutes lancé",
-      lines: ["Objectif: faire 5 minutes de maths.", "Reponds au plus de questions possible."],
-      hint: "Un resume parent sera genere en fin de session.",
+      lines: ["Objectif : faire 5 minutes de maths.", "Réponds au plus de questions possible."],
+      hint: "Un résumé parent sera généré en fin de session.",
     });
   }
 
@@ -1427,8 +1427,8 @@ export default function App() {
     setStudy5LastSummary(summary);
     showCoachPopup({
       title: "Défi 5 minutes terminé",
-      lines: [`Questions: ${summary.answered}`, `Reussite: ${summary.accuracy}%`, `Meilleur combo: ${summary.bestStreak}`],
-      hint: "Tu peux partager ce resume au parent.",
+      lines: [`Questions: ${summary.answered}`, `Réussite: ${summary.accuracy}%`, `Meilleur combo: ${summary.bestStreak}`],
+      hint: "Tu peux partager ce résumé au parent.",
     });
     if (cloudEnabled) {
       cloudLogEvent({
@@ -1446,11 +1446,11 @@ export default function App() {
     const text = [
       "Résumé parent - Défi 5 minutes",
       `Date: ${new Date(t.endedAt).toLocaleString("fr-FR")}`,
-      `Duree: ${t.durationSec}s`,
+      `Durée: ${t.durationSec}s`,
       `Questions: ${t.answered}`,
-      `Bonnes reponses: ${t.right}`,
+      `Bonnes réponses: ${t.right}`,
       `Erreurs: ${t.wrong}`,
-      `Precision: ${t.accuracy}%`,
+      `Précision: ${t.accuracy}%`,
       `Meilleur combo: ${t.bestStreak}`,
       `Score: ${t.score}`,
     ].join("\n");
@@ -1461,7 +1461,7 @@ export default function App() {
     if (study5On) {
       showCoachPopup({
         title: "Rush indisponible",
-        lines: ["Termine le defi 5 minutes avant de lancer Rush."],
+        lines: ["Termine le défi 5 minutes avant de lancer Rush."],
         hint: "Un seul mode minuteur a la fois.",
       });
       return;
@@ -1472,7 +1472,7 @@ export default function App() {
       showCoachPopup({
         title: "Rush limite atteint",
         lines: ["Version gratuite: 3 rush par jour."],
-        hint: "Passe Premium pour Rush illimite.",
+        hint: "Passe Premium pour Rush illimité.",
       });
       return;
     }
@@ -1530,7 +1530,7 @@ export default function App() {
       });
     }
     showCoachPopup({
-      title: "Rush termine",
+      title: "Rush terminé",
       lines: [`Score rush: ${rushScore}`, `Meilleur: ${Math.max(rushBestScore, rushScore)}`],
       hint: "Tu peux relancer un rush quand tu veux.",
     });
@@ -1669,14 +1669,14 @@ export default function App() {
         setAdBoostNext(true);
         showCoachPopup({
           title: "Pub optionnelle",
-          lines: ["Prochaine bonne reponse: pieces + XP x2 actives."],
+          lines: ["Prochaine bonne réponse : pièces + XP x2 activés."],
           hint: "Aucune pub forcée.",
         });
         logAdEvent("double_reward");
       },
       {
-        title: "Publicite en cours",
-        lines: ["Deblocage du bonus x2.", "Fin de la simulation dans 3 secondes."],
+        title: "Publicité en cours",
+        lines: ["Déblocage du bonus x2.", "Fin de la simulation dans 3 secondes."],
       }
     );
   }
@@ -1690,14 +1690,14 @@ export default function App() {
         setChestQueue((prev) => [...(prev ?? []), t]);
         showCoachPopup({
           title: "Pub optionnelle",
-          lines: [`${CHEST_TYPES[t]?.label ?? "Coffre"} ajoute instantanement.`],
+          lines: [`${CHEST_TYPES[t]?.label ?? "Coffre"} ajouté instantanément.`],
           hint: "Aucune pub forcée.",
         });
         logAdEvent("instant_chest", { chestType: t });
       },
       {
-        title: "Publicite en cours",
-        lines: ["Deblocage d'un coffre immediat.", "Fin de la simulation dans 3 secondes."],
+        title: "Publicité en cours",
+        lines: ["Déblocage d'un coffre immédiat.", "Fin de la simulation dans 3 secondes."],
       }
     );
   }
@@ -1710,13 +1710,13 @@ export default function App() {
         setAdSurvivalLives((n) => Math.min(3, n + 1));
         showCoachPopup({
           title: "Pub optionnelle",
-          lines: ["1 vie de survie stockee."],
+          lines: ["1 vie de survie stockée."],
           hint: "Elle sera consommée si un chrono Rush ou Défi 5 minutes tombe à 0.",
         });
         logAdEvent("survival_life");
       },
       {
-        title: "Publicite en cours",
+        title: "Publicité en cours",
         lines: ["Preparation d'une vie de survie.", "Fin de la simulation dans 3 secondes."],
       }
     );
@@ -1728,7 +1728,7 @@ export default function App() {
     if (!premiumSinceTs) setPremiumSinceTs(Date.now());
     showCoachPopup({
       title: "Premium active",
-      lines: [plan === "lifetime" ? "Plan Lifetime active" : "Plan Mensuel actif"],
+      lines: [plan === "lifetime" ? "Plan à vie activé" : "Plan mensuel activé"],
       hint: "Skins/avatars premium + Rush illimité + stats avancées.",
     });
     if (cloudEnabled) {
@@ -1746,7 +1746,7 @@ export default function App() {
     showCoachPopup({
       title: "Retour gratuit",
       lines: ["Mode gratuit actif."],
-      hint: "Tu gardes les objets deja achetes.",
+      hint: "Tu gardes les objets déjà achetés.",
     });
     if (cloudEnabled) {
       cloudLogEvent({
@@ -1797,13 +1797,13 @@ export default function App() {
     const nextLevel = hintLevel + 1;
     const cost = getHintCost(nextLevel);
     if (cost > 0 && coins < cost) {
-      setHintMsg("Pas assez de pieces pour un indice.");
+      setHintMsg("Pas assez de pièces pour un indice.");
       return;
     }
 
     if (cost > 0) setCoins((c) => Math.max(0, c - cost));
     setHintLevel(nextLevel);
-    setHintMsg(cost > 0 ? `Indice debloque (-${cost} piece${cost > 1 ? "s" : ""}).` : "Premier indice gratuit en facile.");
+    setHintMsg(cost > 0 ? `Indice débloqué (-${cost} pièce${cost > 1 ? "s" : ""}).` : "Premier indice gratuit en facile.");
   }
 
   function computeAdaptiveAction(roll20, perfByMode) {
@@ -1818,7 +1818,7 @@ export default function App() {
         return {
           kind: "up",
           nextDiffId: nextDiff,
-          lines: [`Precision sur 20 questions: ${acc20}%. On monte en difficulte (${nextDiff}).`],
+          lines: [`Précision sur 20 questions: ${acc20}%. On monte en difficulté (${nextDiff}).`],
           hint: "Tu progresses tres bien, on augmente le challenge.",
         };
       }
@@ -1833,8 +1833,8 @@ export default function App() {
         nextDiffId: nextDiff !== diffId ? nextDiff : null,
         suggestedModeId: weakMode && weakMode !== modeId ? weakMode : null,
         lines: [
-          `Precision sur 20 questions: ${acc20}%.`,
-          nextDiff !== diffId ? `On baisse la difficulte (${nextDiff}) pour consolider.` : "On garde la difficulte actuelle.",
+          `Précision sur 20 questions: ${acc20}%.`,
+          nextDiff !== diffId ? `On baisse la difficulté (${nextDiff}) pour consolider.` : "On garde la difficulté actuelle.",
           weakMode ? `Entrainement cible conseille: ${modeName(weakMode)}.` : "Continue sur ce mode pour consolider.",
         ],
         hint: weakMode ? modeHint(weakMode) : modeHint(modeId),
@@ -1904,8 +1904,8 @@ export default function App() {
       playBeep("level", audioOn);
       vibrate([22, 16, 30]);
       showCoachPopup({
-        title: "Boss Fight",
-        lines: [`${bossPick.name}`, "Boss enrage: 100 HP", "Chaque bonne reponse: -20% HP"],
+        title: "Combat de boss",
+        lines: [`${bossPick.name}`, "Boss enragé : 100 PV", "Chaque bonne réponse : -20 % PV"],
         hint: "Reste focus jusqu'au bout.",
       });
     }
@@ -1971,7 +1971,7 @@ export default function App() {
             showBadgePopup({
               icon: "\uD83C\uDFC6",
               title: `Monde complete: ${currentWorld.name}`,
-              desc: `${currentWorld.badge} debloque | +180 pieces | +220 XP`,
+              desc: `${currentWorld.badge} débloqué | +180 pièces | +220 XP`,
               reward: 180,
             });
           }
@@ -1981,7 +1981,7 @@ export default function App() {
         setWorldBossActive(false);
         setWorldBossRemaining(0);
         showCoachPopup({
-          title: `Boss final rate`,
+          title: "Boss final raté",
           lines: [`${currentWorld.name}: essaie encore.`],
           hint: "Reviens plus fort, le badge est proche.",
         });
@@ -2016,8 +2016,8 @@ export default function App() {
           setChestQueue((prev) => [...(prev ?? []), t]);
           showBadgePopup({
             icon: CHEST_TYPES[t]?.icon ?? "",
-            title: `${CHEST_TYPES[t]?.label ?? "Coffre"} gagne`,
-            desc: "15 bonnes reponses atteintes. Ouvre ton coffre.",
+            title: `${CHEST_TYPES[t]?.label ?? "Coffre"} gagné`,
+            desc: "15 bonnes réponses atteintes. Ouvre ton coffre.",
             reward: 0,
           });
           return next - 15;
@@ -2299,7 +2299,7 @@ export default function App() {
     showBadgePopup({
       icon: ch.icon ?? "",
       title: `Défi ${isDaily ? "journalier" : "hebdo"} complété`,
-      desc: `${ch.title} | +${ch.rewardCoins} pieces | +${ch.rewardXp} XP`,
+      desc: `${ch.title} | +${ch.rewardCoins} pièces | +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
     });
 
@@ -2320,7 +2320,7 @@ export default function App() {
     showBadgePopup({
       icon: "\uD83C\uDFC6",
       title: "Défi collège complété",
-      desc: "12 bonnes reponses en difficile | +90 pieces | +120 XP",
+      desc: "12 bonnes réponses en difficile | +90 pièces | +120 XP",
       reward: 90,
     });
   }
@@ -2330,7 +2330,7 @@ export default function App() {
     if (!total) return 0;
     return Math.round((totalRight / total) * 100);
   }, [totalRight, totalWrong]);
-  const premiumLabel = premiumPlan === "lifetime" ? "Lifetime" : premiumPlan === "monthly" ? "Mensuel" : "Gratuit";
+  const premiumLabel = premiumPlan === "lifetime" ? "À vie" : premiumPlan === "monthly" ? "Mensuel" : "Gratuit";
   const isCollegeNow = isCollegeGrade(gradeId);
   const collegeArenaToday = useMemo(() => {
     const today = parisDayKey();
@@ -2450,7 +2450,7 @@ export default function App() {
 
     if (reward.kind === "coins") {
       nextCoins += reward.coins;
-      rewardText = `+${reward.coins} pieces`;
+      rewardText = `+${reward.coins} pièces`;
     } else {
       if (!nextOwnedAv.includes(reward.avatarId)) nextOwnedAv.push(reward.avatarId);
       rewardText = `NOUVEL AVATAR : ${
@@ -2555,7 +2555,7 @@ export default function App() {
       let refreshToken = signUp?.data?.refresh_token ?? null;
       if (!accessToken) {
         const signIn = await cloudAuthSignIn(pseudoKey, pass);
-        if (!signIn?.ok) return setAuthMsg("Compte cree, mais connexion cloud impossible.");
+        if (!signIn?.ok) return setAuthMsg("Compte créé, mais connexion cloud impossible.");
         accessToken = signIn?.data?.access_token ?? null;
         refreshToken = signIn?.data?.refresh_token ?? null;
       }
@@ -2571,7 +2571,7 @@ export default function App() {
 
     if (!crypto?.subtle) return setAuthMsg("Ton navigateur ne supporte pas crypto.subtle.");
     const idx = getUsersIndex();
-    if (idx.users?.[pseudoKey]) return setAuthMsg("Pseudo deja pris.");
+    if (idx.users?.[pseudoKey]) return setAuthMsg("Pseudo déjà pris.");
     const hash = await sha256Hex(pass);
     const recoveryCode = `${randInt(100000, 999999)}-${randInt(100000, 999999)}`;
     const nextIdx = {
@@ -2583,7 +2583,7 @@ export default function App() {
     };
     setUsersIndex(nextIdx);
     safeLSSet(userKey(pseudoKey), starterSave);
-    alert(`IMPORTANT : garde ce code de recuperation (si tu oublies ton mot de passe) :\n\n${recoveryCode}\n\nNote-le quelque part ?`);
+    alert(`IMPORTANT : garde ce code de récupération (si tu oublies ton mot de passe) :\n\n${recoveryCode}\n\nNote-le quelque part ?`);
     const au = { pseudoDisplay, pseudoKey, authProvider: "local" };
     safeLSSet("math-adventure-auth", au);
     setAuthUser(au);
@@ -2641,9 +2641,9 @@ export default function App() {
       if (!loginOrEmail) return setPwMsg("Pseudo ou email manquant.");
       const redirectTo = `${window.location.origin}/`;
       const sent = await cloudAuthSendPasswordReset(loginOrEmail, redirectTo);
-      if (!sent?.ok) return setPwMsg("Impossible d'envoyer l'email de reinitialisation.");
+      if (!sent?.ok) return setPwMsg("Impossible d'envoyer l'email de réinitialisation.");
       setPwTargetPseudo("");
-      setPwMsg("Email de reinitialisation envoye. Verifie ta boite mail.");
+      setPwMsg("Email de réinitialisation envoyé. Vérifie ta boîte mail.");
       return;
     }
     if (!crypto?.subtle) return setPwMsg("Ton navigateur ne supporte pas crypto.subtle.");
@@ -2654,7 +2654,7 @@ export default function App() {
     const next2 = String(pwNew2 || "");
 
     if (pseudoKey.length < 3) return setPwMsg("Pseudo invalide.");
-    if (rec.length < 3) return setPwMsg("Code de recuperation manquant.");
+    if (rec.length < 3) return setPwMsg("Code de récupération manquant.");
     if (next.length < 4) return setPwMsg("Nouveau mot de passe trop court (min 4).");
     if (next !== next2) return setPwMsg("Confirmation differente.");
 
@@ -2662,7 +2662,7 @@ export default function App() {
     const u = idx.users?.[pseudoKey];
     if (!u) return setPwMsg("Utilisateur introuvable.");
 
-    if (String(u.recoveryCode || "").trim() !== rec) return setPwMsg("Code de recuperation incorrect.");
+    if (String(u.recoveryCode || "").trim() !== rec) return setPwMsg("Code de récupération incorrect.");
 
     const nextHash = await sha256Hex(next);
 
@@ -2788,7 +2788,7 @@ export default function App() {
             <div className="logo smooth" />
             <div>
               <div className="h1">Math Royale</div>
-              <div className="sub">Connecte-toi pour acceder a ton profil</div>
+              <div className="sub">Connecte-toi pour accéder à ton profil</div>
             </div>
           </div>
         </div>
@@ -2819,7 +2819,7 @@ export default function App() {
                   </button>
                 ) : (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={doRegister}>
-                    Creer le compte
+                    Créer le compte
                   </button>
                 )}
 
@@ -2832,7 +2832,7 @@ export default function App() {
                     setAuthMode((m) => (m === "login" ? "register" : "login"));
                   }}
                 >
-                  {authMode === "login" ? "Creer un compte" : "J'ai deja un compte"}
+                  {authMode === "login" ? "Créer un compte" : "J'ai déjà un compte"}
                 </button>
 
                 {authMode === "login" && (
@@ -2844,7 +2844,7 @@ export default function App() {
                       setPwMode((m) => (m === "forgot" ? "none" : "forgot"));
                     }}
                   >
-                    {pwMode === "forgot" ? "Retour" : "Mot de passe oublie"}
+                    {pwMode === "forgot" ? "Retour" : "Mot de passe oublié"}
                   </button>
                 )}
               </div>
@@ -2855,9 +2855,9 @@ export default function App() {
                     <>
                       <div className="toast" style={{ marginTop: 0 }}>
                         <div>
-                          <strong>Reinitialiser via email</strong>
+                          <strong>Réinitialiser via email</strong>
                           <div className="sub" style={{ marginTop: 6 }}>
-                            Entre ton pseudo ou ton email. On t'envoie un lien de reinitialisation.
+                            Entre ton pseudo ou ton email. On t'envoie un lien de réinitialisation.
                           </div>
                         </div>
                         <span className="pill">cloud</span>
@@ -2873,16 +2873,16 @@ export default function App() {
                       {pwMsg && <div className={/envoye|reinitialis/i.test(pwMsg) ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
 
                       <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
-                        Envoyer email de reset
+                        Envoyer l'email de réinitialisation
                       </button>
                     </>
                   ) : (
                     <>
                       <div className="toast" style={{ marginTop: 0 }}>
                         <div>
-                          <strong>Reinitialiser (front-only)</strong>
+                          <strong>Réinitialiser (local uniquement)</strong>
                           <div className="sub" style={{ marginTop: 6 }}>
-                            Utilise ton <b>code de recuperation</b> (donne a l'inscription).
+                            Utilise ton <b>code de récupération</b> (donné à l'inscription).
                           </div>
                         </div>
                         <span className="pill">recovery</span>
@@ -2896,7 +2896,7 @@ export default function App() {
                       />
                       <input
                         className="input smooth"
-                        placeholder="Code de recuperation (ex: 123456-654321)"
+                        placeholder="Code de récupération (ex: 123456-654321)"
                         value={pwRecovery}
                         onChange={(e) => setPwRecovery(e.target.value)}
                       />
@@ -2918,7 +2918,7 @@ export default function App() {
                       {pwMsg && <div className={/envoye|reinitialis/i.test(pwMsg) ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
 
                       <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
-                        Reinitialiser
+                        Réinitialiser
                       </button>
                     </>
                   )}
@@ -2926,7 +2926,7 @@ export default function App() {
               )}
 
               <div className="small">
-                Note : stockage local (front). Pour une vraie securite multi-utilisateurs, il faut un serveur.
+                Note : stockage local (front). Pour une vraie sécurité multi-utilisateurs, il faut un serveur.
               </div>
             </div>
           </div>
@@ -3216,16 +3216,16 @@ export default function App() {
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
             <div style={{ flex: 1 }}>
-              <div className="levelPopTitle">LEVEL UP !</div>
+              <div className="levelPopTitle">NIVEAU SUPÉRIEUR !</div>
               <div className="levelPopSub">
                 Niveau <b>{levelPop.toLevel}</b>
                 {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} |
                 <span className="levelCoins">
-                  <span className="coinDot" /> +{levelPop.gainedCoins} pieces
+                  <span className="coinDot" /> +{levelPop.gainedCoins} pièces
                 </span>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Continue comme ca !
+                Continue comme ça !
               </div>
             </div>
             <button className="btn btnPrimary smooth hover-lift press" onClick={() => setLevelPop(null)}>
@@ -3262,16 +3262,16 @@ export default function App() {
         <div className="overlay" role="dialog" aria-modal="true">
           <div className="modal" style={{ width: "min(560px, 100%)" }}>
             <div className="modalHead">
-              <div className="modalTitle">Publicite optionnelle</div>
-              <span className="pill">{adSim.provider === "regie_externe" ? "regie externe" : "video sponsorisee"}</span>
+              <div className="modalTitle">Publicité optionnelle</div>
+              <span className="pill">{adSim.provider === "regie_externe" ? "régie externe" : "vidéo sponsorisée"}</span>
             </div>
             <div className="modalBody">
               <div className="toast" style={{ marginTop: 0 }}>
                 <div style={{ width: "100%" }}>
                   <strong>{adSim.title}</strong>
                   <div className="small" style={{ marginTop: 6 }}>
-                    Source: <b>{adSim.provider === "regie_externe" ? "Regie configuree" : "Simulation locale"}</b> | Format:{" "}
-                    <b>{adSim.provider === "regie_externe" ? "rewarded" : "3s"}</b>
+                    Source: <b>{adSim.provider === "regie_externe" ? "Régie configurée" : "Simulation locale"}</b> | Format:{" "}
+                    <b>{adSim.provider === "regie_externe" ? "récompensée" : "3 s"}</b>
                   </div>
                   <div className="small" style={{ marginTop: 8 }}>
                     {adSim.lines?.map((line, i) => (
@@ -3282,7 +3282,7 @@ export default function App() {
                     <div className="bar" style={{ width: `${((3 - (adSim.secondsLeft ?? 0)) / 3) * 100}%` }} />
                   </div>
                   <div className="small" style={{ marginTop: 8 }}>
-                    Recompense accordee dans <b>{adSim.secondsLeft}</b>s.
+                    Récompense accordée dans <b>{adSim.secondsLeft}</b>s.
                   </div>
                   {!isPremium && (
                     <div className="small" style={{ marginTop: 6 }}>
@@ -3365,7 +3365,7 @@ export default function App() {
                           <span className={`chestRarity tone-${item.visual.tone}`}>{item.visual.rarity}</span>
                           {(item.reward.kind === "skin" || item.reward.kind === "effect") && (
                             <button className="btn smooth press chestEquipBtn" onClick={() => equipChestReward(item)}>
-                              Equiper maintenant
+                              Équiper maintenant
                             </button>
                           )}
                         </div>
@@ -3474,7 +3474,7 @@ export default function App() {
               <div className="statValue">{streak}</div>
             </div>
             <div className="statBox smooth">
-              <div className="statLabel">Precision</div>
+              <div className="statLabel">Précision</div>
               <div className="statValue">{accuracy}%</div>
             </div>
             <div className="statBox smooth">
@@ -3483,7 +3483,7 @@ export default function App() {
                 Streak {loginStreak}/7
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Derniere connexion : <b>{lastLoginDayKey ?? "-"}</b>
+                Dernière connexion : <b>{lastLoginDayKey ?? "-"}</b>
               </div>
             </div>
           </div>
@@ -3501,7 +3501,7 @@ export default function App() {
                 Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Prêt" : "Verrouillé"}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Badge special: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non debloque"}</b>
+                Badge spécial: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non débloqué"}</b>
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className="btn btnPrimary smooth hover-lift press" onClick={startWorldBoss} disabled={!worldBossReady}>
@@ -3516,7 +3516,7 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>{"\u23F1\uFE0F "}Défi 5 minutes</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Temps: <b>{formatClock(study5TimeLeft)}</b> | Questions: <b>{study5Answered}</b> | Precision: <b>{study5Accuracy}%</b>
+                Temps: <b>{formatClock(study5TimeLeft)}</b> | Questions: <b>{study5Answered}</b> | Précision: <b>{study5Accuracy}%</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Bonnes: <b>{study5Right}</b> | Erreurs: <b>{study5Wrong}</b> | Meilleur combo: <b>{study5BestStreak}</b>
@@ -3532,13 +3532,13 @@ export default function App() {
                   </button>
                 )}
                 <button className="btn smooth hover-lift press" onClick={copyStudy5Summary} disabled={!study5LastSummary}>
-                  Copier resume parent
+                  Copier résumé parent
                 </button>
               </div>
               {study5LastSummary && (
                 <div className="small" style={{ marginTop: 8 }}>
-                  Dernier resume: {new Date(study5LastSummary.endedAt).toLocaleString("fr-FR")} | {study5LastSummary.answered} questions |{" "}
-                  {study5LastSummary.accuracy}% de precision
+                  Dernier résumé: {new Date(study5LastSummary.endedAt).toLocaleString("fr-FR")} | {study5LastSummary.answered} questions |{" "}
+                  {study5LastSummary.accuracy}% de précision
                 </div>
               )}
             </div>
@@ -3549,7 +3549,7 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Mode Arena (principal)</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Etat: <b>{arenaOn ? "ACTIF" : "OFF"}</b> | Serie infinie | Boss toutes les 10 questions | Multiplicateur combo jusqua <b>x4</b>
+                État: <b>{arenaOn ? "Actif" : "OFF"}</b> | Série infinie | Boss toutes les 10 questions | Multiplicateur combo jusqu'à <b>x4</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Multiplicateur actuel: <b>x{arenaMultNow}</b>
@@ -3598,7 +3598,7 @@ export default function App() {
                     </button>
                   ) : (
                     <button className="btn smooth hover-lift press" onClick={() => setRushOn(false)}>
-                      Stop Rush
+                      Arrêter Rush
                   </button>
                 )}
               </div>
@@ -3612,13 +3612,13 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>{"\uD83C\uDFC6 "}Ligue saisonniere</strong>
+              <strong>{"\uD83C\uDFC6 "}Ligue saisonnière</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 <b>{leagueTier.label}</b> | Points: <b>{league?.points ?? 0}</b> | Fin de saison: <b>{seasonDaysLeft}j</b>
               </div>
               {isPremium ? (
                 <div className="small" style={{ marginTop: 6 }}>
-                  Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> | Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> | Best streak: <b>{league?.bestStreak ?? 0}</b>
+                  Précision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> | Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> | Meilleure série: <b>{league?.bestStreak ?? 0}</b>
                 </div>
               ) : (
                 <div className="small" style={{ marginTop: 6 }}>Stats avancées réservées Premium.</div>
@@ -3638,7 +3638,7 @@ export default function App() {
                 </div>
               )}
             </div>
-            <span className="pill">Competition</span>
+            <span className="pill">Compétition</span>
           </div>
 
           {isCollegeNow && (
@@ -3646,7 +3646,7 @@ export default function App() {
               <div style={{ width: "100%" }}>
                 <strong>Défi collège du jour</strong>
                 <div className="small" style={{ marginTop: 6 }}>
-                  Objectif: <b>{collegeArenaTarget}</b> bonnes reponses en difficulte <b>difficile</b>.
+                  Objectif: <b>{collegeArenaTarget}</b> bonnes réponses en difficulté <b>difficile</b>.
                 </div>
                 <div className="small" style={{ marginTop: 6 }}>
                   Progression: <b>{Math.min(collegeArenaToday.hardRight, collegeArenaTarget)}</b> / <b>{collegeArenaTarget}</b>
@@ -3655,14 +3655,14 @@ export default function App() {
                   <div className="bar" style={{ width: `${collegeArenaPct}%` }} />
                 </div>
                 <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span className="pill">+90 pieces</span>
+                  <span className="pill">+90 pièces</span>
                   <span className="pill">+120 XP</span>
                   <button
                     className="btn btnPrimary smooth hover-lift press"
                     disabled={!collegeArenaDone || !!collegeArenaToday.claimed}
                     onClick={claimCollegeArenaReward}
                   >
-                    {collegeArenaToday.claimed ? "Récompense reçue" : "Recuperer"}
+                    {collegeArenaToday.claimed ? "Récompense reçue" : "Récupérer"}
                   </button>
                 </div>
               </div>
@@ -3677,7 +3677,7 @@ export default function App() {
                 Progression: <b>{chestProgress}/15</b> bonnes réponses | Coffres prêts: <b>{chestPending}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Commun {chestTypeCounts.common} | Rare {chestTypeCounts.rare} | Epique {chestTypeCounts.epic} | Legendaire {chestTypeCounts.legendary}
+                Commun {chestTypeCounts.common} | Rare {chestTypeCounts.rare} | Épique {chestTypeCounts.epic} | Légendaire {chestTypeCounts.legendary}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Bonus XP x2: <b>{xpBoostActive ? `actif (${xpBoostMinutesLeft} min)` : "inactif"}</b>
@@ -3697,7 +3697,7 @@ export default function App() {
                   onClick={watchAdInstantChest}
                   disabled={adLocked || (!isPremium && (adUsageToday.instant_chest ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0))}
                 >
-                  Pub: coffre instantane
+                  Pub: coffre instantané
                 </button>
               </div>
             </div>
@@ -3721,7 +3721,7 @@ export default function App() {
                 ))}
               </div>
               <div className="small" style={{ marginTop: 8 }}>
-                Deblocage via coffres: Explosion doree, Aura electrique, Particules spec.
+                Déblocage via coffres: Explosion dorée, Aura électrique, Particules spéciales.
               </div>
             </div>
           </div>
@@ -3733,14 +3733,14 @@ export default function App() {
                 Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprimées" : "Pubs optionnelles actives"}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Premium: skins/avatars exclusifs, Rush illimite, stats avancées, thèmes spéciaux.
+                Premium: skins/avatars exclusifs, Rush illimité, stats avancées, thèmes spéciaux.
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className="btn btnPrimary smooth hover-lift press" onClick={() => activatePremium("monthly")}>
                   Premium 4,99 EUR/mois
                 </button>
                 <button className="btn smooth hover-lift press" onClick={() => activatePremium("lifetime")}>
-                  Lifetime 19 EUR
+                  À vie 19 EUR
                 </button>
                 {isPremium && (
                   <button className="btn smooth hover-lift press" onClick={disablePremium}>
@@ -3753,11 +3753,11 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Publicite intelligente (optionnelle)</strong>
+              <strong>Publicité intelligente (optionnelle)</strong>
               <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcée après une question.</div>
               <div className="small" style={{ marginTop: 6 }}>
                 {isPremium
-                  ? "Premium: pas de quota journalier, mais cooldown conserve pour equilibrer."
+                  ? "Premium: pas de quota journalier, mais cooldown conservé pour équilibrer."
                   : `Quota gratuit: ${Math.max(0, OPTIONAL_AD_LIMITS.total - adTodayUsed)} restantes aujourd'hui.`}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
@@ -3797,19 +3797,19 @@ export default function App() {
                   Pub: +1 vie en survie
                 </button>
               </div>
-              {adBoostNext && <div className="small" style={{ marginTop: 8 }}>Boost actif: prochaine bonne reponse x2 (pieces + XP).</div>}
-              <div className="small" style={{ marginTop: 6 }}>Vies de survie stockees: <b>{adSurvivalLives}/3</b></div>
-              {isPremium && <div className="small" style={{ marginTop: 6 }}>Premium peut passer la simulation instantanement.</div>}
+              {adBoostNext && <div className="small" style={{ marginTop: 8 }}>Boost actif: prochaine bonne réponse x2 (pièces + XP).</div>}
+              <div className="small" style={{ marginTop: 6 }}>Vies de survie stockées: <b>{adSurvivalLives}/3</b></div>
+              {isPremium && <div className="small" style={{ marginTop: 6 }}>Premium peut passer la simulation instantanément.</div>}
             </div>
           </div>
 
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>{"\uD83D\uDC09 "}Boss Fight</strong>
+              <strong>{"\uD83D\uDC09 "}Combat de boss</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Etat: <b>{bossActive ? "ACTIF" : "attente"}</b>
-                {bossActive ? ` | HP: ${bossRemaining}% | Temps: ${bossTimeLeft}s` : ` | Prochain boss toutes les 10 questions`}
+                État: <b>{bossActive ? "Actif" : "attente"}</b>
+                {bossActive ? ` | PV: ${bossRemaining}% | Temps: ${bossTimeLeft}s` : ` | Prochain boss toutes les 10 questions`}
               </div>
               {bossActive && (
                 <div className="small" style={{ marginTop: 6 }}>
@@ -3827,7 +3827,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>{"\uD83D\uDCC5 "}Calendrier activite</strong>
+              <strong>{"\uD83D\uDCC5 "}Calendrier d'activité</strong>
               <div className="heatmapTabs" style={{ marginTop: 8 }}>
                 <button className={`btn smooth hover-lift press ${activitySpan === 7 ? "btnPrimary" : ""}`} onClick={() => setActivitySpan(7)}>
                   7 jours
@@ -3867,14 +3867,14 @@ export default function App() {
                 />
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span className="pill">+{dailyChallenge?.rewardCoins ?? 0} pieces</span>
+                <span className="pill">+{dailyChallenge?.rewardCoins ?? 0} pièces</span>
                 <span className="pill">+{dailyChallenge?.rewardXp ?? 0} XP</span>
                 <button
                   className="btn btnPrimary smooth hover-lift press"
                   disabled={!isDailyDone || !!challengeProgress?.claimedDaily}
                   onClick={() => claimChallenge("daily")}
                 >
-                  {challengeProgress?.claimedDaily ? "Récompense reçue" : "Recuperer"}
+                  {challengeProgress?.claimedDaily ? "Récompense reçue" : "Récupérer"}
                 </button>
               </div>
             </div>
@@ -3894,14 +3894,14 @@ export default function App() {
                 />
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span className="pill">+{weeklyChallenge?.rewardCoins ?? 0} pieces</span>
+                <span className="pill">+{weeklyChallenge?.rewardCoins ?? 0} pièces</span>
                 <span className="pill">+{weeklyChallenge?.rewardXp ?? 0} XP</span>
                 <button
                   className="btn btnPrimary smooth hover-lift press"
                   disabled={!isWeeklyDone || !!challengeProgress?.claimedWeekly}
                   onClick={() => claimChallenge("weekly")}
                 >
-                  {challengeProgress?.claimedWeekly ? "Récompense reçue" : "Recuperer"}
+                  {challengeProgress?.claimedWeekly ? "Récompense reçue" : "Récupérer"}
                 </button>
               </div>
             </div>
@@ -3914,7 +3914,7 @@ export default function App() {
                 Connecte-toi 7 jours d'affilée pour maximiser les récompenses. Récompense donnée automatiquement au 1er lancement du jour.
               </div>
             </div>
-            <span className="pill">aleatoire</span>
+            <span className="pill">aléatoire</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -3928,7 +3928,7 @@ export default function App() {
                 window.location.reload();
               }}
             >
-              Reset profil
+              Réinitialiser le profil
             </button>
           </div>
                 </div>
@@ -4064,6 +4064,8 @@ export default function App() {
     </div>
   );
 }
+
+
 
 
 

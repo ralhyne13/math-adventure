@@ -9,14 +9,14 @@ export default function ClassicPlayScreen({ onBack, onOpenRush, onOpenArena, que
         </button>
         <div className="classicPlayTitleWrap">
           <div className="classicPlayTitle">Mode Classique</div>
-          <div className="small">Session libre, progression et defis</div>
+          <div className="small">Session libre, progression et défis</div>
         </div>
         <div className="classicPlayActions">
           <button className="btn smooth hover-lift press" onClick={onOpenArena}>
-            🏟 Arena
+            Arène
           </button>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
-            ⚡ Rush
+            Rush
           </button>
         </div>
       </div>

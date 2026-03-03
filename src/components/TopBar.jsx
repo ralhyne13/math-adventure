@@ -33,15 +33,15 @@ export default function TopBar({
         </div>
 
         <div className="topbarCompactRight">
-          <div className="mobileStatPill">🪙 {coins}</div>
+          <div className="mobileStatPill">\uD83E\uDE99 {coins}</div>
           <div className="mobileStatPill">Lv {level}</div>
           {canInstallApp && (
             <button className="btn btnPrimary smooth hover-lift press topbarCompactBtn" onClick={onInstallApp} aria-label="Installer l'app">
-              App
+              {"\uD83D\uDCF2"}
             </button>
           )}
           <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Réglages">
-            Reg
+              {"\u2699\uFE0F"}
           </button>
         </div>
       </div>
@@ -67,16 +67,16 @@ export default function TopBar({
 
       <div className="hud">
         <div className="hudLeft">
-          <div className="coins chip coinChip smooth" title="Pieces">
+          <div className="coins chip coinChip smooth" title="Pièces">
             <span className="coinDot" />
             <span>{coins}</span>
-            <span className="chipLabel">pieces</span>
+            <span className="chipLabel">pièces</span>
           </div>
 
           <div className="chip smooth" title="Niveau">
-            <span className="chipIcon">Lv</span>
+            <span className="chipIcon">Niv.</span>
             <span>
-              Lv <b>{level}</b>
+              Niv. <b>{level}</b>
             </span>
           </div>
 
@@ -110,12 +110,13 @@ export default function TopBar({
             Boutique
           </button>
           <button className="btn smooth hover-lift press" onClick={onLogout} title="Se déconnecter">
-            Deconnexion
+            Déconnexion
           </button>
         </div>
       </div>
     </div>
   );
 }
+
 
 

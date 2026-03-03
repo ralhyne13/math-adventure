@@ -26,10 +26,10 @@ function speedBonus(rtMs) {
 }
 
 const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "B", min: 0 },
-  { id: "silver", name: "Argent", icon: "A", min: 1200 },
-  { id: "gold", name: "Or", icon: "O", min: 2600 },
-  { id: "diamond", name: "Diamant", icon: "D", min: 4200 },
+  { id: "bronze", name: "Bronze", icon: "\uD83E\uDD49", min: 0 },
+  { id: "silver", name: "Argent", icon: "\uD83E\uDD48", min: 1200 },
+  { id: "gold", name: "Or", icon: "\uD83E\uDD47", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "\uD83D\uDC8E", min: 4200 },
 ];
 
 function leagueFromScore(score) {
@@ -98,7 +98,7 @@ function rollChestReward({ score, ownedSkins, ownedAvatars }) {
   }
 
   const coins = coinsForChest(rarity);
-  return { rarity, kind: "coins", coins, label: `+${coins} pieces` };
+  return { rarity, kind: "coins", coins, label: `+${coins} pièces` };
 }
 
 function pushQuestionHistory(historyRef, q, modeId, gradeId, diffId) {
@@ -405,7 +405,7 @@ export default function RushScreen({
             <div className="small">Score max, combo et multiplicateur</div>
           </div>
           <button className="btn smooth hover-lift press" onClick={resetRush}>
-            Reset
+            Réinitialiser
           </button>
         </div>
       )}
@@ -425,7 +425,7 @@ export default function RushScreen({
               Retour
             </button>
             <button className="btn smooth hover-lift press" onClick={resetRush}>
-              Reset
+              Réinitialiser
             </button>
           </div>
         </div>
@@ -468,11 +468,11 @@ export default function RushScreen({
             <div>
               <strong>Règles</strong>
               <div className="sub" style={{ marginTop: 8 }}>
-                Bonne reponse : +0.9s et points x multiplicateur
+                Bonne réponse : +0,9 s et points x multiplicateur
                 <br />
-                Erreur : -1.4s et combo reset
+                Erreur : -1,4 s et combo réinitialisé
                 <br />
-                Combo : x2 a 3, x3 a 6, x4 a 10, x5 a 15
+                Combo : x2 à 3, x3 à 6, x4 à 10, x5 à 15
               </div>
             </div>
             <span className="pill">60s</span>
@@ -490,7 +490,7 @@ export default function RushScreen({
         <div className="card smooth rushPlayCard rushPhasePanel">
           <div className="rushHud">
             <div className="rushHudLeft">
-              <div className={`rushTime ${dangerTime ? "danger" : ""}`}>Time {(timeLeft / 1000).toFixed(1)}s</div>
+              <div className={`rushTime ${dangerTime ? "danger" : ""}`}>Temps {(timeLeft / 1000).toFixed(1)}s</div>
               <div className={`rushBarWrap ${dangerTime ? "danger" : ""}`}>
                 <div
                   className="rushBar"
@@ -510,7 +510,7 @@ export default function RushScreen({
             <div className="rushHudRight">
               <div className="rushScore">{rushScore}</div>
               <div className="small">
-                Best combo: <b>{bestCombo}</b>
+                Meilleur combo : <b>{bestCombo}</b>
               </div>
             </div>
           </div>
@@ -553,7 +553,7 @@ export default function RushScreen({
         <div className="card smooth rushEndCard rushPhasePanel">
           <div className="cardTitle">
             <span>Fin du Rush</span>
-            <span className="pill">resultats</span>
+            <span className="pill">résultats</span>
           </div>
 
           <div className="stats" style={{ marginTop: 12 }}>
@@ -593,7 +593,7 @@ export default function RushScreen({
                 )}
               </div>
             </div>
-            <span className="pill">Saison local</span>
+            <span className="pill">Saison locale</span>
           </div>
 
           {chest && (
@@ -607,15 +607,15 @@ export default function RushScreen({
                     Ouvre pour récupérer ta récompense.
                   </div>
                 </div>
-                <span className="pill">{chest.rarity === "epic" ? "✨" : chest.rarity === "rare" ? "🌟" : "🎈"}</span>
+                <span className="pill">{chest.rarity === "epic" ? "\u2728" : chest.rarity === "rare" ? "\uD83C\uDF1F" : "\uD83C\uDF81"}</span>
               </div>
 
               <div className={`chestBox ${chestPhase}`} aria-live="polite">
-                <div className="chestEmoji">🧰</div>
+                <div className="chestEmoji">\uD83E\uDDF0</div>
                 {chestPhase === "opened" ? (
                   <div className="chestReward">
                     <div style={{ fontWeight: 1200 }}>{chest.label}</div>
-                    <div className="small" style={{ marginTop: 6 }}>Récompense ajoutée ✅</div>
+                    <div className="small" style={{ marginTop: 6 }}>Récompense ajoutée \u2705</div>
                   </div>
                 ) : (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={openChest} disabled={chestPhase !== "closed"}>
@@ -631,7 +631,7 @@ export default function RushScreen({
               Rejouer
             </button>
             <button className="btn smooth hover-lift press" onClick={resetRush}>
-              Retour menu Rush
+              Retour au menu Rush
             </button>
           </div>
         </div>
@@ -646,6 +646,7 @@ export default function RushScreen({
 
   return <div className="shell rushScreen">{body}</div>;
 }
+
 
 
 

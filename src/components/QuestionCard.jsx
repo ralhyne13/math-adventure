@@ -115,9 +115,9 @@ export default function QuestionCard({
             ))}
           </select>
           <button className="btn smooth hover-lift press" onClick={resetSession}>
-            Reset session
+            Réinitialiser la session
           </button>
-          <span className="pill">Adaptatif: {adaptiveOn ? "ON" : "OFF"}</span>
+          <span className="pill">Adaptatif : {adaptiveOn ? "Activé" : "Désactivé"}</span>
           <span className="pill">Niveau monde: {worldLevel}/30</span>
           {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final prêt</span> : null}
         </div>
@@ -155,11 +155,11 @@ export default function QuestionCard({
             </span>
             {arenaOn && !rushOn && (
               <span className="metaPill">
-                <span className="metaIcon">Arena</span> <b>x{arenaMultNow}</b>
+                <span className="metaIcon">Arène</span> <b>x{arenaMultNow}</b>
               </span>
             )}
             <span className="metaPill">
-              <span className="metaIcon">Precision</span> <b>{accuracy}%</b>
+              <span className="metaIcon">Précision</span> <b>{accuracy}%</b>
             </span>
             {rushOn && (
               <span className="metaPill">
@@ -186,13 +186,13 @@ export default function QuestionCard({
               <div className="bossAvatar" aria-hidden="true">{bossProfile?.emoji ?? "👑"}</div>
               <div style={{ flex: 1 }}>
                 <div className="small" style={{ color: "rgba(234,240,255,.92)" }}>
-                  Boss Arena
+                  Boss d'arène
                 </div>
-                <div style={{ fontWeight: 1100 }}>{bossProfile?.name ?? "Boss mystere"}</div>
+                <div style={{ fontWeight: 1100 }}>{bossProfile?.name ?? "Boss mystère"}</div>
               </div>
-              <span className="pill">HP {bossRemaining}%</span>
+              <span className="pill">PV {bossRemaining}%</span>
             </div>
-            <div className="bossBarWrap" aria-label="boss hp">
+            <div className="bossBarWrap" aria-label="points de vie du boss">
               <div className="bossBar" style={{ width: `${bossHpPct}%` }} />
             </div>
           </>
@@ -254,9 +254,9 @@ export default function QuestionCard({
         <div className={`learningRow ${compact ? "learningRowCompact" : ""}`}>
           <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
             Indice {hintLevel + 1}/{hintList.length}
-            {canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} piece${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
+            {canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} pièce${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
           </button>
-          {!compact && <span className="small">Les indices aident, mais coutent des pieces (sauf le 1er en facile).</span>}
+          {!compact && <span className="small">Les indices aident, mais coûtent des pièces (sauf le 1er en facile).</span>}
         </div>
         {hintMsg && !visibleHints.length && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
 

@@ -49,11 +49,11 @@
         </div>
 
         <div className="mobileQuickStats">
-          <div className="mobileStatPill">🪙 {coins} pieces</div>
+          <div className="mobileStatPill">🪙 {coins} pièces</div>
           <div className="mobileStatPill">Lv {level}</div>
           <div className="mobileStatPill">XP {xp}</div>
           <div className="mobileStatPill">Combo {streak}</div>
-          <div className="mobileStatPill">Precision {accuracy}%</div>
+          <div className="mobileStatPill">Précision {accuracy}%</div>
         </div>
 
         <div className="mobileActionRow">
@@ -83,7 +83,7 @@
               <span className="pill">mobile</span>
             </div>
             <div className="small" style={{ marginTop: 8 }}>
-              Ajoute Math Royale a ton ecran d'accueil pour jouer en plein ecran, avec un lancement plus rapide et un rendu
+              Ajoute Math Royale à ton écran d'accueil pour jouer en plein écran, avec un lancement plus rapide et un rendu
               plus proche d'une vraie app mobile.
             </div>
           </div>
@@ -125,7 +125,7 @@
           <span className="pill">{chestPending} coffre(s)</span>
         </div>
         <div className="small" style={{ marginTop: 8 }}>
-          Progression coffre: <b>{chestProgress}/15</b> bonnes reponses
+          Progression coffre : <b>{chestProgress}/15</b> bonnes réponses
         </div>
         <div className="mobileActionRow" style={{ marginTop: 12 }}>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenChest} disabled={chestPending <= 0}>
@@ -139,6 +139,7 @@
     </div>
   );
 }
+
 
 
 

@@ -37,27 +37,27 @@ export default function MobileGameShell({
 
       <div className="mobileDock" aria-label="Navigation mobile">
         <button className={`mobileDockBtn ${activeRoute === "home" ? "isActive" : ""}`} onClick={onGoHome}>
-          <span className="mobileDockIcon">🏠</span>
+          <span className="mobileDockIcon">Accueil</span>
           <span>Accueil</span>
         </button>
         <button className={`mobileDockBtn ${activeRoute === "classic-play" ? "isActive" : ""}`} onClick={onGoPlay}>
-          <span className="mobileDockIcon">▶</span>
+          <span className="mobileDockIcon">Jouer</span>
           <span>Jouer</span>
         </button>
         <button className={`mobileDockBtn ${activeRoute === "rush" ? "isActive" : ""}`} onClick={onGoRush}>
-          <span className="mobileDockIcon">⚡</span>
+          <span className="mobileDockIcon">Rush</span>
           <span>Rush</span>
         </button>
         <button className={`mobileDockBtn ${activeRoute === "arena" ? "isActive" : ""}`} onClick={onGoArena}>
-          <span className="mobileDockIcon">🏟</span>
-          <span>Arena</span>
+          <span className="mobileDockIcon">Arène</span>
+          <span>Arène</span>
         </button>
         <button className={`mobileDockBtn ${activeRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
-          <span className="mobileDockIcon">🛍</span>
+          <span className="mobileDockIcon">Boutique</span>
           <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn ${activeRoute === "profile" ? "isActive" : ""}`} onClick={onOpenProfile}>
-          <span className="mobileDockIcon">👤</span>
+          <span className="mobileDockIcon">Profil</span>
           <span>Profil</span>
         </button>
       </div>
