@@ -1,4 +1,4 @@
-Ôªø// App.jsx
+// App.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 import { clamp, randInt } from "./utils/math";
@@ -74,7 +74,7 @@ function rewardRoll(streakDay, ownedAvatars) {
   if (roll < avatarChance) {
     const commons = AVATARS.filter((a) => a.rarity === "Commun");
     const rares = AVATARS.filter((a) => a.rarity === "Rare");
-    const epics = AVATARS.filter((a) => a.rarity === "Epique");
+    const epics = AVATARS.filter((a) => a.rarity === "…pique");
 
     const tierRoll = Math.random();
     let pool = commons;
@@ -93,10 +93,10 @@ function rewardRoll(streakDay, ownedAvatars) {
 }
 
 const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "ü•â", min: 0 },
-  { id: "silver", name: "Argent", icon: "ü•à", min: 1200 },
-  { id: "gold", name: "Or", icon: "ü•á", min: 2600 },
-  { id: "diamond", name: "Diamant", icon: "üíé", min: 4200 },
+  { id: "bronze", name: "Bronze", icon: "??", min: 0 },
+  { id: "silver", name: "Argent", icon: "??", min: 1200 },
+  { id: "gold", name: "Or", icon: "??", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "??", min: 4200 },
 ];
 
 function leagueFromScore(score) {
@@ -152,9 +152,9 @@ function buildRushLeaderboard(prev, entry) {
 
 const CHEST_TYPES = {
   common: { id: "common", label: "Coffre commun", icon: "??" },
-  rare: { id: "rare", label: "Coffre rare", icon: "üåü" },
-  epic: { id: "epic", label: "Coffre √©pique", icon: "‚ú®" },
-  legendary: { id: "legendary", label: "Coffre l√©gendaire", icon: "üëë" },
+  rare: { id: "rare", label: "Coffre rare", icon: "??" },
+  epic: { id: "epic", label: "Coffre Èpique", icon: "?" },
+  legendary: { id: "legendary", label: "Coffre lÈgendaire", icon: "??" },
 };
 
 const ANSWER_EFFECTS = [
@@ -180,8 +180,8 @@ function chestTypeFromRoll(score = 0) {
 
 function rarityRank(raw) {
   const r = String(raw || "").toLowerCase();
-  if (r.includes("exclusif")) return 5;
-  if (r.includes("epique")) return 4;
+  if (r.includes("lÈgendaire") || r.includes("legendaire") || r.includes("exclusif")) return 5;
+  if (r.includes("Èpique") || r.includes("epique")) return 4;
   if (r.includes("rare")) return 3;
   return 1;
 }
@@ -208,9 +208,9 @@ function pickSkinReward(rarity, ownedSkins) {
 function pickAvatarReward(rarity, ownedAvatars) {
   const pool =
     rarity === "epic"
-      ? AVATARS.filter((a) => a.rarity === "Epique" || a.rarity === "Exclusif")
+      ? AVATARS.filter((a) => a.rarity === "…pique" || a.rarity === "Exclusif")
       : rarity === "rare"
-        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Epique")
+        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "…pique")
         : AVATARS.filter((a) => a.rarity === "Commun" || a.rarity === "Rare");
 
   const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
@@ -344,45 +344,45 @@ function speedBonus(rtMs) {
 
 function rewardVisualMeta(reward, chestType) {
   if (reward.kind === "dust") {
-    return { icon: "üíé", label: `${reward.dust} diamants cosm√©tiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
+    return { icon: "??", label: `${reward.dust} diamants cosmÈtiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
   }
   if (reward.kind === "coins") {
-    return { icon: "ü™ô", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
+    return { icon: "??", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
   }
   if (reward.kind === "avatar") {
     const avatar = AVATARS.find((a) => a.id === reward.avatarId);
     return {
-      icon: avatar?.emoji ?? "üë§",
+      icon: avatar?.emoji ?? "??",
       label: reward.text,
       tone: "rare",
       rarity: avatar?.rarity ?? "Rare",
-      preview: { type: "emoji", value: avatar?.emoji ?? "üë§" },
+      preview: { type: "emoji", value: avatar?.emoji ?? "??" },
     };
   }
   if (reward.kind === "skin") {
     const skin = SKINS.find((s) => s.id === reward.skinId);
     return {
-      icon: "üé®",
+      icon: "??",
       label: reward.text,
       tone: "epic",
-      rarity: skin?.price > 170 ? "L√©gendaire" : "√âpique",
+      rarity: skin?.price > 170 ? "LÈgendaire" : "…pique",
       preview: { type: "skin", accent: skin?.vars?.["--accent"], accent2: skin?.vars?.["--accent2"] },
     };
   }
   if (reward.kind === "xpBoost") {
-    return { icon: "‚ö°", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
+    return { icon: "?", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
   }
   if (reward.kind === "effect") {
     const fx = ANSWER_EFFECTS.find((e) => e.id === reward.effectId);
     return {
-      icon: "‚ú®",
+      icon: "?",
       label: reward.text,
       tone: "legendary",
-      rarity: "L√©gendaire",
+      rarity: "LÈgendaire",
       preview: { type: "effect", value: fx?.label ?? "Effet" },
     };
   }
-  return { icon: "üéÅ", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
+  return { icon: "??", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
 }
 
 function dustForDuplicate(kind) {
@@ -393,21 +393,21 @@ function dustForDuplicate(kind) {
 }
 
 const ARENA_BOSSES = [
-  { id: "hydra", name: "Hydre des Tables", emoji: "üêâ" },
-  { id: "golem", name: "Golem du Calcul", emoji: "ü™®" },
-  { id: "phantom", name: "Fantome des Fractions", emoji: "üëª" },
-  { id: "titan", name: "Titan Algebra", emoji: "üóø" },
+  { id: "hydra", name: "Hydre des Tables", emoji: "??" },
+  { id: "golem", name: "Golem du Calcul", emoji: "??" },
+  { id: "phantom", name: "Fantome des Fractions", emoji: "??" },
+  { id: "titan", name: "Titan Algebra", emoji: "??" },
 ];
 
 function evolvedOwlForLevel(level) {
-  if (level >= 30) return { emoji: "üëë", name: "Hibou l√©gendaire" };
-  if (level >= 20) return { emoji: "ü•á", name: "Hibou dore" };
-  if (level >= 10) return { emoji: "üõ°Ô∏è", name: "Hibou armure" };
-  return { emoji: "ü¶â", name: "Petit hibou" };
+  if (level >= 30) return { emoji: "??", name: "Hibou lÈgendaire" };
+  if (level >= 20) return { emoji: "??", name: "Hibou dore" };
+  if (level >= 10) return { emoji: "???", name: "Hibou armure" };
+  return { emoji: "??", name: "Petit hibou" };
 }
 
 function displayAvatarByLevel(baseAvatar, avatarId, level) {
-  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "ü¶â" };
+  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "??" };
   if (avatarId !== "owl") return baseAvatar;
   const evo = evolvedOwlForLevel(level);
   return { ...baseAvatar, ...evo };
@@ -1051,7 +1051,7 @@ export default function App() {
             setAdSurvivalLives((n) => Math.max(0, n - 1));
             showCoachPopup({
               title: "Vie de survie utilisee",
-              lines: ["D√©fi 5 minutes prolong√© de 30 secondes."],
+              lines: ["DÈfi 5 minutes prolongÈ de 30 secondes."],
               hint: "La reserve de survie est consommee automatiquement.",
             });
             playBeep("ok", audioOn);
@@ -1213,7 +1213,7 @@ export default function App() {
     setOwnedEffects((prev) => (prev.includes(effectId) ? prev : [...prev, effectId]));
     setAnswerEffectId(effectId);
     showBadgePopup({
-      icon: "??",
+      icon: "FX",
       title: "Effet debloque",
       desc: `${fx.label} | -${cost} diamants`,
       reward: 0,
@@ -1375,8 +1375,8 @@ export default function App() {
   function startStudy5() {
     if (rushOn) {
       showCoachPopup({
-        title: "D√©fi 5 minutes",
-        lines: ["Arr√™te le mode Rush avant de lancer le d√©fi 5 minutes."],
+        title: "DÈfi 5 minutes",
+        lines: ["ArrÍte le mode Rush avant de lancer le dÈfi 5 minutes."],
         hint: "Un seul mode minuteur a la fois.",
       });
       return;
@@ -1400,7 +1400,7 @@ export default function App() {
     setWorldBossRemaining(0);
     newQuestion(true);
     showCoachPopup({
-      title: "D√©fi 5 minutes lanc√©",
+      title: "DÈfi 5 minutes lancÈ",
       lines: ["Objectif: faire 5 minutes de maths.", "Reponds au plus de questions possible."],
       hint: "Un resume parent sera genere en fin de session.",
     });
@@ -1426,7 +1426,7 @@ export default function App() {
     };
     setStudy5LastSummary(summary);
     showCoachPopup({
-      title: "D√©fi 5 minutes termin√©",
+      title: "DÈfi 5 minutes terminÈ",
       lines: [`Questions: ${summary.answered}`, `Reussite: ${summary.accuracy}%`, `Meilleur combo: ${summary.bestStreak}`],
       hint: "Tu peux partager ce resume au parent.",
     });
@@ -1444,7 +1444,7 @@ export default function App() {
     if (!study5LastSummary) return;
     const t = study5LastSummary;
     const text = [
-      "R√©sum√© parent - D√©fi 5 minutes",
+      "RÈsumÈ parent - DÈfi 5 minutes",
       `Date: ${new Date(t.endedAt).toLocaleString("fr-FR")}`,
       `Duree: ${t.durationSec}s`,
       `Questions: ${t.answered}`,
@@ -1616,7 +1616,7 @@ export default function App() {
     showBadgePopup({
       icon: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.icon ?? "??" : "??",
       title: headline,
-      desc: openCount === 1 ? opened[0]?.reward?.text : `${openCount} r√©compenses r√©v√©l√©es`,
+      desc: openCount === 1 ? opened[0]?.reward?.text : `${openCount} rÈcompenses rÈvÈlÈes`,
       reward: 0,
     });
 
@@ -1670,7 +1670,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: ["Prochaine bonne reponse: pieces + XP x2 actives."],
-          hint: "Aucune pub forc√©e.",
+          hint: "Aucune pub forcÈe.",
         });
         logAdEvent("double_reward");
       },
@@ -1691,7 +1691,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: [`${CHEST_TYPES[t]?.label ?? "Coffre"} ajoute instantanement.`],
-          hint: "Aucune pub forc√©e.",
+          hint: "Aucune pub forcÈe.",
         });
         logAdEvent("instant_chest", { chestType: t });
       },
@@ -1711,7 +1711,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: ["1 vie de survie stockee."],
-          hint: "Elle sera consomm√©e si un chrono Rush ou D√©fi 5 minutes tombe √† 0.",
+          hint: "Elle sera consommÈe si un chrono Rush ou DÈfi 5 minutes tombe ‡ 0.",
         });
         logAdEvent("survival_life");
       },
@@ -1729,7 +1729,7 @@ export default function App() {
     showCoachPopup({
       title: "Premium active",
       lines: [plan === "lifetime" ? "Plan Lifetime active" : "Plan Mensuel actif"],
-      hint: "Skins/avatars premium + Rush illimit√© + stats avanc√©es.",
+      hint: "Skins/avatars premium + Rush illimitÈ + stats avancÈes.",
     });
     if (cloudEnabled) {
       cloudLogEvent({
@@ -1999,7 +1999,7 @@ export default function App() {
           showCoachPopup({
             title: `${currentWorld.icon} ${currentWorld.name}`,
             lines: [`Niveau ${nextLevel}/${WORLD_LEVEL_MAX}`],
-            hint: nextLevel >= WORLD_LEVEL_MAX ? "Boss final pr√™t √† lancer." : "Continue l'aventure.",
+            hint: nextLevel >= WORLD_LEVEL_MAX ? "Boss final prÍt ‡ lancer." : "Continue l'aventure.",
           });
         }
         base[currentWorld.id] = { ...cur, level: nextLevel, progress: nextProgress };
@@ -2015,7 +2015,7 @@ export default function App() {
           setChestPending((v) => v + 1);
           setChestQueue((prev) => [...(prev ?? []), t]);
           showBadgePopup({
-            icon: CHEST_TYPES[t]?.icon ?? "??",
+            icon: CHEST_TYPES[t]?.icon ?? "Gift",
             title: `${CHEST_TYPES[t]?.label ?? "Coffre"} gagne`,
             desc: "15 bonnes reponses atteintes. Ouvre ton coffre.",
             reward: 0,
@@ -2298,7 +2298,7 @@ export default function App() {
     awardXp(ch.rewardXp);
     showBadgePopup({
       icon: ch.icon ?? "??",
-      title: `D√©fi ${isDaily ? "journalier" : "hebdo"} compl√©t√©`,
+      title: `DÈfi ${isDaily ? "journalier" : "hebdo"} complÈtÈ`,
       desc: `${ch.title} | +${ch.rewardCoins} pieces | +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
     });
@@ -2318,8 +2318,8 @@ export default function App() {
     awardXp(120);
     setCollegeArena({ ...arena, claimed: true });
     showBadgePopup({
-      icon: "??",
-      title: "D√©fi coll√®ge compl√©t√©",
+      icon: "Cup",
+      title: "DÈfi collËge complÈtÈ",
       desc: "12 bonnes reponses en difficile | +90 pieces | +120 XP",
       reward: 90,
     });
@@ -2453,7 +2453,7 @@ export default function App() {
       rewardText = `+${reward.coins} pieces`;
     } else {
       if (!nextOwnedAv.includes(reward.avatarId)) nextOwnedAv.push(reward.avatarId);
-      rewardText = `NOUVEL AVATAR : ${AVATARS.find((a) => a.id === reward.avatarId)?.emoji ?? "?"} ${
+      rewardText = `NOUVEL AVATAR : ${AVATARS.find((a) => a.id === reward.avatarId)?.emoji ?? "Avatar"} ${
         AVATARS.find((a) => a.id === reward.avatarId)?.name ?? "Avatar"
       }`;
     }
@@ -2678,7 +2678,7 @@ export default function App() {
     setPwRecovery("");
     setPwNew("");
     setPwNew2("");
-    setPwMsg("‚úÖ Mot de passe r√©initialis√©. Tu peux te connecter.");
+    setPwMsg("? Mot de passe rÈinitialisÈ. Tu peux te connecter.");
     setAuthMode("login");
     setPwMode("none");
   }
@@ -3340,7 +3340,7 @@ export default function App() {
               <>
                 <div className="chestIconBig chestRolling" aria-hidden="true">
                   {chestPop.reel?.map((t, i) => (
-                    <span key={`${t}-${i}`}>{CHEST_TYPES[t]?.icon ?? "??"}</span>
+                    <span key={`${t}-${i}`}>{CHEST_TYPES[t]?.icon ?? "Gift"}</span>
                   ))}
                 </div>
                 <div className="chestPopTitle">Ouverture...</div>
@@ -3515,7 +3515,7 @@ export default function App() {
                 {!worldBossDone && worldLevel < 30 ? ` | ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Pr√™t" : "Verrouill√©"}</b>
+                Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "PrÍt" : "VerrouillÈ"}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Badge special: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non debloque"}</b>
@@ -3531,7 +3531,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>D√©fi 5 minutes</strong>
+              <strong>DÈfi 5 minutes</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Temps: <b>{formatClock(study5TimeLeft)}</b> | Questions: <b>{study5Answered}</b> | Precision: <b>{study5Accuracy}%</b>
               </div>
@@ -3541,11 +3541,11 @@ export default function App() {
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {!study5On ? (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={startStudy5}>
-                    Lancer D√©fi 5 min
+                    Lancer DÈfi 5 min
                   </button>
                 ) : (
                   <button className="btn smooth hover-lift press" onClick={() => setStudy5On(false)}>
-                    Arr√™ter D√©fi 5 min
+                    ArrÍter DÈfi 5 min
                   </button>
                 )}
                 <button className="btn smooth hover-lift press" onClick={copyStudy5Summary} disabled={!study5LastSummary}>
@@ -3638,7 +3638,7 @@ export default function App() {
                   Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> | Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> | Best streak: <b>{league?.bestStreak ?? 0}</b>
                 </div>
               ) : (
-                <div className="small" style={{ marginTop: 6 }}>Stats avanc√©es r√©serv√©es Premium.</div>
+                <div className="small" style={{ marginTop: 6 }}>Stats avancÈes rÈservÈes Premium.</div>
               )}
             </div>
           </div>
@@ -3661,7 +3661,7 @@ export default function App() {
           {isCollegeNow && (
             <div className="toast" style={{ marginTop: 12 }}>
               <div style={{ width: "100%" }}>
-                <strong>D√©fi coll√®ge du jour</strong>
+                <strong>DÈfi collËge du jour</strong>
                 <div className="small" style={{ marginTop: 6 }}>
                   Objectif: <b>{collegeArenaTarget}</b> bonnes reponses en difficulte <b>difficile</b>.
                 </div>
@@ -3679,11 +3679,11 @@ export default function App() {
                     disabled={!collegeArenaDone || !!collegeArenaToday.claimed}
                     onClick={claimCollegeArenaReward}
                   >
-                    {collegeArenaToday.claimed ? "R√©compense re√ßue" : "Recuperer"}
+                    {collegeArenaToday.claimed ? "RÈcompense reÁue" : "Recuperer"}
                   </button>
                 </div>
               </div>
-              <span className="pill">D√©fis</span>
+              <span className="pill">DÈfis</span>
             </div>
           )}
 
@@ -3691,7 +3691,7 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Coffres</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>{chestProgress}/15</b> bonnes r√©ponses | Coffres pr√™ts: <b>{chestPending}</b>
+                Progression: <b>{chestProgress}/15</b> bonnes rÈponses | Coffres prÍts: <b>{chestPending}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 {CHEST_TYPES.common.icon} {chestTypeCounts.common} | {CHEST_TYPES.rare.icon} {chestTypeCounts.rare} | {CHEST_TYPES.epic.icon} {chestTypeCounts.epic} |{" "}
@@ -3723,9 +3723,9 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Effets cosm√©tiques</strong>
+              <strong>Effets cosmÈtiques</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Effet √©quip√©: <b>{ANSWER_EFFECTS.find((e) => e.id === answerEffectId)?.label ?? "Classique"}</b>
+                Effet ÈquipÈ: <b>{ANSWER_EFFECTS.find((e) => e.id === answerEffectId)?.label ?? "Classique"}</b>
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {ANSWER_EFFECTS.filter((e) => ownedEffects.includes(e.id)).map((e) => (
@@ -3748,10 +3748,10 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Premium</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprim√©es" : "Pubs optionnelles actives"}
+                Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprimÈes" : "Pubs optionnelles actives"}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Premium: skins/avatars exclusifs, Rush illimite, stats avanc√©es, th√®mes sp√©ciaux.
+                Premium: skins/avatars exclusifs, Rush illimite, stats avancÈes, thËmes spÈciaux.
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className="btn btnPrimary smooth hover-lift press" onClick={() => activatePremium("monthly")}>
@@ -3772,7 +3772,7 @@ export default function App() {
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
               <strong>Publicite intelligente (optionnelle)</strong>
-              <div className="small" style={{ marginTop: 6 }}>Jamais de pub forc√©e apr√®s une question.</div>
+              <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcÈe aprËs une question.</div>
               <div className="small" style={{ marginTop: 6 }}>
                 {isPremium
                   ? "Premium: pas de quota journalier, mais cooldown conserve pour equilibrer."
@@ -3801,7 +3801,7 @@ export default function App() {
                   onClick={watchAdDoubleReward}
                   disabled={adLocked || (!isPremium && (adUsageToday.double_reward ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0))}
                 >
-                  Pub: doubler r√©compense
+                  Pub: doubler rÈcompense
                 </button>
                 <button
                   className="btn smooth hover-lift press"
@@ -3866,14 +3866,14 @@ export default function App() {
                 })}
               </div>
               <div className="small" style={{ marginTop: 8 }}>
-                Jours jou√©s : <b>{playedDays}/{activitySpan}</b> | Streak visuel : <b>{visualStreak}</b>
+                Jours jouÈs : <b>{playedDays}/{activitySpan}</b> | Streak visuel : <b>{visualStreak}</b>
               </div>
             </div>
           </div>
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div style={{ width: "100%" }}>
-              <strong>D√©fi journalier</strong>
+              <strong>DÈfi journalier</strong>
               <div className="sub" style={{ marginTop: 6 }}>{dailyChallenge?.desc}</div>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>{Math.min(dailyProgress, dailyChallenge?.target ?? 0)}</b> / <b>{dailyChallenge?.target ?? 0}</b>
@@ -3892,7 +3892,7 @@ export default function App() {
                   disabled={!isDailyDone || !!challengeProgress?.claimedDaily}
                   onClick={() => claimChallenge("daily")}
                 >
-                  {challengeProgress?.claimedDaily ? "R√©compense re√ßue" : "Recuperer"}
+                  {challengeProgress?.claimedDaily ? "RÈcompense reÁue" : "Recuperer"}
                 </button>
               </div>
             </div>
@@ -3900,7 +3900,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>D√©fi hebdo</strong>
+              <strong>DÈfi hebdo</strong>
               <div className="sub" style={{ marginTop: 6 }}>{weeklyChallenge?.desc}</div>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>{Math.min(weeklyProgress, weeklyChallenge?.target ?? 0)}</b> / <b>{weeklyChallenge?.target ?? 0}</b>
@@ -3919,7 +3919,7 @@ export default function App() {
                   disabled={!isWeeklyDone || !!challengeProgress?.claimedWeekly}
                   onClick={() => claimChallenge("weekly")}
                 >
-                  {challengeProgress?.claimedWeekly ? "R√©compense re√ßue" : "Recuperer"}
+                  {challengeProgress?.claimedWeekly ? "RÈcompense reÁue" : "Recuperer"}
                 </button>
               </div>
             </div>
@@ -3927,12 +3927,12 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div>
-              <strong>R√©compense quotidienne</strong>
+              <strong>RÈcompense quotidienne</strong>
               <div className="sub" style={{ marginTop: 8 }}>
-                Connecte-toi 7 jours d'affil√©e pour maximiser les r√©compenses. R√©compense donn√©e automatiquement au 1er lancement du jour.
+                Connecte-toi 7 jours d'affilÈe pour maximiser les rÈcompenses. RÈcompense donnÈe automatiquement au 1er lancement du jour.
               </div>
             </div>
-            <span className="pill">üé≤ aleatoire</span>
+            <span className="pill">?? aleatoire</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -4048,7 +4048,7 @@ export default function App() {
             navigateMobile("home");
           }}
         >
-          <span className="mobileDockIcon">üè†</span>
+          <span className="mobileDockIcon">??</span>
           <span>Accueil</span>
         </button>
         <button
@@ -4057,11 +4057,11 @@ export default function App() {
             navigateMobile("classic-play");
           }}
         >
-          <span className="mobileDockIcon">‚ñ∂Ô∏è</span>
+          <span className="mobileDockIcon">??</span>
           <span>Jouer</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={openArenaScreen}>
-          <span className="mobileDockIcon">üèüÔ∏è</span>
+          <span className="mobileDockIcon">???</span>
           <span>Arena</span>
         </button>
         <button
@@ -4070,25 +4070,28 @@ export default function App() {
             navigateMobile("rush");
           }}
         >
-          <span className="mobileDockIcon">‚ö°</span>
+          <span className="mobileDockIcon">?</span>
           <span>Rush</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={openShopPanel}>
-          <span className="mobileDockIcon">üõçÔ∏è</span>
+          <span className="mobileDockIcon">???</span>
           <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={openProfilePanel}>
-          <span className="mobileDockIcon">üë§</span>
+          <span className="mobileDockIcon">??</span>
           <span>Profil</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
-          <span className="mobileDockIcon">‚öôÔ∏è</span>
-          <span>R√©glages</span>
+          <span className="mobileDockIcon">??</span>
+          <span>RÈglages</span>
         </button>
       </div>
     </div>
   );
 }
+
+
+
 
 
 
