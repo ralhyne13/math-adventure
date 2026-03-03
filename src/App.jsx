@@ -50,10 +50,12 @@ import { SKINS, AVATARS, ACHIEVEMENTS } from "./config/gameData";
 import TopBar from "./components/TopBar";
 import QuestionCard from "./components/QuestionCard";
 import RushScreen from "./components/RushScreen";
-import MobileHomeScreen from "./components/MobileHomeScreen";
 import ClassicPlayScreen from "./components/ClassicPlayScreen";
 import ArenaScreen from "./components/ArenaScreen";
 import MobileGameShell from "./components/MobileGameShell";
+import MobileAppView from "./components/MobileAppView";
+import AppOverlays from "./components/AppOverlays";
+import { buildMobileViewProps } from "./components/buildMobileViewProps";
 import Shop from "./components/Shop";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
@@ -3185,6 +3187,95 @@ export default function App() {
 
   const useMobilePages = isMobileViewport;
   const activeMobilePage = useMobilePages ? mobileRoute : "home";
+  const { mobileHomeProps, mobileShopProps, mobileProfileProps, mobileSettingsProps } = buildMobileViewProps({
+    activeMobilePage,
+    navigateMobile,
+    openArenaScreen,
+    openShopPanel,
+    openProfilePanel,
+    openSettingsPanel,
+    closeShopPanel,
+    closeProfilePanel,
+    closeSettingsPanel,
+    installPromptEvent,
+    isInstalledPwa,
+    installPwaApp,
+    startStudy5,
+    openChest,
+    shopTab,
+    setShopTab,
+    profileTab,
+    setProfileTab,
+    coins,
+    SKINS,
+    AVATARS,
+    ownedSkins,
+    skinId,
+    canBuy,
+    buySkin,
+    equipSkin,
+    ownedAvatars,
+    avatarId,
+    buyAvatar,
+    equipAvatar,
+    isPremium,
+    cosmeticDust,
+    authUser,
+    level,
+    loginStreak,
+    totalRight,
+    totalWrong,
+    accuracy,
+    totalQuestions,
+    bestStreak,
+    GRADES,
+    DIFFS,
+    MODES,
+    records,
+    unlockedCount,
+    ACHIEVEMENTS,
+    isUnlocked,
+    achievements,
+    answerEffects: ANSWER_EFFECTS,
+    ownedEffects,
+    answerEffectId,
+    unlockEffectWithDust,
+    audioOn,
+    setAudioOn,
+    vibrateOn,
+    setVibrateOn,
+    autoNextOn,
+    setAutoNextOn,
+    autoNextMs,
+    setAutoNextMs,
+    reduceMotion,
+    setReduceMotion,
+    skinAnimated: skin.animated,
+    adaptiveOn,
+    setAdaptiveOn,
+    noPenaltyOnWrong,
+    setNoPenaltyOnWrong,
+    pwCurrent,
+    setPwCurrent,
+    pwChangeNew,
+    setPwChangeNew,
+    pwChangeNew2,
+    setPwChangeNew2,
+    pwChangeMsg,
+    changePasswordLoggedIn,
+    avatar,
+    profileRank,
+    xpLabel: `${xp}/${xpNeed}`,
+    streak,
+    currentWorld,
+    worldLevel,
+    worldBossReady,
+    worldBossDone,
+    chestPending,
+    chestProgress,
+    dailyChallenge,
+    dailyProgress,
+  });
 
   /* ------------------------ Main app render ------------------------ */
   return (
@@ -3206,252 +3297,61 @@ export default function App() {
         ))}
       </div>
 
-      {loginRewardPop && (
-        <div className="levelPop" role="status" aria-live="polite">
-          <div className="levelPopInner smooth">
-            <div style={{ flex: 1 }}>
-              <div className="levelPopTitle">Connexion quotidienne</div>
-              <div className="levelPopSub">
-                Jour <b>{loginRewardPop.day}</b>/7 | <span className="levelCoins">{loginRewardPop.text}</span>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                {loginRewardPop.detail}
-              </div>
-            </div>
-            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setLoginRewardPop(null)}>
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {levelPop && (
-        <div className="levelPop" role="status" aria-live="polite">
-          <div className="levelPopInner smooth">
-            <div style={{ flex: 1 }}>
-              <div className="levelPopTitle">NIVEAU SUPÉRIEUR !</div>
-              <div className="levelPopSub">
-                Niveau <b>{levelPop.toLevel}</b>
-                {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} |
-                <span className="levelCoins">
-                  <span className="coinDot" /> +{levelPop.gainedCoins} pièces
-                </span>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Continue comme ça !
-              </div>
-            </div>
-            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setLevelPop(null)}>
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {coachPop && (
-        <div className="coachPop" role="status" aria-live="polite">
-          <div className="coachPopInner smooth">
-            <div style={{ flex: 1 }}>
-              <div className="coachPopTitle">{coachPop.title}</div>
-              <div className="coachPopSub" style={{ marginTop: 6 }}>
-                {coachPop.lines?.map((t, i) => (
-                  <div key={i}>{t}</div>
-                ))}
-              </div>
-              {coachPop.hint && (
-                <div className="small" style={{ marginTop: 8 }}>
-                  {coachPop.hint}
-                </div>
-              )}
-            </div>
-            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setCoachPop(null)}>
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {adSim && (
-        <div className="overlay" role="dialog" aria-modal="true">
-          <div className="modal" style={{ width: "min(560px, 100%)" }}>
-            <div className="modalHead">
-              <div className="modalTitle">Publicité optionnelle</div>
-              <span className="pill">{adSim.provider === "regie_externe" ? "régie externe" : "vidéo sponsorisée"}</span>
-            </div>
-            <div className="modalBody">
-              <div className="toast" style={{ marginTop: 0 }}>
-                <div style={{ width: "100%" }}>
-                  <strong>{adSim.title}</strong>
-                  <div className="small" style={{ marginTop: 6 }}>
-                    Source: <b>{adSim.provider === "regie_externe" ? "Régie configurée" : "Simulation locale"}</b> | Format:{" "}
-                    <b>{adSim.provider === "regie_externe" ? "récompensée" : "3 s"}</b>
-                  </div>
-                  <div className="small" style={{ marginTop: 8 }}>
-                    {adSim.lines?.map((line, i) => (
-                      <div key={i}>{line}</div>
-                    ))}
-                  </div>
-                  <div className="barWrap" style={{ marginTop: 12 }}>
-                    <div className="bar" style={{ width: `${((3 - (adSim.secondsLeft ?? 0)) / 3) * 100}%` }} />
-                  </div>
-                  <div className="small" style={{ marginTop: 8 }}>
-                    Récompense accordée dans <b>{adSim.secondsLeft}</b>s.
-                  </div>
-                  {!isPremium && (
-                    <div className="small" style={{ marginTop: 6 }}>
-                      Quota du jour: <b>{adSim.usedAfterStart}/6</b>
-                    </div>
-                  )}
-                  {isPremium && (
-                    <div style={{ marginTop: 12 }}>
-                      <button className="btn btnPrimary smooth hover-lift press" onClick={skipOptionalAd}>
-                        Passer
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {badgePop && (
-        <div className="badgePop">
-          <div className="badgePopInner smooth">
-            {badgePop.icon ? <div className="badgeIcon" style={{ background: "rgba(0,0,0,.22)" }}>{badgePop.icon}</div> : null}
-            <div style={{ flex: 1 }}>
-              <div className="badgePopTitle">{badgePop.title}</div>
-              <div className="badgePopSub">{badgePop.desc}</div>
-            </div>
-            <button className="btn btnPrimary smooth hover-lift press" onClick={() => setBadgePop(null)}>
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {chestPop && (
-        <div className="chestPop" role="status" aria-live="polite" onMouseDown={() => setChestPop(null)}>
-          <div
-            className={`chestPopInner smooth chest-${chestPop.chestType} reward-${chestPop.leadRewardKind ?? "coins"}`}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="chestBurst" aria-hidden="true" />
-            {chestPop.phase === "rolling" ? (
-              <>
-                <div className="chestIconBig chestRolling" aria-hidden="true" />
-                <div className="chestPopTitle">Ouverture...</div>
-                <div className="chestPopSub">Le coffre tourne avant la révélation.</div>
-              </>
-            ) : (
-              <>
-                {chestPop.chestIcon ? <div className="chestIconBig" aria-hidden="true">{chestPop.chestIcon}</div> : null}
-                <div className="chestPopTitle">{chestPop.chestLabel}</div>
-                <div className="chestRewardsList">
-                  {(chestPop.rewards ?? []).map((item, idx) => (
-                    <div
-                      key={`${item.chestType}-${item.reward.kind}-${idx}`}
-                      className={`chestRewardRow tone-${item.visual.tone} reward-${item.reward.kind} ${
-                        item.reward.kind === "skin" || item.reward.kind === "avatar" || item.reward.kind === "effect" ? "is-card" : ""
-                      }`}
-                    >
-                      <span
-                        className={`chestRewardPreview preview-${item.visual.preview?.type ?? "gift"}`}
-                        aria-hidden="true"
-                        style={
-                          item.visual.preview?.type === "skin"
-                            ? { background: `linear-gradient(135deg, ${item.visual.preview?.accent || "#5b7cfa"}, ${item.visual.preview?.accent2 || "#f59e0b"})` }
-                            : undefined
-                        }
-                      >
-                        {item.visual.preview?.type === "emoji" ? item.visual.preview?.value : null}
-                        {item.visual.preview?.type === "effect" ? "" : null}
-                        {item.visual.preview?.type === "coin" ? "" : null}
-                        {item.visual.preview?.type === "dust" ? "" : null}
-                        {item.visual.preview?.type === "bolt" ? "" : null}
-                        {item.visual.preview?.type === "gift" ? item.visual.icon : null}
-                      </span>
-                      <div style={{ flex: 1 }}>
-                        <div className="chestRewardText">{item.visual.label}</div>
-                        <div className="chestRewardMeta">
-                          <span className={`chestRarity tone-${item.visual.tone}`}>{item.visual.rarity}</span>
-                          {(item.reward.kind === "skin" || item.reward.kind === "effect") && (
-                            <button className="btn smooth press chestEquipBtn" onClick={() => equipChestReward(item)}>
-                              Équiper maintenant
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-            <div style={{ marginTop: 12 }}>
-              <button className="btn btnPrimary smooth hover-lift press" onClick={() => setChestPop(null)}>
-                Super
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <TopBar
-        avatar={avatar}
-        authUser={authUser}
-        loginStreak={loginStreak}
-        profileRank={profileRank}
-        coins={coins}
-        level={level}
-        xp={`${xp}/${xpNeed}`}
-        questionIndex={questionIndex}
-        bestScore={bestScore}
-        unlockedCount={unlockedCount}
-        onOpenSettings={openSettingsPanel}
-        onOpenProfile={openProfilePanel}
-        onOpenShop={openShopPanel}
-        canInstallApp={!isInstalledPwa && !!installPromptEvent}
-        onInstallApp={installPwaApp}
-        onLogout={doLogout}
-        compact={isMobileViewport}
+      <AppOverlays
+        loginRewardPop={loginRewardPop}
+        onCloseLoginReward={() => setLoginRewardPop(null)}
+        levelPop={levelPop}
+        onCloseLevelPop={() => setLevelPop(null)}
+        coachPop={coachPop}
+        onCloseCoachPop={() => setCoachPop(null)}
+        adSim={adSim}
+        isPremium={isPremium}
+        onSkipOptionalAd={skipOptionalAd}
+        badgePop={badgePop}
+        onCloseBadgePop={() => setBadgePop(null)}
+        chestPop={chestPop}
+        onCloseChestPop={() => setChestPop(null)}
+        onEquipChestReward={equipChestReward}
       />
 
-      {activeMobilePage === "home" && (
+      {useMobilePages ? (
+        <MobileAppView
+          topBarProps={mobileGameTopBarProps}
+          mobileRoute={mobileRoute}
+          onNavigateHome={() => navigateMobile("home")}
+          onNavigatePlay={() => navigateMobile("classic-play")}
+          onNavigateRush={() => navigateMobile("rush")}
+          onOpenArena={openArenaScreen}
+          onOpenShop={openShopPanel}
+          onOpenProfile={openProfilePanel}
+          onOpenSettings={openSettingsPanel}
+          homeProps={mobileHomeProps}
+          shopProps={mobileShopProps}
+          profileProps={mobileProfileProps}
+          settingsProps={mobileSettingsProps}
+        />
+      ) : (
         <>
-          {useMobilePages ? (
-            <div className="appFrame">
-              <MobileHomeScreen
-                avatar={avatar}
-                authUser={authUser}
-                profileRank={profileRank}
-                coins={coins}
-                level={level}
-                xp={`${xp}/${xpNeed}`}
-                streak={streak}
-                accuracy={accuracy}
-                loginStreak={loginStreak}
-                currentWorld={currentWorld}
-                worldLevel={worldLevel}
-                worldBossReady={worldBossReady}
-                worldBossDone={worldBossDone}
-                chestPending={chestPending}
-                chestProgress={chestProgress}
-                dailyChallenge={dailyChallenge}
-                dailyProgress={dailyProgress}
-                canInstallApp={!isInstalledPwa && !!installPromptEvent}
-                onInstallApp={installPwaApp}
-                onOpenPlay={() => navigateMobile("classic-play")}
-                onOpenArena={openArenaScreen}
-                onOpenRush={() => navigateMobile("rush")}
-                onOpenShop={openShopPanel}
-                onOpenProfile={openProfilePanel}
-                onOpenSettings={openSettingsPanel}
-                onStartStudy5={startStudy5}
-                onOpenChest={openChest}
-              />
-            </div>
-          ) : (
+          <TopBar
+            avatar={avatar}
+            authUser={authUser}
+            loginStreak={loginStreak}
+            profileRank={profileRank}
+            coins={coins}
+            level={level}
+            xp={`${xp}/${xpNeed}`}
+            questionIndex={questionIndex}
+            bestScore={bestScore}
+            unlockedCount={unlockedCount}
+            onOpenSettings={openSettingsPanel}
+            onOpenProfile={openProfilePanel}
+            onOpenShop={openShopPanel}
+            canInstallApp={!isInstalledPwa && !!installPromptEvent}
+            onInstallApp={installPwaApp}
+            onLogout={doLogout}
+          />
+
+          {activeMobilePage === "home" && (
             <>
               <div className="mobileHeroStrip">
                 <button className="btn btnPrimary smooth hover-lift press" onClick={() => setScreen("rush")}>
@@ -3512,132 +3412,92 @@ export default function App() {
               </div>
             </>
           )}
+
+          <Shop
+            show={showShop}
+            onClose={closeShopPanel}
+            presentation="modal"
+            shopTab={shopTab}
+            setShopTab={setShopTab}
+            coins={coins}
+            SKINS={SKINS}
+            AVATARS={AVATARS}
+            ownedSkins={ownedSkins}
+            skinId={skinId}
+            canBuy={canBuy}
+            buySkin={buySkin}
+            equipSkin={equipSkin}
+            ownedAvatars={ownedAvatars}
+            avatarId={avatarId}
+            buyAvatar={buyAvatar}
+            equipAvatar={equipAvatar}
+            isPremium={isPremium}
+          />
+          <Profile
+            show={showProfile}
+            onClose={closeProfilePanel}
+            presentation="modal"
+            profileTab={profileTab}
+            setProfileTab={setProfileTab}
+            coins={coins}
+            cosmeticDust={cosmeticDust}
+            authUser={authUser}
+            level={level}
+            loginStreak={loginStreak}
+            totalRight={totalRight}
+            totalWrong={totalWrong}
+            accuracy={accuracy}
+            totalQuestions={totalQuestions}
+            bestStreak={bestStreak}
+            GRADES={GRADES}
+            DIFFS={DIFFS}
+            MODES={MODES}
+            records={records}
+            unlockedCount={unlockedCount}
+            ACHIEVEMENTS={ACHIEVEMENTS}
+            isUnlocked={isUnlocked}
+            achievements={achievements}
+            SKINS={SKINS}
+            AVATARS={AVATARS}
+            answerEffects={ANSWER_EFFECTS}
+            ownedSkins={ownedSkins}
+            ownedAvatars={ownedAvatars}
+            ownedEffects={ownedEffects}
+            skinId={skinId}
+            avatarId={avatarId}
+            answerEffectId={answerEffectId}
+            unlockEffectWithDust={unlockEffectWithDust}
+          />
+          <Settings
+            show={showSettings}
+            onClose={closeSettingsPanel}
+            presentation="modal"
+            audioOn={audioOn}
+            setAudioOn={setAudioOn}
+            vibrateOn={vibrateOn}
+            setVibrateOn={setVibrateOn}
+            autoNextOn={autoNextOn}
+            setAutoNextOn={setAutoNextOn}
+            autoNextMs={autoNextMs}
+            setAutoNextMs={setAutoNextMs}
+            reduceMotion={reduceMotion}
+            setReduceMotion={setReduceMotion}
+            skinAnimated={skin.animated}
+            adaptiveOn={adaptiveOn}
+            setAdaptiveOn={setAdaptiveOn}
+            noPenaltyOnWrong={noPenaltyOnWrong}
+            setNoPenaltyOnWrong={setNoPenaltyOnWrong}
+            pwCurrent={pwCurrent}
+            setPwCurrent={setPwCurrent}
+            pwChangeNew={pwChangeNew}
+            setPwChangeNew={setPwChangeNew}
+            pwChangeNew2={pwChangeNew2}
+            setPwChangeNew2={setPwChangeNew2}
+            pwChangeMsg={pwChangeMsg}
+            changePasswordLoggedIn={changePasswordLoggedIn}
+          />
         </>
       )}
-
-      <Shop
-        show={useMobilePages ? activeMobilePage === "shop" : showShop}
-        onClose={closeShopPanel}
-        presentation={useMobilePages ? "page" : "modal"}
-        shopTab={shopTab}
-        setShopTab={setShopTab}
-        coins={coins}
-        SKINS={SKINS}
-        AVATARS={AVATARS}
-        ownedSkins={ownedSkins}
-        skinId={skinId}
-        canBuy={canBuy}
-        buySkin={buySkin}
-        equipSkin={equipSkin}
-        ownedAvatars={ownedAvatars}
-        avatarId={avatarId}
-        buyAvatar={buyAvatar}
-        equipAvatar={equipAvatar}
-        isPremium={isPremium}
-      />
-      {/* Profil */}
-      <Profile
-        show={useMobilePages ? activeMobilePage === "profile" : showProfile}
-        onClose={closeProfilePanel}
-        presentation={useMobilePages ? "page" : "modal"}
-        profileTab={profileTab}
-        setProfileTab={setProfileTab}
-        coins={coins}
-        cosmeticDust={cosmeticDust}
-        authUser={authUser}
-        level={level}
-        loginStreak={loginStreak}
-        totalRight={totalRight}
-        totalWrong={totalWrong}
-        accuracy={accuracy}
-        totalQuestions={totalQuestions}
-        bestStreak={bestStreak}
-        GRADES={GRADES}
-        DIFFS={DIFFS}
-        MODES={MODES}
-        records={records}
-        unlockedCount={unlockedCount}
-        ACHIEVEMENTS={ACHIEVEMENTS}
-        isUnlocked={isUnlocked}
-        achievements={achievements}
-        SKINS={SKINS}
-        AVATARS={AVATARS}
-        answerEffects={ANSWER_EFFECTS}
-        ownedSkins={ownedSkins}
-        ownedAvatars={ownedAvatars}
-        ownedEffects={ownedEffects}
-        skinId={skinId}
-        avatarId={avatarId}
-        answerEffectId={answerEffectId}
-        unlockEffectWithDust={unlockEffectWithDust}
-      />
-      <Settings
-        show={useMobilePages ? activeMobilePage === "settings" : showSettings}
-        onClose={closeSettingsPanel}
-        presentation={useMobilePages ? "page" : "modal"}
-        audioOn={audioOn}
-        setAudioOn={setAudioOn}
-        vibrateOn={vibrateOn}
-        setVibrateOn={setVibrateOn}
-        autoNextOn={autoNextOn}
-        setAutoNextOn={setAutoNextOn}
-        autoNextMs={autoNextMs}
-        setAutoNextMs={setAutoNextMs}
-        reduceMotion={reduceMotion}
-        setReduceMotion={setReduceMotion}
-        skinAnimated={skin.animated}
-        adaptiveOn={adaptiveOn}
-        setAdaptiveOn={setAdaptiveOn}
-        noPenaltyOnWrong={noPenaltyOnWrong}
-        setNoPenaltyOnWrong={setNoPenaltyOnWrong}
-        pwCurrent={pwCurrent}
-        setPwCurrent={setPwCurrent}
-        pwChangeNew={pwChangeNew}
-        setPwChangeNew={setPwChangeNew}
-        pwChangeNew2={pwChangeNew2}
-        setPwChangeNew2={setPwChangeNew2}
-        pwChangeMsg={pwChangeMsg}
-        changePasswordLoggedIn={changePasswordLoggedIn}
-      />
-
-      <div className="mobileDock" aria-label="Navigation mobile">
-        <button
-          className={`mobileDockBtn ${mobileRoute === "home" ? "isActive" : ""}`}
-          onClick={() => {
-            navigateMobile("home");
-          }}
-        >
-          <span>Accueil</span>
-        </button>
-        <button
-          className={`mobileDockBtn ${mobileRoute === "classic-play" ? "isActive" : ""}`}
-          onClick={() => {
-            navigateMobile("classic-play");
-          }}
-        >
-          <span>Jouer</span>
-        </button>
-        <button className={`mobileDockBtn ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={openArenaScreen}>
-          <span>Arène</span>
-        </button>
-        <button
-          className={`mobileDockBtn ${mobileRoute === "rush" ? "isActive" : ""}`}
-          onClick={() => {
-            navigateMobile("rush");
-          }}
-        >
-          <span>Rush</span>
-        </button>
-        <button className={`mobileDockBtn ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={openShopPanel}>
-          <span>Boutique</span>
-        </button>
-        <button className={`mobileDockBtn ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={openProfilePanel}>
-          <span>Profil</span>
-        </button>
-        <button className={`mobileDockBtn ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
-          <span>{"\u2699\uFE0F "}Réglages</span>
-        </button>
-      </div>
     </div>
   );
 }
