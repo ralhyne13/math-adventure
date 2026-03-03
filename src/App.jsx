@@ -1,4 +1,4 @@
-// App.jsx
+ï»¿// App.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 import { clamp, randInt } from "./utils/math";
@@ -74,7 +74,7 @@ function rewardRoll(streakDay, ownedAvatars) {
   if (roll < avatarChance) {
     const commons = AVATARS.filter((a) => a.rarity === "Commun");
     const rares = AVATARS.filter((a) => a.rarity === "Rare");
-    const epics = AVATARS.filter((a) => a.rarity === "Épique");
+    const epics = AVATARS.filter((a) => a.rarity === "Ã‰pique");
 
     const tierRoll = Math.random();
     let pool = commons;
@@ -93,10 +93,10 @@ function rewardRoll(streakDay, ownedAvatars) {
 }
 
 const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "", min: 0 },
-  { id: "silver", name: "Argent", icon: "", min: 1200 },
-  { id: "gold", name: "Or", icon: "", min: 2600 },
-  { id: "diamond", name: "Diamant", icon: "", min: 4200 },
+  { id: "bronze", name: "Bronze", icon: "\uD83E\uDD49", min: 0 },
+  { id: "silver", name: "Argent", icon: "\uD83E\uDD48", min: 1200 },
+  { id: "gold", name: "Or", icon: "\uD83E\uDD47", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "\uD83D\uDC8E", min: 4200 },
 ];
 
 function leagueFromScore(score) {
@@ -151,10 +151,10 @@ function buildRushLeaderboard(prev, entry) {
 }
 
 const CHEST_TYPES = {
-  common: { id: "common", label: "Coffre commun", icon: "" },
-  rare: { id: "rare", label: "Coffre rare", icon: "" },
-  epic: { id: "epic", label: "Coffre épique", icon: "" },
-  legendary: { id: "legendary", label: "Coffre légendaire", icon: "" },
+  common: { id: "common", label: "\uD83C\uDF81 Coffre commun", icon: "\uD83C\uDF81" },
+  rare: { id: "rare", label: "\uD83C\uDF1F Coffre rare", icon: "\uD83C\uDF1F" },
+  epic: { id: "epic", label: "\u2728 Coffre Ã©pique", icon: "\u2728" },
+  legendary: { id: "legendary", label: "\uD83D\uDC51 Coffre lÃ©gendaire", icon: "\uD83D\uDC51" },
 };
 
 const ANSWER_EFFECTS = [
@@ -180,8 +180,8 @@ function chestTypeFromRoll(score = 0) {
 
 function rarityRank(raw) {
   const r = String(raw || "").toLowerCase();
-  if (r.includes("légendaire") || r.includes("legendaire") || r.includes("exclusif")) return 5;
-  if (r.includes("épique") || r.includes("epique")) return 4;
+  if (r.includes("lÃ©gendaire") || r.includes("legendaire") || r.includes("exclusif")) return 5;
+  if (r.includes("Ã©pique") || r.includes("epique")) return 4;
   if (r.includes("rare")) return 3;
   return 1;
 }
@@ -208,9 +208,9 @@ function pickSkinReward(rarity, ownedSkins) {
 function pickAvatarReward(rarity, ownedAvatars) {
   const pool =
     rarity === "epic"
-      ? AVATARS.filter((a) => a.rarity === "Épique" || a.rarity === "Exclusif")
+      ? AVATARS.filter((a) => a.rarity === "Ã‰pique" || a.rarity === "Exclusif")
       : rarity === "rare"
-        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Épique")
+        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Ã‰pique")
         : AVATARS.filter((a) => a.rarity === "Commun" || a.rarity === "Rare");
 
   const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
@@ -344,45 +344,45 @@ function speedBonus(rtMs) {
 
 function rewardVisualMeta(reward, chestType) {
   if (reward.kind === "dust") {
-    return { icon: "", label: `${reward.dust} diamants cosmétiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
+    return { icon: "\uD83D\uDC8E", label: `${reward.dust} diamants cosmÃ©tiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
   }
   if (reward.kind === "coins") {
-    return { icon: "", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
+    return { icon: "\uD83E\uDE99", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
   }
   if (reward.kind === "avatar") {
     const avatar = AVATARS.find((a) => a.id === reward.avatarId);
     return {
-      icon: "",
+      icon: "\uD83D\uDE42",
       label: reward.text,
       tone: "rare",
       rarity: avatar?.rarity ?? "Rare",
-      preview: { type: "emoji", value: "" },
+      preview: { type: "emoji", value: avatar?.emoji ?? "\uD83D\uDE42" },
     };
   }
   if (reward.kind === "skin") {
     const skin = SKINS.find((s) => s.id === reward.skinId);
     return {
-      icon: "",
+      icon: "\uD83C\uDFA8",
       label: reward.text,
       tone: "epic",
-      rarity: skin?.price > 170 ? "Légendaire" : "Épique",
+      rarity: skin?.price > 170 ? "LÃ©gendaire" : "Ã‰pique",
       preview: { type: "skin", accent: skin?.vars?.["--accent"], accent2: skin?.vars?.["--accent2"] },
     };
   }
   if (reward.kind === "xpBoost") {
-    return { icon: "", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
+    return { icon: "\u26A1", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
   }
   if (reward.kind === "effect") {
     const fx = ANSWER_EFFECTS.find((e) => e.id === reward.effectId);
     return {
-      icon: "",
+      icon: "\u2728",
       label: reward.text,
       tone: "legendary",
-      rarity: "Légendaire",
+      rarity: "LÃ©gendaire",
       preview: { type: "effect", value: fx?.label ?? "Effet" },
     };
   }
-  return { icon: "", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
+  return { icon: "\uD83C\uDF81", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
 }
 
 function dustForDuplicate(kind) {
@@ -393,21 +393,21 @@ function dustForDuplicate(kind) {
 }
 
 const ARENA_BOSSES = [
-  { id: "hydra", name: "Hydre des Tables", emoji: "" },
-  { id: "golem", name: "Golem du Calcul", emoji: "" },
-  { id: "phantom", name: "Fantome des Fractions", emoji: "" },
-  { id: "titan", name: "Titan Algebra", emoji: "" },
+  { id: "hydra", name: "Hydre des Tables", emoji: "\uD83D\uDC09" },
+  { id: "golem", name: "Golem du Calcul", emoji: "\uD83E\uDEA8" },
+  { id: "phantom", name: "FantÃ´me des Fractions", emoji: "\uD83D\uDC7B" },
+  { id: "titan", name: "Titan Algebra", emoji: "\uD83D\uDDFF" },
 ];
 
 function evolvedOwlForLevel(level) {
-  if (level >= 30) return { emoji: "", name: "Hibou légendaire" };
-  if (level >= 20) return { emoji: "", name: "Hibou dore" };
-  if (level >= 10) return { emoji: "", name: "Hibou armure" };
-  return { emoji: "", name: "Petit hibou" };
+  if (level >= 30) return { emoji: "\uD83D\uDC51", name: "Hibou lÃ©gendaire" };
+  if (level >= 20) return { emoji: "\uD83E\uDD47", name: "Hibou dore" };
+  if (level >= 10) return { emoji: "\uD83D\uDEE1\uFE0F", name: "Hibou armure" };
+  return { emoji: "\uD83E\uDD89", name: "Petit hibou" };
 }
 
 function displayAvatarByLevel(baseAvatar, avatarId, level) {
-  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "" };
+  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "\uD83E\uDD89" };
   if (avatarId !== "owl") return baseAvatar;
   const evo = evolvedOwlForLevel(level);
   return { ...baseAvatar, ...evo };
@@ -1051,7 +1051,7 @@ export default function App() {
             setAdSurvivalLives((n) => Math.max(0, n - 1));
             showCoachPopup({
               title: "Vie de survie utilisee",
-              lines: ["Défi 5 minutes prolongé de 30 secondes."],
+              lines: ["DÃ©fi 5 minutes prolongÃ© de 30 secondes."],
               hint: "La reserve de survie est consommee automatiquement.",
             });
             playBeep("ok", audioOn);
@@ -1213,7 +1213,7 @@ export default function App() {
     setOwnedEffects((prev) => (prev.includes(effectId) ? prev : [...prev, effectId]));
     setAnswerEffectId(effectId);
     showBadgePopup({
-      icon: "",
+      icon: "\u2728",
       title: "Effet debloque",
       desc: `${fx.label} | -${cost} diamants`,
       reward: 0,
@@ -1375,8 +1375,8 @@ export default function App() {
   function startStudy5() {
     if (rushOn) {
       showCoachPopup({
-        title: "Défi 5 minutes",
-        lines: ["Arrête le mode Rush avant de lancer le défi 5 minutes."],
+        title: "DÃ©fi 5 minutes",
+        lines: ["ArrÃªte le mode Rush avant de lancer le dÃ©fi 5 minutes."],
         hint: "Un seul mode minuteur a la fois.",
       });
       return;
@@ -1400,7 +1400,7 @@ export default function App() {
     setWorldBossRemaining(0);
     newQuestion(true);
     showCoachPopup({
-      title: "Défi 5 minutes lancé",
+      title: "DÃ©fi 5 minutes lancÃ©",
       lines: ["Objectif: faire 5 minutes de maths.", "Reponds au plus de questions possible."],
       hint: "Un resume parent sera genere en fin de session.",
     });
@@ -1426,7 +1426,7 @@ export default function App() {
     };
     setStudy5LastSummary(summary);
     showCoachPopup({
-      title: "Défi 5 minutes terminé",
+      title: "DÃ©fi 5 minutes terminÃ©",
       lines: [`Questions: ${summary.answered}`, `Reussite: ${summary.accuracy}%`, `Meilleur combo: ${summary.bestStreak}`],
       hint: "Tu peux partager ce resume au parent.",
     });
@@ -1444,7 +1444,7 @@ export default function App() {
     if (!study5LastSummary) return;
     const t = study5LastSummary;
     const text = [
-      "Résumé parent - Défi 5 minutes",
+      "RÃ©sumÃ© parent - DÃ©fi 5 minutes",
       `Date: ${new Date(t.endedAt).toLocaleString("fr-FR")}`,
       `Duree: ${t.durationSec}s`,
       `Questions: ${t.answered}`,
@@ -1614,9 +1614,9 @@ export default function App() {
 
     const headline = openCount === 1 ? `${CHEST_TYPES[opened[0]?.chestType]?.label ?? "Coffre"} ouvert` : `${openCount} coffres ouverts`;
     showBadgePopup({
-      icon: "",
+      icon: CHEST_TYPES[opened[0]?.chestType]?.icon ?? "\uD83C\uDF81",
       title: headline,
-      desc: openCount === 1 ? opened[0]?.reward?.text : `${openCount} récompenses révélées`,
+      desc: openCount === 1 ? opened[0]?.reward?.text : `${openCount} rÃ©compenses rÃ©vÃ©lÃ©es`,
       reward: 0,
     });
 
@@ -1670,7 +1670,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: ["Prochaine bonne reponse: pieces + XP x2 actives."],
-          hint: "Aucune pub forcée.",
+          hint: "Aucune pub forcÃ©e.",
         });
         logAdEvent("double_reward");
       },
@@ -1691,7 +1691,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: [`${CHEST_TYPES[t]?.label ?? "Coffre"} ajoute instantanement.`],
-          hint: "Aucune pub forcée.",
+          hint: "Aucune pub forcÃ©e.",
         });
         logAdEvent("instant_chest", { chestType: t });
       },
@@ -1711,7 +1711,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: ["1 vie de survie stockee."],
-          hint: "Elle sera consommée si un chrono Rush ou Défi 5 minutes tombe à 0.",
+          hint: "Elle sera consommÃ©e si un chrono Rush ou DÃ©fi 5 minutes tombe Ã  0.",
         });
         logAdEvent("survival_life");
       },
@@ -1729,7 +1729,7 @@ export default function App() {
     showCoachPopup({
       title: "Premium active",
       lines: [plan === "lifetime" ? "Plan Lifetime active" : "Plan Mensuel actif"],
-      hint: "Skins/avatars premium + Rush illimité + stats avancées.",
+      hint: "Skins/avatars premium + Rush illimitÃ© + stats avancÃ©es.",
     });
     if (cloudEnabled) {
       cloudLogEvent({
@@ -1969,7 +1969,7 @@ export default function App() {
             awardCoins(180);
             awardXp(220);
             showBadgePopup({
-              icon: "",
+              icon: "\uD83C\uDFC6",
               title: `Monde complete: ${currentWorld.name}`,
               desc: `${currentWorld.badge} debloque | +180 pieces | +220 XP`,
               reward: 180,
@@ -1999,7 +1999,7 @@ export default function App() {
           showCoachPopup({
             title: currentWorld.name,
             lines: [`Niveau ${nextLevel}/${WORLD_LEVEL_MAX}`],
-            hint: nextLevel >= WORLD_LEVEL_MAX ? "Boss final prêt à lancer." : "Continue l'aventure.",
+            hint: nextLevel >= WORLD_LEVEL_MAX ? "Boss final prÃªt Ã  lancer." : "Continue l'aventure.",
           });
         }
         base[currentWorld.id] = { ...cur, level: nextLevel, progress: nextProgress };
@@ -2298,7 +2298,7 @@ export default function App() {
     awardXp(ch.rewardXp);
     showBadgePopup({
       icon: ch.icon ?? "",
-      title: `Défi ${isDaily ? "journalier" : "hebdo"} complété`,
+      title: `DÃ©fi ${isDaily ? "journalier" : "hebdo"} complÃ©tÃ©`,
       desc: `${ch.title} | +${ch.rewardCoins} pieces | +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
     });
@@ -2318,8 +2318,8 @@ export default function App() {
     awardXp(120);
     setCollegeArena({ ...arena, claimed: true });
     showBadgePopup({
-      icon: "",
-      title: "Défi collège complété",
+      icon: "\uD83C\uDFC6",
+      title: "DÃ©fi collÃ¨ge complÃ©tÃ©",
       desc: "12 bonnes reponses en difficile | +90 pieces | +120 XP",
       reward: 90,
     });
@@ -2678,7 +2678,7 @@ export default function App() {
     setPwRecovery("");
     setPwNew("");
     setPwNew2("");
-    setPwMsg("Mot de passe réinitialisé. Tu peux te connecter.");
+    setPwMsg("Mot de passe rÃ©initialisÃ©. Tu peux te connecter.");
     setAuthMode("login");
     setPwMode("none");
   }
@@ -3498,7 +3498,7 @@ export default function App() {
                 {!worldBossDone && worldLevel < 30 ? ` | ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Prêt" : "Verrouillé"}</b>
+                Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "PrÃªt" : "VerrouillÃ©"}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Badge special: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non debloque"}</b>
@@ -3514,7 +3514,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Défi 5 minutes</strong>
+              <strong>{"\u23F1\uFE0F "}DÃ©fi 5 minutes</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Temps: <b>{formatClock(study5TimeLeft)}</b> | Questions: <b>{study5Answered}</b> | Precision: <b>{study5Accuracy}%</b>
               </div>
@@ -3524,11 +3524,11 @@ export default function App() {
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {!study5On ? (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={startStudy5}>
-                    Lancer Défi 5 min
+                    Lancer DÃ©fi 5 min
                   </button>
                 ) : (
                   <button className="btn smooth hover-lift press" onClick={() => setStudy5On(false)}>
-                    Arrêter Défi 5 min
+                    ArrÃªter DÃ©fi 5 min
                   </button>
                 )}
                 <button className="btn smooth hover-lift press" onClick={copyStudy5Summary} disabled={!study5LastSummary}>
@@ -3564,7 +3564,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Rush 60s</strong>
+              <strong>{"\u26A1\uFE0F "}Rush 60s</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> | Score: <b>{rushScore}</b> | Combo: <b>{rushCombo}</b> | Record: <b>{rushBestScore}</b>
               </div>
@@ -3612,7 +3612,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Ligue saisonniere</strong>
+              <strong>{"\uD83C\uDFC6 "}Ligue saisonniere</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 <b>{leagueTier.label}</b> | Points: <b>{league?.points ?? 0}</b> | Fin de saison: <b>{seasonDaysLeft}j</b>
               </div>
@@ -3621,14 +3621,14 @@ export default function App() {
                   Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> | Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> | Best streak: <b>{league?.bestStreak ?? 0}</b>
                 </div>
               ) : (
-                <div className="small" style={{ marginTop: 6 }}>Stats avancées réservées Premium.</div>
+                <div className="small" style={{ marginTop: 6 }}>Stats avancÃ©es rÃ©servÃ©es Premium.</div>
               )}
             </div>
           </div>
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Classement local</strong>
+              <strong>{"\uD83E\uDD47 "}Classement local</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Ton rang: <b>{localCompetition.myRank || "-"}</b> / <b>{localCompetition.rows.length}</b>
               </div>
@@ -3644,7 +3644,7 @@ export default function App() {
           {isCollegeNow && (
             <div className="toast" style={{ marginTop: 12 }}>
               <div style={{ width: "100%" }}>
-                <strong>Défi collège du jour</strong>
+                <strong>DÃ©fi collÃ¨ge du jour</strong>
                 <div className="small" style={{ marginTop: 6 }}>
                   Objectif: <b>{collegeArenaTarget}</b> bonnes reponses en difficulte <b>difficile</b>.
                 </div>
@@ -3662,19 +3662,19 @@ export default function App() {
                     disabled={!collegeArenaDone || !!collegeArenaToday.claimed}
                     onClick={claimCollegeArenaReward}
                   >
-                    {collegeArenaToday.claimed ? "Récompense reçue" : "Recuperer"}
+                    {collegeArenaToday.claimed ? "RÃ©compense reÃ§ue" : "Recuperer"}
                   </button>
                 </div>
               </div>
-              <span className="pill">Défis</span>
+              <span className="pill">DÃ©fis</span>
             </div>
           )}
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Coffres</strong>
+              <strong>{"\uD83C\uDF81 "}Coffres</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>{chestProgress}/15</b> bonnes réponses | Coffres prêts: <b>{chestPending}</b>
+                Progression: <b>{chestProgress}/15</b> bonnes rÃ©ponses | Coffres prÃªts: <b>{chestPending}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Commun {chestTypeCounts.common} | Rare {chestTypeCounts.rare} | Epique {chestTypeCounts.epic} | Legendaire {chestTypeCounts.legendary}
@@ -3705,9 +3705,9 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Effets cosmétiques</strong>
+              <strong>{"\u2728 "}Effets cosmÃ©tiques</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Effet équipé: <b>{ANSWER_EFFECTS.find((e) => e.id === answerEffectId)?.label ?? "Classique"}</b>
+                Effet Ã©quipÃ©: <b>{ANSWER_EFFECTS.find((e) => e.id === answerEffectId)?.label ?? "Classique"}</b>
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {ANSWER_EFFECTS.filter((e) => ownedEffects.includes(e.id)).map((e) => (
@@ -3728,12 +3728,12 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Premium</strong>
+              <strong>{"\uD83D\uDC51 "}Premium</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprimées" : "Pubs optionnelles actives"}
+                Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprimÃ©es" : "Pubs optionnelles actives"}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Premium: skins/avatars exclusifs, Rush illimite, stats avancées, thèmes spéciaux.
+                Premium: skins/avatars exclusifs, Rush illimite, stats avancÃ©es, thÃ¨mes spÃ©ciaux.
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className="btn btnPrimary smooth hover-lift press" onClick={() => activatePremium("monthly")}>
@@ -3754,7 +3754,7 @@ export default function App() {
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
               <strong>Publicite intelligente (optionnelle)</strong>
-              <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcée après une question.</div>
+              <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcÃ©e aprÃ¨s une question.</div>
               <div className="small" style={{ marginTop: 6 }}>
                 {isPremium
                   ? "Premium: pas de quota journalier, mais cooldown conserve pour equilibrer."
@@ -3783,7 +3783,7 @@ export default function App() {
                   onClick={watchAdDoubleReward}
                   disabled={adLocked || (!isPremium && (adUsageToday.double_reward ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0))}
                 >
-                  Pub: doubler récompense
+                  Pub: doubler rÃ©compense
                 </button>
                 <button
                   className="btn smooth hover-lift press"
@@ -3806,7 +3806,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Boss Fight</strong>
+              <strong>{"\uD83D\uDC09 "}Boss Fight</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Etat: <b>{bossActive ? "ACTIF" : "attente"}</b>
                 {bossActive ? ` | HP: ${bossRemaining}% | Temps: ${bossTimeLeft}s` : ` | Prochain boss toutes les 10 questions`}
@@ -3827,7 +3827,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Calendrier activite</strong>
+              <strong>{"\uD83D\uDCC5 "}Calendrier activite</strong>
               <div className="heatmapTabs" style={{ marginTop: 8 }}>
                 <button className={`btn smooth hover-lift press ${activitySpan === 7 ? "btnPrimary" : ""}`} onClick={() => setActivitySpan(7)}>
                   7 jours
@@ -3848,14 +3848,14 @@ export default function App() {
                 })}
               </div>
               <div className="small" style={{ marginTop: 8 }}>
-                Jours joués : <b>{playedDays}/{activitySpan}</b> | Streak visuel : <b>{visualStreak}</b>
+                Jours jouÃ©s : <b>{playedDays}/{activitySpan}</b> | Streak visuel : <b>{visualStreak}</b>
               </div>
             </div>
           </div>
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div style={{ width: "100%" }}>
-              <strong>Défi journalier</strong>
+              <strong>{"\uD83C\uDFAF "}DÃ©fi journalier</strong>
               <div className="sub" style={{ marginTop: 6 }}>{dailyChallenge?.desc}</div>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>{Math.min(dailyProgress, dailyChallenge?.target ?? 0)}</b> / <b>{dailyChallenge?.target ?? 0}</b>
@@ -3874,7 +3874,7 @@ export default function App() {
                   disabled={!isDailyDone || !!challengeProgress?.claimedDaily}
                   onClick={() => claimChallenge("daily")}
                 >
-                  {challengeProgress?.claimedDaily ? "Récompense reçue" : "Recuperer"}
+                  {challengeProgress?.claimedDaily ? "RÃ©compense reÃ§ue" : "Recuperer"}
                 </button>
               </div>
             </div>
@@ -3882,7 +3882,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Défi hebdo</strong>
+              <strong>{"\uD83D\uDCC6 "}DÃ©fi hebdo</strong>
               <div className="sub" style={{ marginTop: 6 }}>{weeklyChallenge?.desc}</div>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>{Math.min(weeklyProgress, weeklyChallenge?.target ?? 0)}</b> / <b>{weeklyChallenge?.target ?? 0}</b>
@@ -3901,7 +3901,7 @@ export default function App() {
                   disabled={!isWeeklyDone || !!challengeProgress?.claimedWeekly}
                   onClick={() => claimChallenge("weekly")}
                 >
-                  {challengeProgress?.claimedWeekly ? "Récompense reçue" : "Recuperer"}
+                  {challengeProgress?.claimedWeekly ? "RÃ©compense reÃ§ue" : "Recuperer"}
                 </button>
               </div>
             </div>
@@ -3909,9 +3909,9 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div>
-              <strong>Récompense quotidienne</strong>
+              <strong>{"\uD83C\uDF81 "}RÃ©compense quotidienne</strong>
               <div className="sub" style={{ marginTop: 8 }}>
-                Connecte-toi 7 jours d'affilée pour maximiser les récompenses. Récompense donnée automatiquement au 1er lancement du jour.
+                Connecte-toi 7 jours d'affilÃ©e pour maximiser les rÃ©compenses. RÃ©compense donnÃ©e automatiquement au 1er lancement du jour.
               </div>
             </div>
             <span className="pill">aleatoire</span>
@@ -4058,12 +4058,17 @@ export default function App() {
           <span>Profil</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
-          <span>Réglages</span>
+          <span>{"\u2699\uFE0F "}RÃ©glages</span>
         </button>
       </div>
     </div>
   );
 }
+
+
+
+
+
 
 
 
