@@ -84,7 +84,7 @@ function rewardRoll(streakDay, ownedAvatars) {
     const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
     if (notOwned.length) {
       const picked = notOwned[randInt(0, notOwned.length - 1)];
-      return { kind: "avatar", avatarId: picked.id, label: `Avatar : ${picked.emoji} ${picked.name}` };
+      return { kind: "avatar", avatarId: picked.id, label: `Avatar : ${picked.name}` };
     }
     return { kind: "coins", coins: coinReward + 40, label: `Pieces : +${coinReward + 40}` };
   }
@@ -93,10 +93,10 @@ function rewardRoll(streakDay, ownedAvatars) {
 }
 
 const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "??", min: 0 },
-  { id: "silver", name: "Argent", icon: "??", min: 1200 },
-  { id: "gold", name: "Or", icon: "??", min: 2600 },
-  { id: "diamond", name: "Diamant", icon: "??", min: 4200 },
+  { id: "bronze", name: "Bronze", icon: "", min: 0 },
+  { id: "silver", name: "Argent", icon: "", min: 1200 },
+  { id: "gold", name: "Or", icon: "", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "", min: 4200 },
 ];
 
 function leagueFromScore(score) {
@@ -151,10 +151,10 @@ function buildRushLeaderboard(prev, entry) {
 }
 
 const CHEST_TYPES = {
-  common: { id: "common", label: "Coffre commun", icon: "??" },
-  rare: { id: "rare", label: "Coffre rare", icon: "??" },
-  epic: { id: "epic", label: "Coffre épique", icon: "?" },
-  legendary: { id: "legendary", label: "Coffre légendaire", icon: "??" },
+  common: { id: "common", label: "Coffre commun", icon: "" },
+  rare: { id: "rare", label: "Coffre rare", icon: "" },
+  epic: { id: "epic", label: "Coffre épique", icon: "" },
+  legendary: { id: "legendary", label: "Coffre légendaire", icon: "" },
 };
 
 const ANSWER_EFFECTS = [
@@ -230,7 +230,7 @@ function rollChestReward({ score, ownedSkins, ownedAvatars }) {
   }
   if (r < skinChance + avatarChance) {
     const avatar = pickAvatarReward(rarity, ownedAvatars);
-    if (avatar) return { rarity, kind: "avatar", avatarId: avatar.id, text: `Avatar: ${avatar.emoji} ${avatar.name}` };
+    if (avatar) return { rarity, kind: "avatar", avatarId: avatar.id, text: `Avatar: ${avatar.name}` };
   }
 
   const coins = coinsForChest(rarity);
@@ -260,7 +260,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
     }
     if (epicAvatars.length && r < 0.9) {
       const a = pick(epicAvatars);
-      return { kind: "avatar", avatarId: a.id, text: `Avatar: ${a.emoji} ${a.name}` };
+      return { kind: "avatar", avatarId: a.id, text: `Avatar: ${a.name}` };
     }
     if (r < 0.97) return { kind: "xpBoost", minutes: 45, text: "Boost XP x2 (45 min)" };
     const coins = randInt(260, 520);
@@ -273,7 +273,7 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
 
   if (commonAvatars.length && r < 0.18) {
     const a = pick(commonAvatars);
-    return { kind: "avatar", avatarId: a.id, text: `Avatar: ${a.emoji} ${a.name}` };
+    return { kind: "avatar", avatarId: a.id, text: `Avatar: ${a.name}` };
   }
   if (r < 0.32) return { kind: "xpBoost", minutes: 15, text: "Boost XP x2 (15 min)" };
   const coins = randInt(40, 110);
@@ -344,25 +344,25 @@ function speedBonus(rtMs) {
 
 function rewardVisualMeta(reward, chestType) {
   if (reward.kind === "dust") {
-    return { icon: "??", label: `${reward.dust} diamants cosmétiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
+    return { icon: "", label: `${reward.dust} diamants cosmétiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
   }
   if (reward.kind === "coins") {
-    return { icon: "??", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
+    return { icon: "", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
   }
   if (reward.kind === "avatar") {
     const avatar = AVATARS.find((a) => a.id === reward.avatarId);
     return {
-      icon: avatar?.emoji ?? "??",
+      icon: "",
       label: reward.text,
       tone: "rare",
       rarity: avatar?.rarity ?? "Rare",
-      preview: { type: "emoji", value: avatar?.emoji ?? "??" },
+      preview: { type: "emoji", value: "" },
     };
   }
   if (reward.kind === "skin") {
     const skin = SKINS.find((s) => s.id === reward.skinId);
     return {
-      icon: "??",
+      icon: "",
       label: reward.text,
       tone: "epic",
       rarity: skin?.price > 170 ? "Légendaire" : "Épique",
@@ -370,19 +370,19 @@ function rewardVisualMeta(reward, chestType) {
     };
   }
   if (reward.kind === "xpBoost") {
-    return { icon: "?", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
+    return { icon: "", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
   }
   if (reward.kind === "effect") {
     const fx = ANSWER_EFFECTS.find((e) => e.id === reward.effectId);
     return {
-      icon: "?",
+      icon: "",
       label: reward.text,
       tone: "legendary",
       rarity: "Légendaire",
       preview: { type: "effect", value: fx?.label ?? "Effet" },
     };
   }
-  return { icon: "??", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
+  return { icon: "", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
 }
 
 function dustForDuplicate(kind) {
@@ -393,21 +393,21 @@ function dustForDuplicate(kind) {
 }
 
 const ARENA_BOSSES = [
-  { id: "hydra", name: "Hydre des Tables", emoji: "??" },
-  { id: "golem", name: "Golem du Calcul", emoji: "??" },
-  { id: "phantom", name: "Fantome des Fractions", emoji: "??" },
-  { id: "titan", name: "Titan Algebra", emoji: "??" },
+  { id: "hydra", name: "Hydre des Tables", emoji: "" },
+  { id: "golem", name: "Golem du Calcul", emoji: "" },
+  { id: "phantom", name: "Fantome des Fractions", emoji: "" },
+  { id: "titan", name: "Titan Algebra", emoji: "" },
 ];
 
 function evolvedOwlForLevel(level) {
-  if (level >= 30) return { emoji: "??", name: "Hibou légendaire" };
-  if (level >= 20) return { emoji: "??", name: "Hibou dore" };
-  if (level >= 10) return { emoji: "???", name: "Hibou armure" };
-  return { emoji: "??", name: "Petit hibou" };
+  if (level >= 30) return { emoji: "", name: "Hibou légendaire" };
+  if (level >= 20) return { emoji: "", name: "Hibou dore" };
+  if (level >= 10) return { emoji: "", name: "Hibou armure" };
+  return { emoji: "", name: "Petit hibou" };
 }
 
 function displayAvatarByLevel(baseAvatar, avatarId, level) {
-  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "??" };
+  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "" };
   if (avatarId !== "owl") return baseAvatar;
   const evo = evolvedOwlForLevel(level);
   return { ...baseAvatar, ...evo };
@@ -1213,7 +1213,7 @@ export default function App() {
     setOwnedEffects((prev) => (prev.includes(effectId) ? prev : [...prev, effectId]));
     setAnswerEffectId(effectId);
     showBadgePopup({
-      icon: "FX",
+      icon: "",
       title: "Effet debloque",
       desc: `${fx.label} | -${cost} diamants`,
       reward: 0,
@@ -1365,7 +1365,7 @@ export default function App() {
     playBeep("level", audioOn);
     vibrate([24, 20, 34]);
     showCoachPopup({
-      title: `${currentWorld.icon} Boss final`,
+      title: "Boss final",
       lines: [`${currentWorld.name}`, "3 questions difficiles pour valider le monde."],
       hint: "Reussis les 3 pour debloquer le badge special.",
     });
@@ -1614,7 +1614,7 @@ export default function App() {
 
     const headline = openCount === 1 ? `${CHEST_TYPES[opened[0]?.chestType]?.label ?? "Coffre"} ouvert` : `${openCount} coffres ouverts`;
     showBadgePopup({
-      icon: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.icon ?? "??" : "??",
+      icon: "",
       title: headline,
       desc: openCount === 1 ? opened[0]?.reward?.text : `${openCount} récompenses révélées`,
       reward: 0,
@@ -1635,7 +1635,7 @@ export default function App() {
         openCount,
         chestType: opened[0]?.chestType ?? "common",
         chestLabel: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.label ?? "Coffre" : `${openCount} coffres`,
-        chestIcon: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.icon ?? "??" : "??",
+        chestIcon: "",
         leadRewardKind: opened[0]?.reward?.kind ?? "coins",
         rewards: opened,
       });
@@ -1905,7 +1905,7 @@ export default function App() {
       vibrate([22, 16, 30]);
       showCoachPopup({
         title: "Boss Fight",
-        lines: [`${bossPick.emoji} ${bossPick.name}`, "Boss enrage: 100 HP", "Chaque bonne reponse: -20% HP"],
+        lines: [`${bossPick.name}`, "Boss enrage: 100 HP", "Chaque bonne reponse: -20% HP"],
         hint: "Reste focus jusqu'au bout.",
       });
     }
@@ -1969,7 +1969,7 @@ export default function App() {
             awardCoins(180);
             awardXp(220);
             showBadgePopup({
-              icon: currentWorld.icon,
+              icon: "",
               title: `Monde complete: ${currentWorld.name}`,
               desc: `${currentWorld.badge} debloque | +180 pieces | +220 XP`,
               reward: 180,
@@ -1997,7 +1997,7 @@ export default function App() {
           nextLevel = Math.min(WORLD_LEVEL_MAX, nextLevel + 1);
           nextProgress = 0;
           showCoachPopup({
-            title: `${currentWorld.icon} ${currentWorld.name}`,
+            title: currentWorld.name,
             lines: [`Niveau ${nextLevel}/${WORLD_LEVEL_MAX}`],
             hint: nextLevel >= WORLD_LEVEL_MAX ? "Boss final prêt à lancer." : "Continue l'aventure.",
           });
@@ -2015,7 +2015,7 @@ export default function App() {
           setChestPending((v) => v + 1);
           setChestQueue((prev) => [...(prev ?? []), t]);
           showBadgePopup({
-            icon: CHEST_TYPES[t]?.icon ?? "Gift",
+            icon: CHEST_TYPES[t]?.icon ?? "",
             title: `${CHEST_TYPES[t]?.label ?? "Coffre"} gagne`,
             desc: "15 bonnes reponses atteintes. Ouvre ton coffre.",
             reward: 0,
@@ -2297,7 +2297,7 @@ export default function App() {
     awardCoins(ch.rewardCoins);
     awardXp(ch.rewardXp);
     showBadgePopup({
-      icon: ch.icon ?? "??",
+      icon: ch.icon ?? "",
       title: `Défi ${isDaily ? "journalier" : "hebdo"} complété`,
       desc: `${ch.title} | +${ch.rewardCoins} pieces | +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
@@ -2318,7 +2318,7 @@ export default function App() {
     awardXp(120);
     setCollegeArena({ ...arena, claimed: true });
     showBadgePopup({
-      icon: "Cup",
+      icon: "",
       title: "Défi collège complété",
       desc: "12 bonnes reponses en difficile | +90 pieces | +120 XP",
       reward: 90,
@@ -2453,7 +2453,7 @@ export default function App() {
       rewardText = `+${reward.coins} pieces`;
     } else {
       if (!nextOwnedAv.includes(reward.avatarId)) nextOwnedAv.push(reward.avatarId);
-      rewardText = `NOUVEL AVATAR : ${AVATARS.find((a) => a.id === reward.avatarId)?.emoji ?? "Avatar"} ${
+      rewardText = `NOUVEL AVATAR : ${
         AVATARS.find((a) => a.id === reward.avatarId)?.name ?? "Avatar"
       }`;
     }
@@ -2643,7 +2643,7 @@ export default function App() {
       const sent = await cloudAuthSendPasswordReset(loginOrEmail, redirectTo);
       if (!sent?.ok) return setPwMsg("Impossible d'envoyer l'email de reinitialisation.");
       setPwTargetPseudo("");
-      setPwMsg("? Email de reinitialisation envoye. Verifie ta boite mail.");
+      setPwMsg("Email de reinitialisation envoye. Verifie ta boite mail.");
       return;
     }
     if (!crypto?.subtle) return setPwMsg("Ton navigateur ne supporte pas crypto.subtle.");
@@ -2678,7 +2678,7 @@ export default function App() {
     setPwRecovery("");
     setPwNew("");
     setPwNew2("");
-    setPwMsg("? Mot de passe réinitialisé. Tu peux te connecter.");
+    setPwMsg("Mot de passe réinitialisé. Tu peux te connecter.");
     setAuthMode("login");
     setPwMode("none");
   }
@@ -2697,7 +2697,7 @@ export default function App() {
       setPwCurrent("");
       setPwChangeNew("");
       setPwChangeNew2("");
-      setPwChangeMsg("? Mot de passe cloud mis a jour.");
+      setPwChangeMsg("Mot de passe cloud mis a jour.");
       return;
     }
     if (!crypto?.subtle) return setPwChangeMsg("Ton navigateur ne supporte pas crypto.subtle.");
@@ -2730,7 +2730,7 @@ export default function App() {
     setPwCurrent("");
     setPwChangeNew("");
     setPwChangeNew2("");
-    setPwChangeMsg("? Mot de passe mis a jour.");
+    setPwChangeMsg("Mot de passe mis a jour.");
   }
 
   /* ------------------------ Apply login reward after login ------------------------ */
@@ -2870,7 +2870,7 @@ export default function App() {
                         onChange={(e) => setPwTargetPseudo(e.target.value)}
                       />
 
-                      {pwMsg && <div className={pwMsg.startsWith("?") ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
+                      {pwMsg && <div className={/envoye|reinitialis/i.test(pwMsg) ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
 
                       <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
                         Envoyer email de reset
@@ -2915,7 +2915,7 @@ export default function App() {
                         onChange={(e) => setPwNew2(e.target.value)}
                       />
 
-                      {pwMsg && <div className={pwMsg.startsWith("?") ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
+                      {pwMsg && <div className={/envoye|reinitialis/i.test(pwMsg) ? "authMsg authMsgOk" : "authMsg"}>{pwMsg}</div>}
 
                       <button className="btn btnPrimary smooth hover-lift press" onClick={resetPasswordWithRecovery}>
                         Reinitialiser
@@ -3196,9 +3196,6 @@ export default function App() {
       {loginRewardPop && (
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
-            <div className="levelBadge" aria-hidden="true">
-              Gift
-            </div>
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">Connexion quotidienne</div>
               <div className="levelPopSub">
@@ -3218,9 +3215,6 @@ export default function App() {
       {levelPop && (
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
-            <div className="levelBadge" aria-hidden="true">
-              Lv
-            </div>
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">LEVEL UP !</div>
               <div className="levelPopSub">
@@ -3244,9 +3238,6 @@ export default function App() {
       {coachPop && (
         <div className="coachPop" role="status" aria-live="polite">
           <div className="coachPopInner smooth">
-            <div className="coachBadge" aria-hidden="true">
-              Coach
-            </div>
             <div style={{ flex: 1 }}>
               <div className="coachPopTitle">{coachPop.title}</div>
               <div className="coachPopSub" style={{ marginTop: 6 }}>
@@ -3315,9 +3306,7 @@ export default function App() {
       {badgePop && (
         <div className="badgePop">
           <div className="badgePopInner smooth">
-            <div className="badgeIcon" style={{ background: "rgba(0,0,0,.22)" }}>
-              {badgePop.icon}
-            </div>
+            {badgePop.icon ? <div className="badgeIcon" style={{ background: "rgba(0,0,0,.22)" }}>{badgePop.icon}</div> : null}
             <div style={{ flex: 1 }}>
               <div className="badgePopTitle">{badgePop.title}</div>
               <div className="badgePopSub">{badgePop.desc}</div>
@@ -3338,19 +3327,13 @@ export default function App() {
             <div className="chestBurst" aria-hidden="true" />
             {chestPop.phase === "rolling" ? (
               <>
-                <div className="chestIconBig chestRolling" aria-hidden="true">
-                  {chestPop.reel?.map((t, i) => (
-                    <span key={`${t}-${i}`}>{CHEST_TYPES[t]?.icon ?? "Gift"}</span>
-                  ))}
-                </div>
+                <div className="chestIconBig chestRolling" aria-hidden="true" />
                 <div className="chestPopTitle">Ouverture...</div>
                 <div className="chestPopSub">Le coffre tourne avant la revelation.</div>
               </>
             ) : (
               <>
-                <div className="chestIconBig" aria-hidden="true">
-                  {chestPop.chestIcon}
-                </div>
+                {chestPop.chestIcon ? <div className="chestIconBig" aria-hidden="true">{chestPop.chestIcon}</div> : null}
                 <div className="chestPopTitle">{chestPop.chestLabel}</div>
                 <div className="chestRewardsList">
                   {(chestPop.rewards ?? []).map((item, idx) => (
@@ -3370,10 +3353,10 @@ export default function App() {
                         }
                       >
                         {item.visual.preview?.type === "emoji" ? item.visual.preview?.value : null}
-                        {item.visual.preview?.type === "effect" ? "FX" : null}
-                        {item.visual.preview?.type === "coin" ? "??" : null}
-                        {item.visual.preview?.type === "dust" ? "??" : null}
-                        {item.visual.preview?.type === "bolt" ? "?" : null}
+                        {item.visual.preview?.type === "effect" ? "" : null}
+                        {item.visual.preview?.type === "coin" ? "" : null}
+                        {item.visual.preview?.type === "dust" ? "" : null}
+                        {item.visual.preview?.type === "bolt" ? "" : null}
                         {item.visual.preview?.type === "gift" ? item.visual.icon : null}
                       </span>
                       <div style={{ flex: 1 }}>
@@ -3508,7 +3491,7 @@ export default function App() {
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
               <strong>
-                {currentWorld.icon} {currentWorld.name}
+                {currentWorld.name}
               </strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>Niveau {worldLevel}/30</b>
@@ -3611,7 +3594,7 @@ export default function App() {
                       className="btn btnPrimary smooth hover-lift press"
                       onClick={() => setScreen("rush")}
                     >
-                      ? Rush 60s
+                      Rush 60s
                     </button>
                   ) : (
                     <button className="btn smooth hover-lift press" onClick={() => setRushOn(false)}>
@@ -3631,7 +3614,7 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Ligue saisonniere</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                {leagueTier.icon} <b>{leagueTier.label}</b> | Points: <b>{league?.points ?? 0}</b> | Fin de saison: <b>{seasonDaysLeft}j</b>
+                <b>{leagueTier.label}</b> | Points: <b>{league?.points ?? 0}</b> | Fin de saison: <b>{seasonDaysLeft}j</b>
               </div>
               {isPremium ? (
                 <div className="small" style={{ marginTop: 6 }}>
@@ -3694,8 +3677,7 @@ export default function App() {
                 Progression: <b>{chestProgress}/15</b> bonnes réponses | Coffres prêts: <b>{chestPending}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                {CHEST_TYPES.common.icon} {chestTypeCounts.common} | {CHEST_TYPES.rare.icon} {chestTypeCounts.rare} | {CHEST_TYPES.epic.icon} {chestTypeCounts.epic} |{" "}
-                {CHEST_TYPES.legendary.icon} {chestTypeCounts.legendary}
+                Commun {chestTypeCounts.common} | Rare {chestTypeCounts.rare} | Epique {chestTypeCounts.epic} | Legendaire {chestTypeCounts.legendary}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Bonus XP x2: <b>{xpBoostActive ? `actif (${xpBoostMinutesLeft} min)` : "inactif"}</b>
@@ -3831,7 +3813,7 @@ export default function App() {
               </div>
               {bossActive && (
                 <div className="small" style={{ marginTop: 6 }}>
-                  Boss actuel: <b>{bossProfile?.emoji} {bossProfile?.name}</b>
+                  Boss actuel: <b>{bossProfile?.name}</b>
                 </div>
               )}
               {bossActive && (
@@ -3932,7 +3914,7 @@ export default function App() {
                 Connecte-toi 7 jours d'affilée pour maximiser les récompenses. Récompense donnée automatiquement au 1er lancement du jour.
               </div>
             </div>
-            <span className="pill">?? aleatoire</span>
+            <span className="pill">aleatoire</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -4048,7 +4030,6 @@ export default function App() {
             navigateMobile("home");
           }}
         >
-          <span className="mobileDockIcon">??</span>
           <span>Accueil</span>
         </button>
         <button
@@ -4057,11 +4038,9 @@ export default function App() {
             navigateMobile("classic-play");
           }}
         >
-          <span className="mobileDockIcon">??</span>
           <span>Jouer</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={openArenaScreen}>
-          <span className="mobileDockIcon">???</span>
           <span>Arena</span>
         </button>
         <button
@@ -4070,25 +4049,28 @@ export default function App() {
             navigateMobile("rush");
           }}
         >
-          <span className="mobileDockIcon">?</span>
           <span>Rush</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={openShopPanel}>
-          <span className="mobileDockIcon">???</span>
           <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={openProfilePanel}>
-          <span className="mobileDockIcon">??</span>
           <span>Profil</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
-          <span className="mobileDockIcon">??</span>
           <span>Réglages</span>
         </button>
       </div>
     </div>
   );
 }
+
+
+
+
+
+
+
 
 
 
