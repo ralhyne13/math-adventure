@@ -1,4 +1,4 @@
-import Fraction from "./Fraction";
+﻿import Fraction from "./Fraction";
 
 export default function QuestionCard({
   status,
@@ -119,7 +119,7 @@ export default function QuestionCard({
           </button>
           <span className="pill">Adaptatif: {adaptiveOn ? "ON" : "OFF"}</span>
           <span className="pill">Niveau monde: {worldLevel}/30</span>
-          {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final pret</span> : null}
+          {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final prêt</span> : null}
         </div>
       ) : (
         <div className="questionCompactTop">
@@ -133,9 +133,9 @@ export default function QuestionCard({
         <div className="bar" style={{ width: `${xpPct}%` }} />
       </div>
 
-      <div className={`miniHistoryWrap ${compact ? "miniHistoryCompact" : ""}`} aria-label="historique des 10 dernieres reponses">
+      <div className={`miniHistoryWrap ${compact ? "miniHistoryCompact" : ""}`} aria-label="historique des 10 dernières réponses">
         <div className="miniHistoryLabel">
-          10 dernieres : <span className="miniHistoryCount">{sessionAnswered}/10</span>
+          10 dernières : <span className="miniHistoryCount">{sessionAnswered}/10</span>
         </div>
         <div className="miniHistory">
           {[...Array(10)].map((_, i) => {
@@ -183,7 +183,7 @@ export default function QuestionCard({
         {bossActive && (
           <>
             <div className={`bossPanel ${bossPhaseClass} ${bossHitFx ? "hit" : ""} ${bossAttackFx ? "attack" : ""}`}>
-              <div className="bossAvatar" aria-hidden="true">{bossProfile?.emoji ?? "BOSS"}</div>
+              <div className="bossAvatar" aria-hidden="true">{bossProfile?.emoji ?? "👑"}</div>
               <div style={{ flex: 1 }}>
                 <div className="small" style={{ color: "rgba(234,240,255,.92)" }}>
                   Boss Arena
@@ -216,7 +216,7 @@ export default function QuestionCard({
           {q.row.kind === "fracEq" && (
             <>
               <Fraction n={q.row.aN} d={q.row.aD} />
-              <div className="bigOp opSep">≡</div>
+              <div className="bigOp opSep">â‰¡</div>
               <Fraction n={q.row.bN} d={q.row.bD} />
             </>
           )}
@@ -321,3 +321,5 @@ export default function QuestionCard({
     </div>
   );
 }
+
+

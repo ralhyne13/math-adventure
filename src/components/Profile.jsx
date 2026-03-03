@@ -1,4 +1,4 @@
-import Modal from "./Modal";
+﻿import Modal from "./Modal";
 import { formatDateFR } from "../hooks/useAchievements";
 
 export default function Profile({
@@ -55,7 +55,7 @@ export default function Profile({
           <span>{coins} pieces</span>
         </div>
         <div className="chip smooth">
-          <span className="chipIcon">🧩</span>
+          <span className="chipIcon">ðŸ§©</span>
           <span>{cosmeticDust} diamants</span>
         </div>
       </div>
@@ -131,7 +131,7 @@ export default function Profile({
               const dateIso = achievements?.[a.id]?.date;
               return (
                 <div key={a.id} className={`badgeCard smooth hover-lift ${unlocked ? "" : "badgeLocked"}`}>
-                  <div className="badgeIcon">{unlocked ? a.icon : "🔒"}</div>
+                  <div className="badgeIcon">{unlocked ? a.icon : "ðŸ”’"}</div>
                   <div style={{ flex: 1 }}>
                     <div className="badgeTitle">{unlocked ? a.title : "Badge verrouille"}</div>
                     <div className="badgeDesc">{unlocked ? a.desc : "Continue a jouer pour le debloquer."}</div>
@@ -170,7 +170,7 @@ export default function Profile({
                   <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
                   <div className="shopTitle">{owned ? s.name : "Skin verrouille"}</div>
                   <div className="small" style={{ marginTop: 6 }}>{owned ? s.desc : `Prix boutique: ${s.price} pieces`}</div>
-                  {equipped && <div className="badgeMeta"><span className="badgeProgress">Equipe</span></div>}
+                  {equipped && <div className="badgeMeta"><span className="badgeProgress">Équipé</span></div>}
                 </div>
               );
             })}
@@ -183,10 +183,10 @@ export default function Profile({
               const equipped = avatarId === a.id;
               return (
                 <div key={a.id} className={`shopCard ${owned ? "" : "badgeLocked"}`}>
-                  <div className="avatarBig">{owned ? a.emoji : "🔒"}</div>
+                  <div className="avatarBig">{owned ? a.emoji : "ðŸ”’"}</div>
                   <div className="shopTitle">{owned ? a.name : "Avatar verrouille"}</div>
                   <div className="small" style={{ marginTop: 6 }}>{owned ? a.rarity : `Prix boutique: ${a.price} pieces`}</div>
-                  {equipped && <div className="badgeMeta"><span className="badgeProgress">Equipe</span></div>}
+                  {equipped && <div className="badgeMeta"><span className="badgeProgress">Équipé</span></div>}
                 </div>
               );
             })}
@@ -200,11 +200,11 @@ export default function Profile({
               const cost = fx.dustCost ?? 0;
               return (
                 <div key={fx.id} className={`shopCard ${owned ? "" : "badgeLocked"}`}>
-                  <div className="badgeIcon">{fx.id === "default" ? "✨" : "💥"}</div>
+                  <div className="badgeIcon">{fx.id === "default" ? "âœ¨" : "ðŸ’¥"}</div>
                   <div className="shopTitle">{owned ? fx.label : "Effet verrouille"}</div>
                   <div className="small" style={{ marginTop: 6 }}>{owned ? fx.desc : `Deblocage: ${cost} diamants`}</div>
                   <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {equipped && <span className="badgeProgress">Equipe</span>}
+                    {equipped && <span className="badgeProgress">Équipé</span>}
                     {!owned && fx.id !== "default" && (
                       <button className="btn btnPrimary smooth hover-lift press" onClick={() => unlockEffectWithDust(fx.id)} disabled={cosmeticDust < cost}>
                         Debloquer
@@ -220,3 +220,4 @@ export default function Profile({
     </Modal>
   );
 }
+

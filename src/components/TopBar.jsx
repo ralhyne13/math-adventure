@@ -1,4 +1,4 @@
-import { ACHIEVEMENTS } from "../config/gameData";
+﻿import { ACHIEVEMENTS } from "../config/gameData";
 
 export default function TopBar({
   avatar,
@@ -33,14 +33,14 @@ export default function TopBar({
         </div>
 
         <div className="topbarCompactRight">
-          <div className="mobileStatPill">P {coins}</div>
+          <div className="mobileStatPill">🪙 {coins}</div>
           <div className="mobileStatPill">Lv {level}</div>
           {canInstallApp && (
             <button className="btn btnPrimary smooth hover-lift press topbarCompactBtn" onClick={onInstallApp} aria-label="Installer l'app">
               App
             </button>
           )}
-          <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Reglages">
+          <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Réglages">
             Reg
           </button>
         </div>
@@ -57,7 +57,7 @@ export default function TopBar({
             Math Royale <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
           </div>
           <div className="sub">
-            Connecte : <b>{authUser.pseudoDisplay}</b> | Streak login : <b>{loginStreak}/7</b>
+            Connecté : <b>{authUser.pseudoDisplay}</b> | Streak login : <b>{loginStreak}/7</b>
           </div>
           <div className="rankTag">
             {profileRank.icon} {profileRank.label}
@@ -101,7 +101,7 @@ export default function TopBar({
             </button>
           )}
           <button className="btn smooth hover-lift press" onClick={onOpenSettings}>
-            Reglages
+            Réglages
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenProfile}>
             Profil
@@ -109,7 +109,7 @@ export default function TopBar({
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenShop}>
             Boutique
           </button>
-          <button className="btn smooth hover-lift press" onClick={onLogout} title="Se deconnecter">
+          <button className="btn smooth hover-lift press" onClick={onLogout} title="Se déconnecter">
             Deconnexion
           </button>
         </div>
@@ -117,3 +117,5 @@ export default function TopBar({
     </div>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import Modal from "./Modal";
+﻿import Modal from "./Modal";
 
 export default function Settings({
   show,
@@ -31,7 +31,7 @@ export default function Settings({
   if (!show) return null;
 
   return (
-    <Modal title="Reglages" onClose={onClose} presentation={presentation}>
+    <Modal title="Réglages" onClose={onClose} presentation={presentation}>
       <div className="shopCard">
         <div style={{ fontWeight: 1100, marginBottom: 8 }}>Audio & vibrations</div>
         <div style={{ display: "grid", gap: 10 }}>
@@ -116,7 +116,7 @@ export default function Settings({
             value={pwChangeNew2}
             onChange={(e) => setPwChangeNew2(e.target.value)}
           />
-          {pwChangeMsg && <div className={pwChangeMsg.startsWith("OK") || pwChangeMsg.startsWith("✅") ? "authMsg authMsgOk" : "authMsg"}>{pwChangeMsg}</div>}
+          {pwChangeMsg && <div className={pwChangeMsg.startsWith("OK") || pwChangeMsg.startsWith("âœ…") ? "authMsg authMsgOk" : "authMsg"}>{pwChangeMsg}</div>}
           <button className="btn btnPrimary smooth hover-lift press" onClick={changePasswordLoggedIn}>
             Mettre a jour
           </button>
@@ -125,3 +125,4 @@ export default function Settings({
     </Modal>
   );
 }
+

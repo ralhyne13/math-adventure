@@ -1,4 +1,4 @@
-export default function MobileHomeScreen({
+﻿export default function MobileHomeScreen({
   avatar,
   authUser,
   profileRank,
@@ -40,16 +40,16 @@ export default function MobileHomeScreen({
               <div className="small">
                 <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
               </div>
-              <div className="small">Streak login: {loginStreak}/7</div>
+              <div className="small">🔥 Streak login: {loginStreak}/7</div>
             </div>
           </div>
           <button className="btn smooth hover-lift press" onClick={onOpenSettings}>
-            Reglages
+            Réglages
           </button>
         </div>
 
         <div className="mobileQuickStats">
-          <div className="mobileStatPill">P {coins} pieces</div>
+          <div className="mobileStatPill">🪙 {coins} pieces</div>
           <div className="mobileStatPill">Lv {level}</div>
           <div className="mobileStatPill">XP {xp}</div>
           <div className="mobileStatPill">Combo {streak}</div>
@@ -58,19 +58,19 @@ export default function MobileHomeScreen({
 
         <div className="mobileActionRow">
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenPlay}>
-            Jouer
+            ▶️ Jouer
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenArena}>
-            Mode Arena
+            🏟️ Mode Arena
           </button>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
-            Rush 60s
+            ⚡ Rush 60s
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenShop}>
-            Boutique
+            🛍️ Boutique
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenProfile}>
-            Profil
+            👤 Profil
           </button>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function MobileHomeScreen({
         <div className="card smooth mobileInstallBanner">
           <div>
             <div className="cardTitle">
-              <span>Installer l'app</span>
+              <span>Installer l’app</span>
               <span className="pill">mobile</span>
             </div>
             <div className="small" style={{ marginTop: 8 }}>
@@ -101,13 +101,13 @@ export default function MobileHomeScreen({
           <span className="pill">Niv. {worldLevel}/30</span>
         </div>
         <div className="small" style={{ marginTop: 8 }}>
-          Boss final: <b>{worldBossDone ? "Vaincu" : worldBossReady ? "Pret" : "En progression"}</b>
+          Boss final: <b>{worldBossDone ? "Vaincu" : worldBossReady ? "Prêt" : "En progression"}</b>
         </div>
       </div>
 
       <div className="card smooth">
         <div className="cardTitle">
-          <span>Defi du jour</span>
+          <span>Défi du jour</span>
           <span className="pill">+{dailyChallenge?.rewardXp ?? 0} XP</span>
         </div>
         <div className="small" style={{ marginTop: 8 }}>{dailyChallenge?.desc}</div>
@@ -121,7 +121,7 @@ export default function MobileHomeScreen({
 
       <div className="card smooth">
         <div className="cardTitle">
-          <span>Recompenses</span>
+          <span>Récompenses</span>
           <span className="pill">{chestPending} coffre(s)</span>
         </div>
         <div className="small" style={{ marginTop: 8 }}>
@@ -132,10 +132,13 @@ export default function MobileHomeScreen({
             Ouvrir coffre
           </button>
           <button className="btn smooth hover-lift press" onClick={onStartStudy5}>
-            Defi 5 min
+            Défi 5 min
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+
+

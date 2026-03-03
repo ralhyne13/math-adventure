@@ -1,4 +1,4 @@
-// App.jsx
+﻿// App.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 import { clamp, randInt } from "./utils/math";
@@ -93,10 +93,10 @@ function rewardRoll(streakDay, ownedAvatars) {
 }
 
 const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "BR", min: 0 },
-  { id: "silver", name: "Argent", icon: "AR", min: 1200 },
-  { id: "gold", name: "Or", icon: "OR", min: 2600 },
-  { id: "diamond", name: "Diamant", icon: "DI", min: 4200 },
+  { id: "bronze", name: "Bronze", icon: "🥉", min: 0 },
+  { id: "silver", name: "Argent", icon: "🥈", min: 1200 },
+  { id: "gold", name: "Or", icon: "🥇", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "💎", min: 4200 },
 ];
 
 function leagueFromScore(score) {
@@ -152,9 +152,9 @@ function buildRushLeaderboard(prev, entry) {
 
 const CHEST_TYPES = {
   common: { id: "common", label: "Coffre commun", icon: "??" },
-  rare: { id: "rare", label: "Coffre rare", icon: "??" },
-  epic: { id: "epic", label: "Coffre epique", icon: "?" },
-  legendary: { id: "legendary", label: "Coffre legendaire", icon: "??" },
+  rare: { id: "rare", label: "Coffre rare", icon: "🌟" },
+  epic: { id: "epic", label: "Coffre épique", icon: "✨" },
+  legendary: { id: "legendary", label: "Coffre légendaire", icon: "👑" },
 };
 
 const ANSWER_EFFECTS = [
@@ -344,45 +344,45 @@ function speedBonus(rtMs) {
 
 function rewardVisualMeta(reward, chestType) {
   if (reward.kind === "dust") {
-    return { icon: "DM", label: `${reward.dust} diamants cosmetiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
+    return { icon: "💎", label: `${reward.dust} diamants cosmétiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
   }
   if (reward.kind === "coins") {
-    return { icon: "PC", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
+    return { icon: "🪙", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
   }
   if (reward.kind === "avatar") {
     const avatar = AVATARS.find((a) => a.id === reward.avatarId);
     return {
-      icon: avatar?.emoji ?? "AV",
+      icon: avatar?.emoji ?? "👤",
       label: reward.text,
       tone: "rare",
       rarity: avatar?.rarity ?? "Rare",
-      preview: { type: "emoji", value: avatar?.emoji ?? "AV" },
+      preview: { type: "emoji", value: avatar?.emoji ?? "👤" },
     };
   }
   if (reward.kind === "skin") {
     const skin = SKINS.find((s) => s.id === reward.skinId);
     return {
-      icon: "SK",
+      icon: "🎨",
       label: reward.text,
       tone: "epic",
-      rarity: skin?.price > 170 ? "Legendaire" : "Epique",
+      rarity: skin?.price > 170 ? "Légendaire" : "Épique",
       preview: { type: "skin", accent: skin?.vars?.["--accent"], accent2: skin?.vars?.["--accent2"] },
     };
   }
   if (reward.kind === "xpBoost") {
-    return { icon: "XP", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
+    return { icon: "⚡", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
   }
   if (reward.kind === "effect") {
     const fx = ANSWER_EFFECTS.find((e) => e.id === reward.effectId);
     return {
-      icon: "FX",
+      icon: "✨",
       label: reward.text,
       tone: "legendary",
-      rarity: "Legendaire",
+      rarity: "Légendaire",
       preview: { type: "effect", value: fx?.label ?? "Effet" },
     };
   }
-  return { icon: "GF", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
+  return { icon: "🎁", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
 }
 
 function dustForDuplicate(kind) {
@@ -393,21 +393,21 @@ function dustForDuplicate(kind) {
 }
 
 const ARENA_BOSSES = [
-  { id: "hydra", name: "Hydre des Tables", emoji: "HY" },
-  { id: "golem", name: "Golem du Calcul", emoji: "GO" },
-  { id: "phantom", name: "Fantome des Fractions", emoji: "PH" },
-  { id: "titan", name: "Titan Algebra", emoji: "TI" },
+  { id: "hydra", name: "Hydre des Tables", emoji: "🐉" },
+  { id: "golem", name: "Golem du Calcul", emoji: "🪨" },
+  { id: "phantom", name: "Fantome des Fractions", emoji: "👻" },
+  { id: "titan", name: "Titan Algebra", emoji: "🗿" },
 ];
 
 function evolvedOwlForLevel(level) {
-  if (level >= 30) return { emoji: "OWL4", name: "Hibou legendaire" };
-  if (level >= 20) return { emoji: "OWL3", name: "Hibou dore" };
-  if (level >= 10) return { emoji: "OWL2", name: "Hibou armure" };
-  return { emoji: "OWL1", name: "Petit hibou" };
+  if (level >= 30) return { emoji: "👑", name: "Hibou légendaire" };
+  if (level >= 20) return { emoji: "🥇", name: "Hibou dore" };
+  if (level >= 10) return { emoji: "🛡️", name: "Hibou armure" };
+  return { emoji: "🦉", name: "Petit hibou" };
 }
 
 function displayAvatarByLevel(baseAvatar, avatarId, level) {
-  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "??" };
+  if (!baseAvatar) return { id: "owl", name: "Petit hibou", emoji: "🦉" };
   if (avatarId !== "owl") return baseAvatar;
   const evo = evolvedOwlForLevel(level);
   return { ...baseAvatar, ...evo };
@@ -1051,7 +1051,7 @@ export default function App() {
             setAdSurvivalLives((n) => Math.max(0, n - 1));
             showCoachPopup({
               title: "Vie de survie utilisee",
-              lines: ["Defi 5 minutes prolonge de 30 secondes."],
+              lines: ["Défi 5 minutes prolongé de 30 secondes."],
               hint: "La reserve de survie est consommee automatiquement.",
             });
             playBeep("ok", audioOn);
@@ -1375,8 +1375,8 @@ export default function App() {
   function startStudy5() {
     if (rushOn) {
       showCoachPopup({
-        title: "Defi 5 minutes",
-        lines: ["Arrete le mode Rush avant de lancer le defi 5 minutes."],
+        title: "Défi 5 minutes",
+        lines: ["Arrête le mode Rush avant de lancer le défi 5 minutes."],
         hint: "Un seul mode minuteur a la fois.",
       });
       return;
@@ -1400,7 +1400,7 @@ export default function App() {
     setWorldBossRemaining(0);
     newQuestion(true);
     showCoachPopup({
-      title: "Defi 5 minutes lance",
+      title: "Défi 5 minutes lancé",
       lines: ["Objectif: faire 5 minutes de maths.", "Reponds au plus de questions possible."],
       hint: "Un resume parent sera genere en fin de session.",
     });
@@ -1426,7 +1426,7 @@ export default function App() {
     };
     setStudy5LastSummary(summary);
     showCoachPopup({
-      title: "Defi 5 minutes termine",
+      title: "Défi 5 minutes terminé",
       lines: [`Questions: ${summary.answered}`, `Reussite: ${summary.accuracy}%`, `Meilleur combo: ${summary.bestStreak}`],
       hint: "Tu peux partager ce resume au parent.",
     });
@@ -1444,7 +1444,7 @@ export default function App() {
     if (!study5LastSummary) return;
     const t = study5LastSummary;
     const text = [
-      "Resume parent - Defi 5 minutes",
+      "Résumé parent - Défi 5 minutes",
       `Date: ${new Date(t.endedAt).toLocaleString("fr-FR")}`,
       `Duree: ${t.durationSec}s`,
       `Questions: ${t.answered}`,
@@ -1616,7 +1616,7 @@ export default function App() {
     showBadgePopup({
       icon: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.icon ?? "??" : "??",
       title: headline,
-      desc: openCount === 1 ? opened[0]?.reward?.text : `${openCount} recompenses revelees`,
+      desc: openCount === 1 ? opened[0]?.reward?.text : `${openCount} récompenses révélées`,
       reward: 0,
     });
 
@@ -1670,7 +1670,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: ["Prochaine bonne reponse: pieces + XP x2 actives."],
-          hint: "Aucune pub forcee.",
+          hint: "Aucune pub forcée.",
         });
         logAdEvent("double_reward");
       },
@@ -1691,7 +1691,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: [`${CHEST_TYPES[t]?.label ?? "Coffre"} ajoute instantanement.`],
-          hint: "Aucune pub forcee.",
+          hint: "Aucune pub forcée.",
         });
         logAdEvent("instant_chest", { chestType: t });
       },
@@ -1711,7 +1711,7 @@ export default function App() {
         showCoachPopup({
           title: "Pub optionnelle",
           lines: ["1 vie de survie stockee."],
-          hint: "Elle sera consommee si un chrono Rush ou Defi 5 minutes tombe a 0.",
+          hint: "Elle sera consommée si un chrono Rush ou Défi 5 minutes tombe à 0.",
         });
         logAdEvent("survival_life");
       },
@@ -1729,7 +1729,7 @@ export default function App() {
     showCoachPopup({
       title: "Premium active",
       lines: [plan === "lifetime" ? "Plan Lifetime active" : "Plan Mensuel actif"],
-      hint: "Skins/avatars premium + Rush illimite + stats avancees.",
+      hint: "Skins/avatars premium + Rush illimité + stats avancées.",
     });
     if (cloudEnabled) {
       cloudLogEvent({
@@ -1999,7 +1999,7 @@ export default function App() {
           showCoachPopup({
             title: `${currentWorld.icon} ${currentWorld.name}`,
             lines: [`Niveau ${nextLevel}/${WORLD_LEVEL_MAX}`],
-            hint: nextLevel >= WORLD_LEVEL_MAX ? "Boss final pret a lancer." : "Continue l'aventure.",
+            hint: nextLevel >= WORLD_LEVEL_MAX ? "Boss final prêt à lancer." : "Continue l'aventure.",
           });
         }
         base[currentWorld.id] = { ...cur, level: nextLevel, progress: nextProgress };
@@ -2298,7 +2298,7 @@ export default function App() {
     awardXp(ch.rewardXp);
     showBadgePopup({
       icon: ch.icon ?? "??",
-      title: `Defi ${isDaily ? "journalier" : "hebdo"} complete`,
+      title: `Défi ${isDaily ? "journalier" : "hebdo"} complété`,
       desc: `${ch.title} | +${ch.rewardCoins} pieces | +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
     });
@@ -2319,7 +2319,7 @@ export default function App() {
     setCollegeArena({ ...arena, claimed: true });
     showBadgePopup({
       icon: "??",
-      title: "Defi college complete",
+      title: "Défi collège complété",
       desc: "12 bonnes reponses en difficile | +90 pieces | +120 XP",
       reward: 90,
     });
@@ -2678,7 +2678,7 @@ export default function App() {
     setPwRecovery("");
     setPwNew("");
     setPwNew2("");
-    setPwMsg("? Mot de passe reinitialise. Tu peux te connecter.");
+    setPwMsg("✅ Mot de passe réinitialisé. Tu peux te connecter.");
     setAuthMode("login");
     setPwMode("none");
   }
@@ -3515,7 +3515,7 @@ export default function App() {
                 {!worldBossDone && worldLevel < 30 ? ` | ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Pret" : "Verrouille"}</b>
+                Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Prêt" : "Verrouillé"}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Badge special: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non debloque"}</b>
@@ -3531,7 +3531,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Defi 5 minutes</strong>
+              <strong>Défi 5 minutes</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Temps: <b>{formatClock(study5TimeLeft)}</b> | Questions: <b>{study5Answered}</b> | Precision: <b>{study5Accuracy}%</b>
               </div>
@@ -3541,11 +3541,11 @@ export default function App() {
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {!study5On ? (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={startStudy5}>
-                    Lancer Defi 5 min
+                    Lancer Défi 5 min
                   </button>
                 ) : (
                   <button className="btn smooth hover-lift press" onClick={() => setStudy5On(false)}>
-                    Arreter Defi 5 min
+                    Arrêter Défi 5 min
                   </button>
                 )}
                 <button className="btn smooth hover-lift press" onClick={copyStudy5Summary} disabled={!study5LastSummary}>
@@ -3638,7 +3638,7 @@ export default function App() {
                   Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> | Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> | Best streak: <b>{league?.bestStreak ?? 0}</b>
                 </div>
               ) : (
-                <div className="small" style={{ marginTop: 6 }}>Stats avancees reservees Premium.</div>
+                <div className="small" style={{ marginTop: 6 }}>Stats avancées réservées Premium.</div>
               )}
             </div>
           </div>
@@ -3661,7 +3661,7 @@ export default function App() {
           {isCollegeNow && (
             <div className="toast" style={{ marginTop: 12 }}>
               <div style={{ width: "100%" }}>
-                <strong>Defi college du jour</strong>
+                <strong>Défi collège du jour</strong>
                 <div className="small" style={{ marginTop: 6 }}>
                   Objectif: <b>{collegeArenaTarget}</b> bonnes reponses en difficulte <b>difficile</b>.
                 </div>
@@ -3679,11 +3679,11 @@ export default function App() {
                     disabled={!collegeArenaDone || !!collegeArenaToday.claimed}
                     onClick={claimCollegeArenaReward}
                   >
-                    {collegeArenaToday.claimed ? "Recompense recue" : "Recuperer"}
+                    {collegeArenaToday.claimed ? "Récompense reçue" : "Recuperer"}
                   </button>
                 </div>
               </div>
-              <span className="pill">Defis</span>
+              <span className="pill">Défis</span>
             </div>
           )}
 
@@ -3691,7 +3691,7 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Coffres</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>{chestProgress}/15</b> bonnes reponses | Coffres prets: <b>{chestPending}</b>
+                Progression: <b>{chestProgress}/15</b> bonnes réponses | Coffres prêts: <b>{chestPending}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 {CHEST_TYPES.common.icon} {chestTypeCounts.common} | {CHEST_TYPES.rare.icon} {chestTypeCounts.rare} | {CHEST_TYPES.epic.icon} {chestTypeCounts.epic} |{" "}
@@ -3723,9 +3723,9 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Effets cosmetiques</strong>
+              <strong>Effets cosmétiques</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Effet equipe: <b>{ANSWER_EFFECTS.find((e) => e.id === answerEffectId)?.label ?? "Classique"}</b>
+                Effet équipé: <b>{ANSWER_EFFECTS.find((e) => e.id === answerEffectId)?.label ?? "Classique"}</b>
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {ANSWER_EFFECTS.filter((e) => ownedEffects.includes(e.id)).map((e) => (
@@ -3748,10 +3748,10 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Premium</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprimees" : "Pubs optionnelles actives"}
+                Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprimées" : "Pubs optionnelles actives"}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Premium: skins/avatars exclusifs, Rush illimite, stats avancees, themes speciaux.
+                Premium: skins/avatars exclusifs, Rush illimite, stats avancées, thèmes spéciaux.
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className="btn btnPrimary smooth hover-lift press" onClick={() => activatePremium("monthly")}>
@@ -3772,7 +3772,7 @@ export default function App() {
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
               <strong>Publicite intelligente (optionnelle)</strong>
-              <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcee apres une question.</div>
+              <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcée après une question.</div>
               <div className="small" style={{ marginTop: 6 }}>
                 {isPremium
                   ? "Premium: pas de quota journalier, mais cooldown conserve pour equilibrer."
@@ -3801,7 +3801,7 @@ export default function App() {
                   onClick={watchAdDoubleReward}
                   disabled={adLocked || (!isPremium && (adUsageToday.double_reward ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0))}
                 >
-                  Pub: doubler recompense
+                  Pub: doubler récompense
                 </button>
                 <button
                   className="btn smooth hover-lift press"
@@ -3866,14 +3866,14 @@ export default function App() {
                 })}
               </div>
               <div className="small" style={{ marginTop: 8 }}>
-                Jours joues : <b>{playedDays}/{activitySpan}</b> | Streak visuel : <b>{visualStreak}</b>
+                Jours joués : <b>{playedDays}/{activitySpan}</b> | Streak visuel : <b>{visualStreak}</b>
               </div>
             </div>
           </div>
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div style={{ width: "100%" }}>
-              <strong>Defi journalier</strong>
+              <strong>Défi journalier</strong>
               <div className="sub" style={{ marginTop: 6 }}>{dailyChallenge?.desc}</div>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>{Math.min(dailyProgress, dailyChallenge?.target ?? 0)}</b> / <b>{dailyChallenge?.target ?? 0}</b>
@@ -3892,7 +3892,7 @@ export default function App() {
                   disabled={!isDailyDone || !!challengeProgress?.claimedDaily}
                   onClick={() => claimChallenge("daily")}
                 >
-                  {challengeProgress?.claimedDaily ? "Recompense recue" : "Recuperer"}
+                  {challengeProgress?.claimedDaily ? "Récompense reçue" : "Recuperer"}
                 </button>
               </div>
             </div>
@@ -3900,7 +3900,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Defi hebdo</strong>
+              <strong>Défi hebdo</strong>
               <div className="sub" style={{ marginTop: 6 }}>{weeklyChallenge?.desc}</div>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>{Math.min(weeklyProgress, weeklyChallenge?.target ?? 0)}</b> / <b>{weeklyChallenge?.target ?? 0}</b>
@@ -3919,7 +3919,7 @@ export default function App() {
                   disabled={!isWeeklyDone || !!challengeProgress?.claimedWeekly}
                   onClick={() => claimChallenge("weekly")}
                 >
-                  {challengeProgress?.claimedWeekly ? "Recompense recue" : "Recuperer"}
+                  {challengeProgress?.claimedWeekly ? "Récompense reçue" : "Recuperer"}
                 </button>
               </div>
             </div>
@@ -3927,12 +3927,12 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div>
-              <strong>Recompense quotidienne</strong>
+              <strong>Récompense quotidienne</strong>
               <div className="sub" style={{ marginTop: 8 }}>
-                Connecte-toi 7 jours d'affilee pour maximiser les recompenses. Recompense donnee automatiquement au 1er lancement du jour.
+                Connecte-toi 7 jours d'affilée pour maximiser les récompenses. Récompense donnée automatiquement au 1er lancement du jour.
               </div>
             </div>
-            <span className="pill">aleatoire</span>
+            <span className="pill">🎲 aleatoire</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -4048,7 +4048,7 @@ export default function App() {
             navigateMobile("home");
           }}
         >
-          <span className="mobileDockIcon">HM</span>
+          <span className="mobileDockIcon">🏠</span>
           <span>Accueil</span>
         </button>
         <button
@@ -4057,11 +4057,11 @@ export default function App() {
             navigateMobile("classic-play");
           }}
         >
-          <span className="mobileDockIcon">PL</span>
+          <span className="mobileDockIcon">▶️</span>
           <span>Jouer</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={openArenaScreen}>
-          <span className="mobileDockIcon">AR</span>
+          <span className="mobileDockIcon">🏟️</span>
           <span>Arena</span>
         </button>
         <button
@@ -4070,24 +4070,27 @@ export default function App() {
             navigateMobile("rush");
           }}
         >
-          <span className="mobileDockIcon">RU</span>
+          <span className="mobileDockIcon">⚡</span>
           <span>Rush</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={openShopPanel}>
-          <span className="mobileDockIcon">SH</span>
+          <span className="mobileDockIcon">🛍️</span>
           <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={openProfilePanel}>
-          <span className="mobileDockIcon">PF</span>
+          <span className="mobileDockIcon">👤</span>
           <span>Profil</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
-          <span className="mobileDockIcon">RG</span>
-          <span>Reglages</span>
+          <span className="mobileDockIcon">⚙️</span>
+          <span>Réglages</span>
         </button>
       </div>
     </div>
   );
 }
+
+
+
 
 

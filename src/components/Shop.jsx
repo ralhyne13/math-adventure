@@ -1,4 +1,4 @@
-import Modal from "./Modal";
+﻿import Modal from "./Modal";
 
 export default function Shop({
   show,
@@ -54,7 +54,7 @@ export default function Shop({
                   <div className="shopRow">
                     <div className="shopLeft">
                       <div className="shopTitle">
-                        {s.name} {s.animated ? "✨" : ""}
+                        {s.name} {s.animated ? "âœ¨" : ""}
                       </div>
                       {s.premiumOnly && <div className="small">Premium requis</div>}
                       <div className="small">{s.desc}</div>
@@ -65,7 +65,7 @@ export default function Shop({
                       </span>
                       {owned ? (
                         <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipSkin(s.id)}>
-                          {equipped ? "Equipe" : "Equiper"}
+                          {equipped ? "Équipé" : "Équiper"}
                         </button>
                       ) : premiumLocked ? (
                         <button className="btn smooth" disabled>
@@ -89,7 +89,7 @@ export default function Shop({
       {shopTab === "avatars" && (
         <>
           <div className="small" style={{ marginBottom: 12 }}>
-            Achete et equipe un avatar.
+            Achète et équipe un avatar.
           </div>
 
           <div className="shopGrid">
@@ -119,7 +119,7 @@ export default function Shop({
 
                       {owned ? (
                         <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipAvatar(a.id)}>
-                          {equipped ? "Equipe" : "Equiper"}
+                          {equipped ? "Équipé" : "Équiper"}
                         </button>
                       ) : premiumLocked ? (
                         <button className="btn smooth" disabled>
@@ -143,3 +143,4 @@ export default function Shop({
     </Modal>
   );
 }
+

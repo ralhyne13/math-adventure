@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { clamp } from "../utils/math";
 import { playBeep } from "../utils/audio";
 import { DIFFS, GRADES, MODES, questionSignature } from "../questions";
@@ -72,9 +72,9 @@ function pickSkinReward(rarity, ownedSkins) {
 function pickAvatarReward(rarity, ownedAvatars) {
   const pool =
     rarity === "epic"
-      ? AVATARS.filter((a) => a.rarity === "�pique" || a.rarity === "Exclusif")
+      ? AVATARS.filter((a) => a.rarity === "Épique" || a.rarity === "Exclusif")
       : rarity === "rare"
-        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "�pique")
+        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Épique")
         : AVATARS.filter((a) => a.rarity === "Commun" || a.rarity === "Rare");
 
   const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
@@ -434,7 +434,7 @@ export default function RushScreen({
       {phase === "start" && (
         <div className="card smooth rushStartCard rushPhasePanel">
           <div className="cardTitle">
-            <span>Pret ?</span>
+            <span>Prêt ?</span>
             <span className="pill">Mode arcade</span>
           </div>
 
@@ -466,7 +466,7 @@ export default function RushScreen({
 
           <div className="toast" style={{ marginTop: 14 }}>
             <div>
-              <strong>Regles</strong>
+              <strong>Règles</strong>
               <div className="sub" style={{ marginTop: 8 }}>
                 Bonne reponse : +0.9s et points x multiplicateur
                 <br />
@@ -588,7 +588,7 @@ export default function RushScreen({
                 </b>
                 {leagueUp && (
                   <div className="small" style={{ marginTop: 6 }}>
-                    Promotion : {LEAGUES.find((l) => l.id === leagueUp.from)?.icon} {"=>"} {LEAGUES.find((l) => l.id === leagueUp.to)?.icon}
+                    Promotion : {LEAGUES.find((l) => l.id === leagueUp.from)?.icon} {"→"} {LEAGUES.find((l) => l.id === leagueUp.to)?.icon}
                   </div>
                 )}
               </div>
@@ -601,21 +601,21 @@ export default function RushScreen({
               <div className="chestTop">
                 <div>
                   <div style={{ fontWeight: 1100 }}>
-                    Coffre {chest.rarity === "epic" ? "Epique" : chest.rarity === "rare" ? "Rare" : "Commun"}
+                    Coffre {chest.rarity === "epic" ? "Épique" : chest.rarity === "rare" ? "Rare" : "Commun"}
                   </div>
                   <div className="small" style={{ marginTop: 6 }}>
-                    Ouvre pour recuperer ta recompense.
+                    Ouvre pour récupérer ta récompense.
                   </div>
                 </div>
-                <span className="pill">{chest.rarity === "epic" ? "EPIC" : chest.rarity === "rare" ? "RARE" : "COMMUN"}</span>
+                <span className="pill">{chest.rarity === "epic" ? "✨" : chest.rarity === "rare" ? "🌟" : "🎈"}</span>
               </div>
 
               <div className={`chestBox ${chestPhase}`} aria-live="polite">
-                <div className="chestEmoji">BOX</div>
+                <div className="chestEmoji">🧰</div>
                 {chestPhase === "opened" ? (
                   <div className="chestReward">
                     <div style={{ fontWeight: 1200 }}>{chest.label}</div>
-                    <div className="small" style={{ marginTop: 6 }}>Recompense ajoutee</div>
+                    <div className="small" style={{ marginTop: 6 }}>Récompense ajoutée ✅</div>
                   </div>
                 ) : (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={openChest} disabled={chestPhase !== "closed"}>
@@ -646,4 +646,6 @@ export default function RushScreen({
 
   return <div className="shell rushScreen">{body}</div>;
 }
+
+
 
