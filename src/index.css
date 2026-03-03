@@ -123,6 +123,21 @@ body.reduce-motion *{
   overflow: hidden;
   animation: pageSheetIn 340ms var(--ease-out) 1;
 }
+.pageSheetMobile{
+  position: relative;
+  isolation: isolate;
+}
+.pageSheetMobile::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto 0;
+  height: 96px;
+  background:
+    radial-gradient(circle at top right, rgba(92,242,204,.16), transparent 58%),
+    radial-gradient(circle at top left, rgba(91,124,250,.14), transparent 54%);
+  pointer-events:none;
+  z-index: 0;
+}
 .pageSheetHead{
   display:flex;
   align-items:center;
@@ -132,9 +147,44 @@ body.reduce-motion *{
   border-bottom: 1px solid rgba(255,255,255,.10);
   background: linear-gradient(180deg, rgba(18,22,44,.96), rgba(18,22,44,.86));
 }
+.pageSheetHead{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.pageSheetMeta{
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 4px;
+}
+.pageSheetEyebrow{
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(237,243,255,.56);
+}
+.pageSheetClose{
+  position: relative;
+  z-index: 1;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 0;
+}
 .pageSheetBody{
   padding: 14px;
   padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+.pageSheetBodyMobile{
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+  padding-bottom: calc(108px + env(safe-area-inset-bottom));
+}
+.pageSheetBodyMobile > *{
+  min-width: 0;
 }
 
 .mobileStack{
@@ -340,6 +390,16 @@ body.reduce-motion *{
     min-height: calc(100vh - 240px);
     border-radius: 24px;
   }
+  .pageSheetMobile{
+    min-height: calc(100vh - 212px);
+  }
+  .pageSheetHead{
+    padding: 16px 14px;
+  }
+  .pageSheetBodyMobile{
+    padding: 14px;
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
   .mobileActionRow{
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -394,6 +454,22 @@ body.reduce-motion *{
 @media (max-width: 520px){
   .mobileHeroStrip{
     grid-template-columns: 1fr;
+  }
+  .pageSheet{
+    margin-top: 10px;
+    border-radius: 22px;
+  }
+  .pageSheetHead{
+    padding: 14px 12px;
+  }
+  .pageSheetBodyMobile{
+    padding: 12px;
+    padding-bottom: calc(108px + env(safe-area-inset-bottom));
+  }
+  .pageSheetBodyMobile .panelTabsRefresh,
+  .pageSheetBodyMobile .panelCard,
+  .pageSheetBodyMobile .settingsPanelCard{
+    border-radius: 16px;
   }
   .mobileHomeRow{
     flex-direction: column;

@@ -29,9 +29,10 @@ export default function Settings({
   changePasswordLoggedIn,
 }) {
   if (!show) return null;
+  const modalTitle = "Reglages";
 
   return (
-    <Modal title="Réglages" onClose={onClose} presentation={presentation}>
+    <Modal title={modalTitle} onClose={onClose} presentation={presentation}>
       <div className="panelSectionStack">
         <div className="shopCard panelCard settingsPanelCard">
           <div className="settingsSectionTitle">Audio et vibrations</div>
@@ -50,7 +51,7 @@ export default function Settings({
         <div className="shopCard panelCard settingsPanelCard">
           <div className="settingsSectionTitle">Rythme</div>
           <label className="settingsRow">
-            <span>Auto-suivant après explication</span>
+            <span>Auto-suivant apres explication</span>
             <input type="checkbox" checked={autoNextOn} onChange={(e) => setAutoNextOn(e.target.checked)} />
           </label>
           <div className="small" style={{ marginTop: 8 }}>Delai (ms) : {autoNextMs}</div>
@@ -83,7 +84,7 @@ export default function Settings({
             <input type="checkbox" checked={adaptiveOn} onChange={(e) => setAdaptiveOn(e.target.checked)} />
           </label>
           <div className="small" style={{ marginTop: 8 }}>
-            Sur 20 réponses : plus de 85% = difficulte +1, moins de 55% = difficulte -1 avec entrainement cible.
+            Sur 20 reponses : plus de 85% = difficulte +1, moins de 55% = difficulte -1 avec entrainement cible.
           </div>
         </div>
 

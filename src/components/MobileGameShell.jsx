@@ -49,8 +49,8 @@ export default function MobileGameShell({
           <span>Rush</span>
         </button>
         <button className={`mobileDockBtn ${activeRoute === "arena" ? "isActive" : ""}`} onClick={onGoArena}>
-          <span className="mobileDockIcon">Arène</span>
-          <span>Arène</span>
+          <span className="mobileDockIcon">Arene</span>
+          <span>Arene</span>
         </button>
         <button className={`mobileDockBtn ${activeRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
           <span className="mobileDockIcon">Boutique</span>

@@ -37,9 +37,10 @@ export default function Profile({
   unlockEffectWithDust,
 }) {
   if (!show) return null;
+  const modalTitle = presentation === "page" ? "Profil" : "Profil - Stats, Badges, Album";
 
   return (
-    <Modal title="Profil - Stats, Badges, Album" onClose={onClose} presentation={presentation}>
+    <Modal title={modalTitle} onClose={onClose} presentation={presentation}>
       <div className="panelTabs panelTabsRefresh">
         <button className={`btn smooth hover-lift press ${profileTab === "stats" ? "btnPrimary" : ""}`} onClick={() => setProfileTab("stats")}>
           Stats

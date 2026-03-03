@@ -21,9 +21,10 @@ export default function Shop({
   isPremium,
 }) {
   if (!show) return null;
+  const modalTitle = presentation === "page" ? "Boutique" : "Boutique - Skins & Avatars";
 
   return (
-    <Modal title="Boutique - Skins & Avatars" onClose={onClose} presentation={presentation}>
+    <Modal title={modalTitle} onClose={onClose} presentation={presentation}>
       <div className="panelTabs panelTabsRefresh">
         <button className={`btn smooth hover-lift press ${shopTab === "skins" ? "btnPrimary" : ""}`} onClick={() => setShopTab("skins")}>
           Skins

@@ -1,15 +1,18 @@
 export default function Modal({ title, onClose, children, presentation = "modal" }) {
   if (presentation === "page") {
     return (
-      <div className="pageSheet" role="region" aria-label={title}>
+      <section className="pageSheet pageSheetMobile" role="region" aria-label={title}>
         <div className="pageSheetHead">
-          <div className="modalTitle">{title}</div>
-          <button className="btn btnGhost smooth hover-lift press" onClick={onClose} aria-label="Fermer">
-            ✕
+          <div className="pageSheetMeta">
+            <div className="pageSheetEyebrow">Mobile</div>
+            <div className="modalTitle">{title}</div>
+          </div>
+          <button className="btn btnGhost smooth hover-lift press pageSheetClose" onClick={onClose} aria-label="Fermer">
+            X
           </button>
         </div>
-        <div className="pageSheetBody">{children}</div>
-      </div>
+        <div className="pageSheetBody pageSheetBodyMobile">{children}</div>
+      </section>
     );
   }
 
@@ -19,7 +22,7 @@ export default function Modal({ title, onClose, children, presentation = "modal"
         <div className="modalHead">
           <div className="modalTitle">{title}</div>
           <button className="btn btnGhost smooth hover-lift press" onClick={onClose} aria-label="Fermer">
-            ✕
+            X
           </button>
         </div>
         <div className="modalBody">{children}</div>
