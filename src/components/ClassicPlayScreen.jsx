@@ -22,7 +22,7 @@ export default function ClassicPlayScreen({ onBack, onOpenRush, onOpenArena, que
 
         <div className="classicPlayActions mobileModeActionGrid">
           <button className="btn smooth hover-lift press" onClick={onOpenArena}>
-            Aller en Arene
+            Aller en Arena
           </button>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
             Passer en Rush

@@ -17,8 +17,8 @@ export default function AppOverlays({
   return (
     <>
       {loginRewardPop && (
-        <div className="levelPop" role="status" aria-live="polite">
-          <div className="levelPopInner smooth">
+        <div className="levelPop levelPopLogin" role="status" aria-live="polite">
+          <div className="levelPopInner smooth feedbackPanel feedbackLoginPanel">
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">Connexion quotidienne</div>
               <div className="levelPopSub">
@@ -36,19 +36,19 @@ export default function AppOverlays({
       )}
 
       {levelPop && (
-        <div className="levelPop" role="status" aria-live="polite">
-          <div className="levelPopInner smooth">
+        <div className="levelPop levelPopLevel" role="status" aria-live="polite">
+          <div className="levelPopInner smooth feedbackPanel feedbackLevelPanel">
             <div style={{ flex: 1 }}>
-              <div className="levelPopTitle">NIVEAU SUPÉRIEUR !</div>
+              <div className="levelPopTitle">NIVEAU SUPERIEUR !</div>
               <div className="levelPopSub">
                 Niveau <b>{levelPop.toLevel}</b>
                 {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} |
                 <span className="levelCoins">
-                  <span className="coinDot" /> +{levelPop.gainedCoins} pièces
+                  <span className="coinDot" /> +{levelPop.gainedCoins} pieces
                 </span>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Continue comme ça !
+                Continue comme ca !
               </div>
             </div>
             <button className="btn btnPrimary smooth hover-lift press" onClick={onCloseLevelPop}>
@@ -59,8 +59,8 @@ export default function AppOverlays({
       )}
 
       {coachPop && (
-        <div className="coachPop" role="status" aria-live="polite">
-          <div className="coachPopInner smooth">
+        <div className="coachPop coachPopRefresh" role="status" aria-live="polite">
+          <div className="coachPopInner smooth feedbackPanel feedbackCoachPanel">
             <div style={{ flex: 1 }}>
               <div className="coachPopTitle">{coachPop.title}</div>
               <div className="coachPopSub" style={{ marginTop: 6 }}>
@@ -85,16 +85,16 @@ export default function AppOverlays({
         <div className="overlay" role="dialog" aria-modal="true">
           <div className="modal" style={{ width: "min(560px, 100%)" }}>
             <div className="modalHead">
-              <div className="modalTitle">Publicité optionnelle</div>
-              <span className="pill">{adSim.provider === "regie_externe" ? "régie externe" : "vidéo sponsorisée"}</span>
+              <div className="modalTitle">Publicite optionnelle</div>
+              <span className="pill">{adSim.provider === "regie_externe" ? "regie externe" : "video sponsorisee"}</span>
             </div>
             <div className="modalBody">
               <div className="toast" style={{ marginTop: 0 }}>
                 <div style={{ width: "100%" }}>
                   <strong>{adSim.title}</strong>
                   <div className="small" style={{ marginTop: 6 }}>
-                    Source: <b>{adSim.provider === "regie_externe" ? "Régie configurée" : "Simulation locale"}</b> | Format:{" "}
-                    <b>{adSim.provider === "regie_externe" ? "récompensée" : "3 s"}</b>
+                    Source: <b>{adSim.provider === "regie_externe" ? "Regie configuree" : "Simulation locale"}</b> | Format:{" "}
+                    <b>{adSim.provider === "regie_externe" ? "recompensee" : "3 s"}</b>
                   </div>
                   <div className="small" style={{ marginTop: 8 }}>
                     {adSim.lines?.map((line, i) => (
@@ -105,7 +105,7 @@ export default function AppOverlays({
                     <div className="bar" style={{ width: `${((3 - (adSim.secondsLeft ?? 0)) / 3) * 100}%` }} />
                   </div>
                   <div className="small" style={{ marginTop: 8 }}>
-                    Récompense accordée dans <b>{adSim.secondsLeft}</b>s.
+                    Recompense accordee dans <b>{adSim.secondsLeft}</b>s.
                   </div>
                   {!isPremium && (
                     <div className="small" style={{ marginTop: 6 }}>
@@ -127,8 +127,8 @@ export default function AppOverlays({
       )}
 
       {badgePop && (
-        <div className="badgePop">
-          <div className="badgePopInner smooth">
+        <div className="badgePop badgePopRefresh">
+          <div className="badgePopInner smooth feedbackPanel feedbackBadgePanel">
             {badgePop.icon ? <div className="badgeIcon" style={{ background: "rgba(0,0,0,.22)" }}>{badgePop.icon}</div> : null}
             <div style={{ flex: 1 }}>
               <div className="badgePopTitle">{badgePop.title}</div>
@@ -142,7 +142,7 @@ export default function AppOverlays({
       )}
 
       {chestPop && (
-        <div className="chestPop" role="status" aria-live="polite" onMouseDown={onCloseChestPop}>
+        <div className="chestPop chestPopRefresh" role="status" aria-live="polite" onMouseDown={onCloseChestPop}>
           <div
             className={`chestPopInner smooth chest-${chestPop.chestType} reward-${chestPop.leadRewardKind ?? "coins"}`}
             onMouseDown={(e) => e.stopPropagation()}
@@ -152,7 +152,7 @@ export default function AppOverlays({
               <>
                 <div className="chestIconBig chestRolling" aria-hidden="true" />
                 <div className="chestPopTitle">Ouverture...</div>
-                <div className="chestPopSub">Le coffre tourne avant la révélation.</div>
+                <div className="chestPopSub">Le coffre tourne avant la revelation.</div>
               </>
             ) : (
               <>
@@ -184,7 +184,7 @@ export default function AppOverlays({
                           <span className={`chestRarity tone-${item.visual.tone}`}>{item.visual.rarity}</span>
                           {(item.reward.kind === "skin" || item.reward.kind === "effect") && (
                             <button className="btn smooth press chestEquipBtn" onClick={() => onEquipChestReward(item)}>
-                              Équiper maintenant
+                              Equiper maintenant
                             </button>
                           )}
                         </div>

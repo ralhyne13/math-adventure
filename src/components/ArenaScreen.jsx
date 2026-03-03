@@ -9,14 +9,14 @@ export default function ArenaScreen({ onBack, onOpenRush, questionCardProps }) {
             Accueil
           </button>
           <div className="mobileModeHeroPills">
-            <span className="pill">Arene</span>
+            <span className="pill">Arena</span>
             <span className="pill">Boss</span>
           </div>
         </div>
 
         <div className="classicPlayTitleWrap mobileModeTitleWrap">
           <div className="classicModeEyebrow">Combat continu</div>
-          <div className="classicPlayTitle">Mode Arene</div>
+          <div className="classicPlayTitle">Mode Arena</div>
           <div className="small">Serie longue, pression constante et boss toutes les 10 questions.</div>
         </div>
 

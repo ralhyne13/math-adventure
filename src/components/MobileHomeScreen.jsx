@@ -91,7 +91,7 @@ export default function MobileHomeScreen({
             Rush 60s
           </button>
           <button className="btn smooth hover-lift press mobilePrimaryBtn" onClick={onOpenArena}>
-            Mode Arene
+            Mode Arena
           </button>
         </div>
       </section>

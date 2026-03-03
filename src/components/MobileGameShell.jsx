@@ -13,7 +13,7 @@ export default function MobileGameShell({
   children,
 }) {
   return (
-    <div className="shell">
+    <div className={`shell mobileShellFrame mobileShellFrame-${activeRoute}`}>
       <div className="mathBg" aria-hidden="true">
         {(floaters ?? []).map((t, i) => (
           <span
@@ -36,28 +36,34 @@ export default function MobileGameShell({
       {children}
 
       <div className="mobileDock" aria-label="Navigation mobile">
-        <button className={`mobileDockBtn ${activeRoute === "home" ? "isActive" : ""}`} onClick={onGoHome}>
+        <button className={`mobileDockBtn route-home ${activeRoute === "home" ? "isActive" : ""}`} onClick={onGoHome}>
           <span className="mobileDockIcon">Accueil</span>
+          <span className="mobileDockGlyph">Home</span>
           <span>Accueil</span>
         </button>
-        <button className={`mobileDockBtn ${activeRoute === "classic-play" ? "isActive" : ""}`} onClick={onGoPlay}>
+        <button className={`mobileDockBtn route-play ${activeRoute === "classic-play" ? "isActive" : ""}`} onClick={onGoPlay}>
           <span className="mobileDockIcon">Jouer</span>
+          <span className="mobileDockGlyph">Play</span>
           <span>Jouer</span>
         </button>
-        <button className={`mobileDockBtn ${activeRoute === "rush" ? "isActive" : ""}`} onClick={onGoRush}>
+        <button className={`mobileDockBtn route-rush ${activeRoute === "rush" ? "isActive" : ""}`} onClick={onGoRush}>
           <span className="mobileDockIcon">Rush</span>
+          <span className="mobileDockGlyph">Rush</span>
           <span>Rush</span>
         </button>
-        <button className={`mobileDockBtn ${activeRoute === "arena" ? "isActive" : ""}`} onClick={onGoArena}>
-          <span className="mobileDockIcon">Arene</span>
-          <span>Arene</span>
+        <button className={`mobileDockBtn route-arena ${activeRoute === "arena" ? "isActive" : ""}`} onClick={onGoArena}>
+          <span className="mobileDockIcon">Arena</span>
+          <span className="mobileDockGlyph">Arena</span>
+          <span>Arena</span>
         </button>
-        <button className={`mobileDockBtn ${activeRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
+        <button className={`mobileDockBtn route-shop ${activeRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
           <span className="mobileDockIcon">Boutique</span>
+          <span className="mobileDockGlyph">Shop</span>
           <span>Boutique</span>
         </button>
-        <button className={`mobileDockBtn ${activeRoute === "profile" ? "isActive" : ""}`} onClick={onOpenProfile}>
+        <button className={`mobileDockBtn route-profile ${activeRoute === "profile" ? "isActive" : ""}`} onClick={onOpenProfile}>
           <span className="mobileDockIcon">Profil</span>
+          <span className="mobileDockGlyph">Profile</span>
           <span>Profil</span>
         </button>
       </div>

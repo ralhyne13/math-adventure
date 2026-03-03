@@ -66,10 +66,11 @@ export default function QuestionCard({
   const modeLabel = MODES.find((m) => m.id === modeId)?.label ?? modeId;
   const worldLabel = worlds.find((w) => w.id === selectedWorldId);
   const diffLabel = DIFFS.find((d) => d.id === diffId)?.label ?? diffId;
+  const modeThemeClass = rushOn ? "theme-rush" : arenaOn ? "theme-arena" : "theme-classic";
 
   return (
     <div
-      className={`card smooth questionCard ${compact ? "questionCardCompact" : ""} ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${
+      className={`card smooth questionCard ${compact ? "questionCardCompact" : ""} ${modeThemeClass} ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${
         bossHitFx ? "bossHitFx" : ""
       } ${errorShakeFx ? "screenShakeFx" : ""}`}
     >
@@ -186,7 +187,7 @@ export default function QuestionCard({
         </div>
       </div>
 
-      <div className={`heroQuestion questionHeroRefresh ${compact ? "heroQuestionCompact" : ""} ${rushDanger ? "rushDanger" : ""}`} data-status={status}>
+      <div className={`heroQuestion questionHeroRefresh ${compact ? "heroQuestionCompact" : ""} ${modeThemeClass} ${rushDanger ? "rushDanger" : ""}`} data-status={status}>
         <div className="heroTop heroTopRefresh">
           <div className="questionPromptBlock">
             <div className="questionEyebrow">Question en cours</div>
