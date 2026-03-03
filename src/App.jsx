@@ -3547,374 +3547,98 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Mode Arène (principal)</strong>
+              <strong>Modes rapides</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                État: <b>{arenaOn ? "Actif" : "OFF"}</b> | Série infinie | Boss toutes les 10 questions | Multiplicateur combo jusqu'à <b>x4</b>
+                Arène: <b>{arenaOn ? "active" : "pause"}</b> | Bonus combo: <b>x{arenaMultNow}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Multiplicateur actuel: <b>x{arenaMultNow}</b>
+                Rush: <b>{rushScore}</b> pts | Record: <b>{rushBestScore}</b> | Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Coffres prêts: <b>{chestPending}</b> | Progression: <b>{chestProgress}/15</b> | XP x2: <b>{xpBoostActive ? `actif (${xpBoostMinutesLeft} min)` : "off"}</b>
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className={`btn smooth hover-lift press ${arenaOn ? "btnPrimary" : ""}`} onClick={() => setArenaOn((v) => !v)}>
-                  {arenaOn ? "Arène activée" : "Arène désactivée"}
+                  {arenaOn ? "Arène activée" : "Activer l'arène"}
                 </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\u26A1\uFE0F "}Rush 60s</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> | Score: <b>{rushScore}</b> | Combo: <b>{rushCombo}</b> | Record: <b>{rushBestScore}</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Multiplicateur rush: <b>x{rushMultNow}</b> | Meilleur combo: <b>{rushBestCombo}</b> (x2/x3/x4/x5)
-              </div>
-              {rushFeedback && (
-                <div className="small" style={{ marginTop: 6 }}>
-                  Feedback vitesse: <b>{rushFeedback.label}</b>
-                  {rushFeedback.bonus > 0 ? ` | +${rushFeedback.bonus} bonus vitesse` : ""}
-                  {typeof rushFeedback.rtMs === "number" ? ` | ${rushFeedback.rtMs}ms` : ""}
-                </div>
-              )}
-              {rushDanger && (
-                <div className="small" style={{ marginTop: 6, color: "rgba(255,170,170,.95)", fontWeight: 1100 }}>
-                  Zone critique: moins de 10 secondes.
-                </div>
-              )}
-              {!isPremium && (
-                <div className="small" style={{ marginTop: 6 }}>
-                  Limite gratuite: <b>{Math.max(0, 3 - rushTodayCount)}/3</b> rush restants aujourd'hui.
-                </div>
-              )}
-                <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  {!rushOn ? (
-                    <button
-                      className="btn btnPrimary smooth hover-lift press"
-                      onClick={() => setScreen("rush")}
-                    >
-                      Rush 60s
-                    </button>
-                  ) : (
-                    <button className="btn smooth hover-lift press" onClick={() => setRushOn(false)}>
-                      Arrêter Rush
+                {!rushOn ? (
+                  <button className="btn btnPrimary smooth hover-lift press" onClick={() => setScreen("rush")}>
+                    Lancer Rush
+                  </button>
+                ) : (
+                  <button className="btn smooth hover-lift press" onClick={() => setRushOn(false)}>
+                    Arrêter Rush
                   </button>
                 )}
-              </div>
-              {!!rushLeaderboard?.length && (
-                <div className="small" style={{ marginTop: 10 }}>
-                  Local top: {rushLeaderboard.slice(0, 3).map((r, idx) => `${idx + 1}. ${r.pseudo} ${r.score}`).join(" | ")}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\uD83C\uDFC6 "}Ligue saisonnière</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                <b>{leagueTier.label}</b> | Points: <b>{league?.points ?? 0}</b> | Fin de saison: <b>{seasonDaysLeft}j</b>
-              </div>
-              {isPremium ? (
-                <div className="small" style={{ marginTop: 6 }}>
-                  Précision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> | Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> | Meilleure série: <b>{league?.bestStreak ?? 0}</b>
-                </div>
-              ) : (
-                <div className="small" style={{ marginTop: 6 }}>Stats avancées réservées Premium.</div>
-              )}
-            </div>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\uD83E\uDD47 "}Classement local</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Ton rang: <b>{localCompetition.myRank || "-"}</b> / <b>{localCompetition.rows.length}</b>
-              </div>
-              {!!localCompetition.rows.length && (
-                <div className="small" style={{ marginTop: 8 }}>
-                  {localCompetition.rows.slice(0, 5).map((r, idx) => `${idx + 1}. ${r.pseudoDisplay} (${r.points} pts, ${r.accuracy}%)`).join(" | ")}
-                </div>
-              )}
-            </div>
-            <span className="pill">Compétition</span>
-          </div>
-
-          {isCollegeNow && (
-            <div className="toast" style={{ marginTop: 12 }}>
-              <div style={{ width: "100%" }}>
-                <strong>Défi collège du jour</strong>
-                <div className="small" style={{ marginTop: 6 }}>
-                  Objectif: <b>{collegeArenaTarget}</b> bonnes réponses en difficulté <b>difficile</b>.
-                </div>
-                <div className="small" style={{ marginTop: 6 }}>
-                  Progression: <b>{Math.min(collegeArenaToday.hardRight, collegeArenaTarget)}</b> / <b>{collegeArenaTarget}</b>
-                </div>
-                <div className="barWrap" style={{ marginTop: 8 }}>
-                  <div className="bar" style={{ width: `${collegeArenaPct}%` }} />
-                </div>
-                <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span className="pill">+90 pièces</span>
-                  <span className="pill">+120 XP</span>
-                  <button
-                    className="btn btnPrimary smooth hover-lift press"
-                    disabled={!collegeArenaDone || !!collegeArenaToday.claimed}
-                    onClick={claimCollegeArenaReward}
-                  >
-                    {collegeArenaToday.claimed ? "Récompense reçue" : "Récupérer"}
-                  </button>
-                </div>
-              </div>
-              <span className="pill">Défis</span>
-            </div>
-          )}
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\uD83C\uDF81 "}Coffres</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>{chestProgress}/15</b> bonnes réponses | Coffres prêts: <b>{chestPending}</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Commun {chestTypeCounts.common} | Rare {chestTypeCounts.rare} | Épique {chestTypeCounts.epic} | Légendaire {chestTypeCounts.legendary}
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Bonus XP x2: <b>{xpBoostActive ? `actif (${xpBoostMinutesLeft} min)` : "inactif"}</b>
-              </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button className="btn btnPrimary smooth hover-lift press" onClick={openChest} disabled={chestPending <= 0}>
+                <button className="btn smooth hover-lift press" onClick={openChest} disabled={chestPending <= 0}>
                   Ouvrir coffre
                 </button>
-                <button className="btn smooth hover-lift press" onClick={() => openChestBatch(3)} disabled={chestPending < 3}>
-                  Ouvrir x3
-                </button>
-                <button className="btn smooth hover-lift press" onClick={() => openChestBatch(chestPending)} disabled={chestPending < 5}>
-                  Ouvrir tout
-                </button>
-                <button
-                  className="btn smooth hover-lift press"
-                  onClick={watchAdInstantChest}
-                  disabled={adLocked || (!isPremium && (adUsageToday.instant_chest ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0))}
-                >
-                  Pub: coffre instantané
-                </button>
               </div>
             </div>
+            <span className="pill">Essentiel</span>
           </div>
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>{"\u2728 "}Effets cosmétiques</strong>
+              <strong>{"\uD83C\uDFAF "}Défis du moment</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Effet équipé: <b>{ANSWER_EFFECTS.find((e) => e.id === answerEffectId)?.label ?? "Classique"}</b>
+                Jour: <b>{Math.min(dailyProgress, dailyChallenge?.target ?? 0)}</b> / <b>{dailyChallenge?.target ?? 0}</b>
+                {" | "}
+                Semaine: <b>{Math.min(weeklyProgress, weeklyChallenge?.target ?? 0)}</b> / <b>{weeklyChallenge?.target ?? 0}</b>
               </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {ANSWER_EFFECTS.filter((e) => ownedEffects.includes(e.id)).map((e) => (
-                  <button
-                    key={e.id}
-                    className={`btn smooth hover-lift press ${answerEffectId === e.id ? "btnPrimary" : ""}`}
-                    onClick={() => setAnswerEffectId(e.id)}
-                  >
-                    {e.label}
-                  </button>
-                ))}
-              </div>
-              <div className="small" style={{ marginTop: 8 }}>
-                Déblocage via coffres: Explosion dorée, Aura électrique, Particules spéciales.
-              </div>
-            </div>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\uD83D\uDC51 "}Premium</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprimées" : "Pubs optionnelles actives"}
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Premium: skins/avatars exclusifs, Rush illimité, stats avancées, thèmes spéciaux.
-              </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button className="btn btnPrimary smooth hover-lift press" onClick={() => activatePremium("monthly")}>
-                  Premium 4,99 EUR/mois
-                </button>
-                <button className="btn smooth hover-lift press" onClick={() => activatePremium("lifetime")}>
-                  À vie 19 EUR
-                </button>
-                {isPremium && (
-                  <button className="btn smooth hover-lift press" onClick={disablePremium}>
-                    Repasser gratuit
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>Publicité intelligente (optionnelle)</strong>
-              <div className="small" style={{ marginTop: 6 }}>Jamais de pub forcée après une question.</div>
-              <div className="small" style={{ marginTop: 6 }}>
-                {isPremium
-                  ? "Premium: pas de quota journalier, mais cooldown conservé pour équilibrer."
-                  : `Quota gratuit: ${Math.max(0, OPTIONAL_AD_LIMITS.total - adTodayUsed)} restantes aujourd'hui.`}
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Coffre: <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0) - (adUsageToday.instant_chest ?? 0))}</b> | Bonus x2:{" "}
-                <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0) - (adUsageToday.double_reward ?? 0))}</b> | Vie:{" "}
-                <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.survival_life ?? 0) - (adUsageToday.survival_life ?? 0))}</b>
-              </div>
-              {adCooldownLeftSec > 0 && (
+              {dailyChallenge && <div className="small" style={{ marginTop: 6 }}>{dailyChallenge.desc}</div>}
+              {weeklyChallenge && <div className="small" style={{ marginTop: 6 }}>{weeklyChallenge.desc}</div>}
+              {isCollegeNow && (
                 <div className="small" style={{ marginTop: 6 }}>
-                  Cooldown actif: <b>{adCooldownLeftSec}s</b>
+                  Collège: <b>{Math.min(collegeArenaToday.hardRight, collegeArenaTarget)}</b> / <b>{collegeArenaTarget}</b> en difficile
                 </div>
               )}
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button
-                  className="btn smooth hover-lift press"
-                  onClick={watchAdInstantChest}
-                  disabled={adLocked || (!isPremium && (adUsageToday.instant_chest ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0))}
-                >
-                  Pub: ouvrir 1 coffre
-                </button>
-                <button
-                  className="btn smooth hover-lift press"
-                  onClick={watchAdDoubleReward}
-                  disabled={adLocked || (!isPremium && (adUsageToday.double_reward ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0))}
-                >
-                  Pub: doubler récompense
-                </button>
-                <button
-                  className="btn smooth hover-lift press"
-                  onClick={watchAdSurvivalLife}
-                  disabled={
-                    adSurvivalLives >= 3 ||
-                    adLocked ||
-                    (!isPremium && (adUsageToday.survival_life ?? 0) >= (OPTIONAL_AD_LIMITS.byKind.survival_life ?? 0))
-                  }
-                >
-                  Pub: +1 vie en survie
-                </button>
-              </div>
-              {adBoostNext && <div className="small" style={{ marginTop: 8 }}>Boost actif: prochaine bonne réponse x2 (pièces + XP).</div>}
-              <div className="small" style={{ marginTop: 6 }}>Vies de survie stockées: <b>{adSurvivalLives}/3</b></div>
-              {isPremium && <div className="small" style={{ marginTop: 6 }}>Premium peut passer la simulation instantanément.</div>}
-            </div>
-          </div>
-
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\uD83D\uDC09 "}Combat de boss</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                État: <b>{bossActive ? "Actif" : "attente"}</b>
-                {bossActive ? ` | PV: ${bossRemaining}% | Temps: ${bossTimeLeft}s` : ` | Prochain boss toutes les 10 questions`}
-              </div>
-              {bossActive && (
-                <div className="small" style={{ marginTop: 6 }}>
-                  Boss actuel: <b>{bossProfile?.name}</b>
-                </div>
-              )}
-              {bossActive && (
-                <div className="barWrap" style={{ marginTop: 8 }}>
-                  <div className="bar" style={{ width: `${bossHpPct}%` }} />
-                </div>
-              )}
-            </div>
-            <span className="pill">XP x3</span>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\uD83D\uDCC5 "}Calendrier d'activité</strong>
-              <div className="heatmapTabs" style={{ marginTop: 8 }}>
-                <button className={`btn smooth hover-lift press ${activitySpan === 7 ? "btnPrimary" : ""}`} onClick={() => setActivitySpan(7)}>
-                  7 jours
-                </button>
-                <button className={`btn smooth hover-lift press ${activitySpan === 30 ? "btnPrimary" : ""}`} onClick={() => setActivitySpan(30)}>
-                  30 jours
-                </button>
-              </div>
-              <div className={`heatmapGrid ${activitySpan === 30 ? "month" : "week"}`} style={{ marginTop: 10 }}>
-                {activityDays.map((d) => {
-                  const lv = d.count === 0 ? 0 : d.count < 3 ? 1 : d.count < 7 ? 2 : d.count < 12 ? 3 : 4;
-                  return (
-                    <div key={d.key} className="heatCol" title={`${d.key} : ${d.count} question(s)`}>
-                      <span className={`heatCell lv${lv}`} />
-                      <span className="heatLbl">{activitySpan === 30 ? d.dayNum : d.day}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="small" style={{ marginTop: 8 }}>
-                Jours joués : <b>{playedDays}/{activitySpan}</b> | Streak visuel : <b>{visualStreak}</b>
-              </div>
-            </div>
-          </div>
-
-          <div className="toast" style={{ marginTop: 14 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\uD83C\uDFAF "}Défi journalier</strong>
-              <div className="sub" style={{ marginTop: 6 }}>{dailyChallenge?.desc}</div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>{Math.min(dailyProgress, dailyChallenge?.target ?? 0)}</b> / <b>{dailyChallenge?.target ?? 0}</b>
-              </div>
-              <div className="barWrap" style={{ marginTop: 8 }}>
-                <div
-                  className="bar"
-                  style={{ width: `${Math.round(((dailyProgress || 0) / Math.max(1, dailyChallenge?.target ?? 1)) * 100)}%` }}
-                />
-              </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span className="pill">+{dailyChallenge?.rewardCoins ?? 0} pièces</span>
-                <span className="pill">+{dailyChallenge?.rewardXp ?? 0} XP</span>
                 <button
                   className="btn btnPrimary smooth hover-lift press"
                   disabled={!isDailyDone || !!challengeProgress?.claimedDaily}
                   onClick={() => claimChallenge("daily")}
                 >
-                  {challengeProgress?.claimedDaily ? "Récompense reçue" : "Récupérer"}
+                  {challengeProgress?.claimedDaily ? "Défi du jour reçu" : "Récupérer le défi du jour"}
                 </button>
+                <button
+                  className="btn smooth hover-lift press"
+                  disabled={!isWeeklyDone || !!challengeProgress?.claimedWeekly}
+                  onClick={() => claimChallenge("weekly")}
+                >
+                  {challengeProgress?.claimedWeekly ? "Défi hebdo reçu" : "Récupérer le défi hebdo"}
+                </button>
+                {isCollegeNow && (
+                  <button
+                    className="btn smooth hover-lift press"
+                    disabled={!collegeArenaDone || !!collegeArenaToday.claimed}
+                    onClick={claimCollegeArenaReward}
+                  >
+                    {collegeArenaToday.claimed ? "Défi collège reçu" : "Récupérer le défi collège"}
+                  </button>
+                )}
               </div>
             </div>
+            <span className="pill">Récompenses</span>
           </div>
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>{"\uD83D\uDCC6 "}Défi hebdo</strong>
-              <div className="sub" style={{ marginTop: 6 }}>{weeklyChallenge?.desc}</div>
+              <strong>Suivi rapide</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>{Math.min(weeklyProgress, weeklyChallenge?.target ?? 0)}</b> / <b>{weeklyChallenge?.target ?? 0}</b>
+                Ligue: <b>{leagueTier.label}</b> | Points: <b>{league?.points ?? 0}</b> | Fin: <b>{seasonDaysLeft}j</b>
               </div>
-              <div className="barWrap" style={{ marginTop: 8 }}>
-                <div
-                  className="bar"
-                  style={{ width: `${Math.round(((weeklyProgress || 0) / Math.max(1, weeklyChallenge?.target ?? 1)) * 100)}%` }}
-                />
+              <div className="small" style={{ marginTop: 6 }}>
+                Rang local: <b>{localCompetition.myRank || "-"}</b> / <b>{localCompetition.rows.length}</b> | Jours joués: <b>{playedDays}/{activitySpan}</b>
               </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span className="pill">+{weeklyChallenge?.rewardCoins ?? 0} pièces</span>
-                <span className="pill">+{weeklyChallenge?.rewardXp ?? 0} XP</span>
-                <button
-                  className="btn btnPrimary smooth hover-lift press"
-                  disabled={!isWeeklyDone || !!challengeProgress?.claimedWeekly}
-                  onClick={() => claimChallenge("weekly")}
-                >
-                  {challengeProgress?.claimedWeekly ? "Récompense reçue" : "Récupérer"}
-                </button>
+              <div className="small" style={{ marginTop: 6 }}>
+                Streak visuel: <b>{visualStreak}</b> | Connexion: <b>{loginStreak}/7</b> | Dernière: <b>{lastLoginDayKey ?? "-"}</b>
+              </div>
+              <div className="small" style={{ marginTop: 6 }}>
+                Premium: <b>{premiumLabel}</b> | Boss: <b>{bossActive ? "en cours" : "attente"}</b>
               </div>
             </div>
-          </div>
-
-          <div className="toast" style={{ marginTop: 14 }}>
-            <div>
-              <strong>{"\uD83C\uDF81 "}Récompense quotidienne</strong>
-              <div className="sub" style={{ marginTop: 8 }}>
-                Connecte-toi 7 jours d'affilée pour maximiser les récompenses. Récompense donnée automatiquement au 1er lancement du jour.
-              </div>
-            </div>
-            <span className="pill">aléatoire</span>
+            <span className="pill">Résumé</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>

@@ -62,6 +62,10 @@ export default function QuestionCard({
   answerEffectId,
 }) {
   const bossPhaseClass = bossRemaining <= 30 ? "phase-final" : bossRemaining <= 60 ? "phase-mid" : "phase-open";
+  const historySlots = compact ? 5 : 10;
+  const modeLabel = MODES.find((m) => m.id === modeId)?.label ?? modeId;
+  const worldLabel = worlds.find((w) => w.id === selectedWorldId);
+  const diffLabel = DIFFS.find((d) => d.id === diffId)?.label ?? diffId;
 
   return (
     <div
@@ -87,11 +91,12 @@ export default function QuestionCard({
       </div>
 
       <div className={`cardTitle ${compact ? "cardTitleCompact" : ""}`}>
-        <span>Choisis la bonne reponse</span>
-        {!compact && <span className="pill">explication puis Suivant</span>}
+        <span>Réponds</span>
+        {!compact && <span className="pill">une étape à la fois</span>}
       </div>
 
       {!compact ? (
+        <>
         <div className="filters" style={{ marginTop: 10 }}>
           <select className="select smooth" value={modeId} onChange={(e) => setModeId(e.target.value)}>
             {MODES.map((m) => (
@@ -115,17 +120,19 @@ export default function QuestionCard({
             ))}
           </select>
           <button className="btn smooth hover-lift press" onClick={resetSession}>
-            Réinitialiser la session
+            Recommencer
           </button>
-          <span className="pill">Adaptatif : {adaptiveOn ? "Activé" : "Désactivé"}</span>
-          <span className="pill">Niveau monde: {worldLevel}/30</span>
+        </div>
+        <div className="questionStatusRow">
+          <span className="pill">Adaptatif {adaptiveOn ? "activé" : "désactivé"}</span>
+          <span className="pill">Monde {worldLevel}/30</span>
           {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final prêt</span> : null}
         </div>
+        </>
       ) : (
         <div className="questionCompactTop">
-          <span className="pill">{MODES.find((m) => m.id === modeId)?.label ?? modeId}</span>
-          <span className="pill">{worlds.find((w) => w.id === selectedWorldId)?.icon} {worldLevel}/30</span>
-          <span className="pill">{DIFFS.find((d) => d.id === diffId)?.label ?? diffId}</span>
+          <span className="pill">{worldLabel?.icon} {worldLevel}/30</span>
+          <span className="pill">{diffLabel}</span>
         </div>
       )}
 
@@ -135,10 +142,10 @@ export default function QuestionCard({
 
       <div className={`miniHistoryWrap ${compact ? "miniHistoryCompact" : ""}`} aria-label="historique des 10 dernières réponses">
         <div className="miniHistoryLabel">
-          10 dernières : <span className="miniHistoryCount">{sessionAnswered}/10</span>
+          {compact ? "Récent" : "Rythme"} : <span className="miniHistoryCount">{Math.min(sessionAnswered, historySlots)}/{historySlots}</span>
         </div>
         <div className="miniHistory">
-          {[...Array(10)].map((_, i) => {
+          {[...Array(historySlots)].map((_, i) => {
             const item = lastAnswers[i];
             const cls = item ? (item.ok ? "ok" : "bad") : "empty";
             return <span key={i} className={`miniDot ${cls}`} />;
@@ -153,14 +160,16 @@ export default function QuestionCard({
             <span className="metaPill">
               <span className="metaIcon">Combo</span> <b>{streak}</b>
             </span>
-            {arenaOn && !rushOn && (
+            {!compact && !rushOn && !bossActive && (
+              <span className="metaPill">
+                <span className="metaIcon">{modeLabel}</span> <b>{accuracy}%</b>
+              </span>
+            )}
+            {arenaOn && !rushOn && !compact && (
               <span className="metaPill">
                 <span className="metaIcon">Arène</span> <b>x{arenaMultNow}</b>
               </span>
             )}
-            <span className="metaPill">
-              <span className="metaIcon">Précision</span> <b>{accuracy}%</b>
-            </span>
             {rushOn && (
               <span className="metaPill">
                 <span className="metaIcon">Rush</span> <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> <b>x{rushMultNow}</b>
@@ -253,8 +262,8 @@ export default function QuestionCard({
 
         <div className={`learningRow ${compact ? "learningRowCompact" : ""}`}>
           <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
-            Indice {hintLevel + 1}/{hintList.length}
-            {canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} pièce${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
+            {compact ? "Indice" : `Indice ${hintLevel + 1}/${hintList.length}`}
+            {!compact && canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} pièce${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
           </button>
           {!compact && <span className="small">Les indices aident, mais coûtent des pièces (sauf le 1er en facile).</span>}
         </div>
@@ -282,17 +291,19 @@ export default function QuestionCard({
             );
           })}
 
-          <button className="btn btnPrimary smooth hover-lift press" onClick={goNext} disabled={!showExplain}>
-            Suivant
-          </button>
+          {showExplain && (
+            <button className="btn btnPrimary smooth hover-lift press" onClick={goNext}>
+              Suivant
+            </button>
+          )}
         </div>
 
         {showExplain && (
           <div className={`toast ${status === "ok" ? "ok" : "bad"}`}>
             <div>
-              {status === "ok" ? <strong>Bien joue</strong> : <strong>Oups</strong>}
+              {status === "ok" ? <strong>Bien joué</strong> : <strong>Oups</strong>}
               <div className="sub" style={{ marginTop: 4 }}>
-                Bonne reponse : <b>{String(q.correct)}</b>
+                Bonne réponse : <b>{String(q.correct)}</b>
               </div>
               <div className="sub" style={{ marginTop: 8 }}>
                 {explain}
@@ -300,7 +311,7 @@ export default function QuestionCard({
               {status === "bad" && methodSteps.length > 0 && (
                 <div style={{ marginTop: 10 }}>
                   <button className="btn smooth hover-lift press" onClick={() => setShowMethod((v) => !v)}>
-                    {showMethod ? "Masquer la methode" : "Voir la methode"}
+                    {showMethod ? "Masquer la méthode" : "Voir la méthode"}
                   </button>
                 </div>
               )}
