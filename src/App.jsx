@@ -74,7 +74,7 @@ function rewardRoll(streakDay, ownedAvatars) {
   if (roll < avatarChance) {
     const commons = AVATARS.filter((a) => a.rarity === "Commun");
     const rares = AVATARS.filter((a) => a.rarity === "Rare");
-    const epics = AVATARS.filter((a) => a.rarity === "�pique");
+    const epics = AVATARS.filter((a) => a.rarity === "ï¿½pique");
 
     const tierRoll = Math.random();
     let pool = commons;
@@ -181,7 +181,7 @@ function chestTypeFromRoll(score = 0) {
 function rarityRank(raw) {
   const r = String(raw || "").toLowerCase();
   if (r.includes("exclusif")) return 5;
-  if (r.includes("epique") || r.includes("�pique")) return 4;
+  if (r.includes("epique") || r.includes("ï¿½pique")) return 4;
   if (r.includes("rare")) return 3;
   return 1;
 }
@@ -208,9 +208,9 @@ function pickSkinReward(rarity, ownedSkins) {
 function pickAvatarReward(rarity, ownedAvatars) {
   const pool =
     rarity === "epic"
-      ? AVATARS.filter((a) => a.rarity === "�pique" || a.rarity === "Exclusif")
+      ? AVATARS.filter((a) => a.rarity === "ï¿½pique" || a.rarity === "Exclusif")
       : rarity === "rare"
-        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "�pique")
+        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "ï¿½pique")
         : AVATARS.filter((a) => a.rarity === "Commun" || a.rarity === "Rare");
 
   const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
@@ -644,6 +644,7 @@ export default function App() {
   const [isInstalledPwa, setIsInstalledPwa] = useState(
     () => window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true
   );
+  const [showMobileBootSplash, setShowMobileBootSplash] = useState(() => window.innerWidth <= 820);
 
   // Session
   const [screen, setScreen] = useState("classic"); // "classic" | "rush"
@@ -1214,7 +1215,7 @@ export default function App() {
     showBadgePopup({
       icon: "??",
       title: "Effet debloque",
-      desc: `${fx.label} � -${cost} diamants`,
+      desc: `${fx.label} ï¿½ -${cost} diamants`,
       reward: 0,
     });
   }
@@ -1970,7 +1971,7 @@ export default function App() {
             showBadgePopup({
               icon: currentWorld.icon,
               title: `Monde complete: ${currentWorld.name}`,
-              desc: `${currentWorld.badge} debloque � +180 pieces � +220 XP`,
+              desc: `${currentWorld.badge} debloque ï¿½ +180 pieces ï¿½ +220 XP`,
               reward: 180,
             });
           }
@@ -2298,7 +2299,7 @@ export default function App() {
     showBadgePopup({
       icon: ch.icon ?? "??",
       title: `Defi ${isDaily ? "journalier" : "hebdo"} complete`,
-      desc: `${ch.title} � +${ch.rewardCoins} pieces � +${ch.rewardXp} XP`,
+      desc: `${ch.title} ï¿½ +${ch.rewardCoins} pieces ï¿½ +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
     });
 
@@ -2319,7 +2320,7 @@ export default function App() {
     showBadgePopup({
       icon: "??",
       title: "Defi college complete",
-      desc: "12 bonnes reponses en difficile � +90 pieces � +120 XP",
+      desc: "12 bonnes reponses en difficile ï¿½ +90 pieces ï¿½ +120 XP",
       reward: 90,
     });
   }
@@ -2422,7 +2423,7 @@ export default function App() {
   const canAskHint = !disableChoices && hintLevel < hintList.length;
 
   const FLOATERS = useMemo(
-    () => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", "-", "�", "�", "=", "<", ">", "?", "p", "%", "??", "?"],
+    () => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", "-", "ï¿½", "ï¿½", "=", "<", ">", "?", "p", "%", "??", "?"],
     []
   );
 
@@ -2751,6 +2752,16 @@ export default function App() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  useEffect(() => {
+    if (!isLoggedIn || !isMobileViewport) {
+      setShowMobileBootSplash(false);
+      return undefined;
+    }
+    setShowMobileBootSplash(true);
+    const t = setTimeout(() => setShowMobileBootSplash(false), reduceMotion ? 250 : 1100);
+    return () => clearTimeout(t);
+  }, [isLoggedIn, isMobileViewport, reduceMotion]);
+
   /* ------------------------ Not logged in screen ------------------------ */
   if (!isLoggedIn) {
     return (
@@ -2924,6 +2935,39 @@ export default function App() {
     );
   }
 
+  if (isMobileViewport && showMobileBootSplash) {
+    return (
+      <div className="shell">
+        <div className="mathBg" aria-hidden="true">
+          {FLOATERS.map((t, i) => (
+            <span
+              key={i}
+              style={{
+                left: `${(i * 37) % 100}%`,
+                top: `${(i * 19) % 100}%`,
+                fontSize: `${14 + (i % 8) * 6}px`,
+                animationDuration: `${10 + (i % 10) * 2.2}s`,
+                animationDelay: `${-(i % 10) * 1.1}s`,
+              }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <div className="mobileBootSplash" role="status" aria-live="polite">
+          <div className="mobileBootSplashCard smooth">
+            <div className="logo smooth" />
+            <div className="mobileBootSplashTitle">Math Royale</div>
+            <div className="small">Chargement du hub mobile...</div>
+            <div className="mobileBootSplashBar">
+              <div className="mobileBootSplashFill" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const questionCardProps = {
     status,
     fx,
@@ -3002,6 +3046,8 @@ export default function App() {
     onOpenSettings: openSettingsPanel,
     onOpenProfile: openProfilePanel,
     onOpenShop: openShopPanel,
+    canInstallApp: !isInstalledPwa && !!installPromptEvent,
+    onInstallApp: installPwaApp,
     onLogout: doLogout,
   };
 
@@ -3156,7 +3202,7 @@ export default function App() {
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">Connexion quotidienne</div>
               <div className="levelPopSub">
-                Jour <b>{loginRewardPop.day}</b>/7 � <span className="levelCoins">{loginRewardPop.text}</span>
+                Jour <b>{loginRewardPop.day}</b>/7 ï¿½ <span className="levelCoins">{loginRewardPop.text}</span>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 {loginRewardPop.detail}
@@ -3179,7 +3225,7 @@ export default function App() {
               <div className="levelPopTitle">LEVEL UP !</div>
               <div className="levelPopSub">
                 Niveau <b>{levelPop.toLevel}</b>
-                {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} �
+                {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} ï¿½
                 <span className="levelCoins">
                   <span className="coinDot" /> +{levelPop.gainedCoins} pieces
                 </span>
@@ -3233,7 +3279,7 @@ export default function App() {
                 <div style={{ width: "100%" }}>
                   <strong>{adSim.title}</strong>
                   <div className="small" style={{ marginTop: 6 }}>
-                    Source: <b>{adSim.provider === "regie_externe" ? "Regie configuree" : "Simulation locale"}</b> � Format:{" "}
+                    Source: <b>{adSim.provider === "regie_externe" ? "Regie configuree" : "Simulation locale"}</b> ï¿½ Format:{" "}
                     <b>{adSim.provider === "regie_externe" ? "rewarded" : "3s"}</b>
                   </div>
                   <div className="small" style={{ marginTop: 8 }}>
@@ -3466,7 +3512,7 @@ export default function App() {
               </strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>Niveau {worldLevel}/30</b>
-                {!worldBossDone && worldLevel < 30 ? ` � ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
+                {!worldBossDone && worldLevel < 30 ? ` ï¿½ ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Pret" : "Verrouille"}</b>
@@ -3487,10 +3533,10 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Defi 5 minutes</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Temps: <b>{formatClock(study5TimeLeft)}</b> � Questions: <b>{study5Answered}</b> � Precision: <b>{study5Accuracy}%</b>
+                Temps: <b>{formatClock(study5TimeLeft)}</b> ï¿½ Questions: <b>{study5Answered}</b> ï¿½ Precision: <b>{study5Accuracy}%</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Bonnes: <b>{study5Right}</b> � Erreurs: <b>{study5Wrong}</b> � Meilleur combo: <b>{study5BestStreak}</b>
+                Bonnes: <b>{study5Right}</b> ï¿½ Erreurs: <b>{study5Wrong}</b> ï¿½ Meilleur combo: <b>{study5BestStreak}</b>
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {!study5On ? (
@@ -3508,7 +3554,7 @@ export default function App() {
               </div>
               {study5LastSummary && (
                 <div className="small" style={{ marginTop: 8 }}>
-                  Dernier resume: {new Date(study5LastSummary.endedAt).toLocaleString("fr-FR")} � {study5LastSummary.answered} questions �{" "}
+                  Dernier resume: {new Date(study5LastSummary.endedAt).toLocaleString("fr-FR")} ï¿½ {study5LastSummary.answered} questions ï¿½{" "}
                   {study5LastSummary.accuracy}% de precision
                 </div>
               )}
@@ -3520,7 +3566,7 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Mode Arena (principal)</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Etat: <b>{arenaOn ? "ACTIF" : "OFF"}</b> � Serie infinie � Boss toutes les 10 questions � Multiplicateur combo jusqu'a <b>x4</b>
+                Etat: <b>{arenaOn ? "ACTIF" : "OFF"}</b> ï¿½ Serie infinie ï¿½ Boss toutes les 10 questions ï¿½ Multiplicateur combo jusqu'a <b>x4</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Multiplicateur actuel: <b>x{arenaMultNow}</b>
@@ -3537,16 +3583,16 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Rush 60s</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> � Score: <b>{rushScore}</b> � Combo: <b>{rushCombo}</b> � Record: <b>{rushBestScore}</b>
+                Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> ï¿½ Score: <b>{rushScore}</b> ï¿½ Combo: <b>{rushCombo}</b> ï¿½ Record: <b>{rushBestScore}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Multiplicateur rush: <b>x{rushMultNow}</b> � Meilleur combo: <b>{rushBestCombo}</b> (x2/x3/x4/x5)
+                Multiplicateur rush: <b>x{rushMultNow}</b> ï¿½ Meilleur combo: <b>{rushBestCombo}</b> (x2/x3/x4/x5)
               </div>
               {rushFeedback && (
                 <div className="small" style={{ marginTop: 6 }}>
                   Feedback vitesse: <b>{rushFeedback.label}</b>
-                  {rushFeedback.bonus > 0 ? ` � +${rushFeedback.bonus} bonus vitesse` : ""}
-                  {typeof rushFeedback.rtMs === "number" ? ` � ${rushFeedback.rtMs}ms` : ""}
+                  {rushFeedback.bonus > 0 ? ` ï¿½ +${rushFeedback.bonus} bonus vitesse` : ""}
+                  {typeof rushFeedback.rtMs === "number" ? ` ï¿½ ${rushFeedback.rtMs}ms` : ""}
                 </div>
               )}
               {rushDanger && (
@@ -3575,7 +3621,7 @@ export default function App() {
               </div>
               {!!rushLeaderboard?.length && (
                 <div className="small" style={{ marginTop: 10 }}>
-                  Local top: {rushLeaderboard.slice(0, 3).map((r, idx) => `${idx + 1}. ${r.pseudo} ${r.score}`).join(" � ")}
+                  Local top: {rushLeaderboard.slice(0, 3).map((r, idx) => `${idx + 1}. ${r.pseudo} ${r.score}`).join(" ï¿½ ")}
                 </div>
               )}
             </div>
@@ -3585,11 +3631,11 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Ligue saisonniere</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                {leagueTier.icon} <b>{leagueTier.label}</b> � Points: <b>{league?.points ?? 0}</b> � Fin de saison: <b>{seasonDaysLeft}j</b>
+                {leagueTier.icon} <b>{leagueTier.label}</b> ï¿½ Points: <b>{league?.points ?? 0}</b> ï¿½ Fin de saison: <b>{seasonDaysLeft}j</b>
               </div>
               {isPremium ? (
                 <div className="small" style={{ marginTop: 6 }}>
-                  Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> � Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> � Best streak: <b>{league?.bestStreak ?? 0}</b>
+                  Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> ï¿½ Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> ï¿½ Best streak: <b>{league?.bestStreak ?? 0}</b>
                 </div>
               ) : (
                 <div className="small" style={{ marginTop: 6 }}>Stats avancees reservees Premium.</div>
@@ -3605,7 +3651,7 @@ export default function App() {
               </div>
               {!!localCompetition.rows.length && (
                 <div className="small" style={{ marginTop: 8 }}>
-                  {localCompetition.rows.slice(0, 5).map((r, idx) => `${idx + 1}. ${r.pseudoDisplay} (${r.points} pts, ${r.accuracy}%)`).join(" � ")}
+                  {localCompetition.rows.slice(0, 5).map((r, idx) => `${idx + 1}. ${r.pseudoDisplay} (${r.points} pts, ${r.accuracy}%)`).join(" ï¿½ ")}
                 </div>
               )}
             </div>
@@ -3645,10 +3691,10 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Coffres</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>{chestProgress}/15</b> bonnes reponses � Coffres prets: <b>{chestPending}</b>
+                Progression: <b>{chestProgress}/15</b> bonnes reponses ï¿½ Coffres prets: <b>{chestPending}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                {CHEST_TYPES.common.icon} {chestTypeCounts.common} � {CHEST_TYPES.rare.icon} {chestTypeCounts.rare} � {CHEST_TYPES.epic.icon} {chestTypeCounts.epic} �{" "}
+                {CHEST_TYPES.common.icon} {chestTypeCounts.common} ï¿½ {CHEST_TYPES.rare.icon} {chestTypeCounts.rare} ï¿½ {CHEST_TYPES.epic.icon} {chestTypeCounts.epic} ï¿½{" "}
                 {CHEST_TYPES.legendary.icon} {chestTypeCounts.legendary}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
@@ -3702,17 +3748,17 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Premium</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Plan actuel: <b>{premiumLabel}</b> � {isPremium ? "Pubs supprimees" : "Pubs optionnelles actives"}
+                Plan actuel: <b>{premiumLabel}</b> ï¿½ {isPremium ? "Pubs supprimees" : "Pubs optionnelles actives"}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Premium: skins/avatars exclusifs, Rush illimite, stats avancees, themes speciaux.
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className="btn btnPrimary smooth hover-lift press" onClick={() => activatePremium("monthly")}>
-                  Premium 4,99�/mois
+                  Premium 4,99ï¿½/mois
                 </button>
                 <button className="btn smooth hover-lift press" onClick={() => activatePremium("lifetime")}>
-                  Lifetime 19�
+                  Lifetime 19ï¿½
                 </button>
                 {isPremium && (
                   <button className="btn smooth hover-lift press" onClick={disablePremium}>
@@ -3733,8 +3779,8 @@ export default function App() {
                   : `Quota gratuit: ${Math.max(0, OPTIONAL_AD_LIMITS.total - adTodayUsed)} restantes aujourd'hui.`}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Coffre: <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0) - (adUsageToday.instant_chest ?? 0))}</b> � Bonus x2:{" "}
-                <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0) - (adUsageToday.double_reward ?? 0))}</b> � Vie:{" "}
+                Coffre: <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0) - (adUsageToday.instant_chest ?? 0))}</b> ï¿½ Bonus x2:{" "}
+                <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0) - (adUsageToday.double_reward ?? 0))}</b> ï¿½ Vie:{" "}
                 <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.survival_life ?? 0) - (adUsageToday.survival_life ?? 0))}</b>
               </div>
               {adCooldownLeftSec > 0 && (
@@ -3781,7 +3827,7 @@ export default function App() {
               <strong>Boss Fight</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Etat: <b>{bossActive ? "ACTIF" : "attente"}</b>
-                {bossActive ? ` � HP: ${bossRemaining}% � Temps: ${bossTimeLeft}s` : ` � Prochain boss toutes les 10 questions`}
+                {bossActive ? ` ï¿½ HP: ${bossRemaining}% ï¿½ Temps: ${bossTimeLeft}s` : ` ï¿½ Prochain boss toutes les 10 questions`}
               </div>
               {bossActive && (
                 <div className="small" style={{ marginTop: 6 }}>
@@ -3820,7 +3866,7 @@ export default function App() {
                 })}
               </div>
               <div className="small" style={{ marginTop: 8 }}>
-                Jours joues : <b>{playedDays}/{activitySpan}</b> � Streak visuel : <b>{visualStreak}</b>
+                Jours joues : <b>{playedDays}/{activitySpan}</b> ï¿½ Streak visuel : <b>{visualStreak}</b>
               </div>
             </div>
           </div>
@@ -4043,6 +4089,5 @@ export default function App() {
     </div>
   );
 }
-
 
 

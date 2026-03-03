@@ -37,11 +37,11 @@ export default function TopBar({
           <div className="mobileStatPill">Lv {level}</div>
           {canInstallApp && (
             <button className="btn btnPrimary smooth hover-lift press topbarCompactBtn" onClick={onInstallApp} aria-label="Installer l'app">
-              DL
+              App
             </button>
           )}
           <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Reglages">
-            Cfg
+            Reg
           </button>
         </div>
       </div>

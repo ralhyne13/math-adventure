@@ -52,33 +52,46 @@ export default function MobileHomeScreen({
           <div className="mobileStatPill">P {coins} pieces</div>
           <div className="mobileStatPill">Lv {level}</div>
           <div className="mobileStatPill">XP {xp}</div>
-          <div className="mobileStatPill">Stk {streak}</div>
-          <div className="mobileStatPill">Acc {accuracy}%</div>
+          <div className="mobileStatPill">Combo {streak}</div>
+          <div className="mobileStatPill">Precision {accuracy}%</div>
         </div>
 
         <div className="mobileActionRow">
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenPlay}>
-            Play
+            Jouer
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenArena}>
-            Arena
+            Mode Arena
           </button>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
-            Rush
+            Rush 60s
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenShop}>
-            Shop
+            Boutique
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenProfile}>
             Profil
           </button>
-          {canInstallApp && (
-            <button className="btn smooth hover-lift press" onClick={onInstallApp}>
-              Install
-            </button>
-          )}
         </div>
       </div>
+
+      {canInstallApp && (
+        <div className="card smooth mobileInstallBanner">
+          <div>
+            <div className="cardTitle">
+              <span>Installer l'app</span>
+              <span className="pill">mobile</span>
+            </div>
+            <div className="small" style={{ marginTop: 8 }}>
+              Ajoute Math Royale a ton ecran d'accueil pour jouer en plein ecran, avec un lancement plus rapide et un rendu
+              plus proche d'une vraie app mobile.
+            </div>
+          </div>
+          <button className="btn btnPrimary smooth hover-lift press mobileInstallBtn" onClick={onInstallApp}>
+            Installer maintenant
+          </button>
+        </div>
+      )}
 
       <div className="card smooth">
         <div className="cardTitle">
