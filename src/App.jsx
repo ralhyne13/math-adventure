@@ -2788,7 +2788,7 @@ export default function App() {
             <div className="logo smooth" />
             <div>
               <div className="h1">Math Royale</div>
-              <div className="sub">Connecte-toi pour accéder à ton profil</div>
+              <div className="sub">Connexion simple pour retrouver ta progression</div>
             </div>
           </div>
         </div>
@@ -2797,14 +2797,25 @@ export default function App() {
           <div className="card smooth">
             <div className="cardTitle">
               <span>{authMode === "login" ? "Connexion" : "Inscription"}</span>
-              <span className="pill">pseudo + mot de passe</span>
+              <span className="pill">{authMode === "login" ? "accès au profil" : "création rapide"}</span>
             </div>
 
             <div style={{ marginTop: 12, display: "grid", gap: 10, maxWidth: 520 }}>
-              <input className="input smooth" placeholder="Pseudo" value={authPseudo} onChange={(e) => setAuthPseudo(e.target.value)} />
+              <div className="toast" style={{ marginTop: 0 }}>
+                <div>
+                  <strong>{authMode === "login" ? "Entre dans ton espace" : "Crée ton profil joueur"}</strong>
+                  <div className="sub" style={{ marginTop: 6 }}>
+                    {authMode === "login"
+                      ? "Saisis ton pseudo et ton mot de passe pour reprendre exactement là où tu t'es arrêté."
+                      : "Choisis un pseudo simple et un mot de passe facile à retenir."}
+                  </div>
+                </div>
+              </div>
+
+              <input className="input smooth" placeholder="Pseudo (ex: Emma)" value={authPseudo} onChange={(e) => setAuthPseudo(e.target.value)} />
               <input
                 className="input smooth"
-                placeholder="Mot de passe"
+                placeholder={authMode === "login" ? "Mot de passe" : "Mot de passe (4 caractères min.)"}
                 type="password"
                 value={authPass}
                 onChange={(e) => setAuthPass(e.target.value)}
@@ -2832,7 +2843,7 @@ export default function App() {
                     setAuthMode((m) => (m === "login" ? "register" : "login"));
                   }}
                 >
-                  {authMode === "login" ? "Créer un compte" : "J'ai déjà un compte"}
+                  {authMode === "login" ? "Je crée mon compte" : "J'ai déjà un compte"}
                 </button>
 
                 {authMode === "login" && (
@@ -2926,7 +2937,7 @@ export default function App() {
               )}
 
               <div className="small">
-                Note : stockage local (front). Pour une vraie sécurité multi-utilisateurs, il faut un serveur.
+                Tes données restent sur cet appareil tant que tu utilises le mode local.
               </div>
             </div>
           </div>
@@ -3543,102 +3554,6 @@ export default function App() {
               )}
             </div>
             <span className="pill">Parents</span>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>Modes rapides</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Arène: <b>{arenaOn ? "active" : "pause"}</b> | Bonus combo: <b>x{arenaMultNow}</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Rush: <b>{rushScore}</b> pts | Record: <b>{rushBestScore}</b> | Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Coffres prêts: <b>{chestPending}</b> | Progression: <b>{chestProgress}/15</b> | XP x2: <b>{xpBoostActive ? `actif (${xpBoostMinutesLeft} min)` : "off"}</b>
-              </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button className={`btn smooth hover-lift press ${arenaOn ? "btnPrimary" : ""}`} onClick={() => setArenaOn((v) => !v)}>
-                  {arenaOn ? "Arène activée" : "Activer l'arène"}
-                </button>
-                {!rushOn ? (
-                  <button className="btn btnPrimary smooth hover-lift press" onClick={() => setScreen("rush")}>
-                    Lancer Rush
-                  </button>
-                ) : (
-                  <button className="btn smooth hover-lift press" onClick={() => setRushOn(false)}>
-                    Arrêter Rush
-                  </button>
-                )}
-                <button className="btn smooth hover-lift press" onClick={openChest} disabled={chestPending <= 0}>
-                  Ouvrir coffre
-                </button>
-              </div>
-            </div>
-            <span className="pill">Essentiel</span>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\uD83C\uDFAF "}Défis du moment</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Jour: <b>{Math.min(dailyProgress, dailyChallenge?.target ?? 0)}</b> / <b>{dailyChallenge?.target ?? 0}</b>
-                {" | "}
-                Semaine: <b>{Math.min(weeklyProgress, weeklyChallenge?.target ?? 0)}</b> / <b>{weeklyChallenge?.target ?? 0}</b>
-              </div>
-              {dailyChallenge && <div className="small" style={{ marginTop: 6 }}>{dailyChallenge.desc}</div>}
-              {weeklyChallenge && <div className="small" style={{ marginTop: 6 }}>{weeklyChallenge.desc}</div>}
-              {isCollegeNow && (
-                <div className="small" style={{ marginTop: 6 }}>
-                  Collège: <b>{Math.min(collegeArenaToday.hardRight, collegeArenaTarget)}</b> / <b>{collegeArenaTarget}</b> en difficile
-                </div>
-              )}
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button
-                  className="btn btnPrimary smooth hover-lift press"
-                  disabled={!isDailyDone || !!challengeProgress?.claimedDaily}
-                  onClick={() => claimChallenge("daily")}
-                >
-                  {challengeProgress?.claimedDaily ? "Défi du jour reçu" : "Récupérer le défi du jour"}
-                </button>
-                <button
-                  className="btn smooth hover-lift press"
-                  disabled={!isWeeklyDone || !!challengeProgress?.claimedWeekly}
-                  onClick={() => claimChallenge("weekly")}
-                >
-                  {challengeProgress?.claimedWeekly ? "Défi hebdo reçu" : "Récupérer le défi hebdo"}
-                </button>
-                {isCollegeNow && (
-                  <button
-                    className="btn smooth hover-lift press"
-                    disabled={!collegeArenaDone || !!collegeArenaToday.claimed}
-                    onClick={claimCollegeArenaReward}
-                  >
-                    {collegeArenaToday.claimed ? "Défi collège reçu" : "Récupérer le défi collège"}
-                  </button>
-                )}
-              </div>
-            </div>
-            <span className="pill">Récompenses</span>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>Suivi rapide</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Ligue: <b>{leagueTier.label}</b> | Points: <b>{league?.points ?? 0}</b> | Fin: <b>{seasonDaysLeft}j</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Rang local: <b>{localCompetition.myRank || "-"}</b> / <b>{localCompetition.rows.length}</b> | Jours joués: <b>{playedDays}/{activitySpan}</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Streak visuel: <b>{visualStreak}</b> | Connexion: <b>{loginStreak}/7</b> | Dernière: <b>{lastLoginDayKey ?? "-"}</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Premium: <b>{premiumLabel}</b> | Boss: <b>{bossActive ? "en cours" : "attente"}</b>
-              </div>
-            </div>
-            <span className="pill">Résumé</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
