@@ -3450,7 +3450,6 @@ export default function App() {
                 onStartStudy5={startStudy5}
                 onOpenChest={openChest}
               />
-              <QuestionCard {...questionCardProps} />
             </div>
           ) : (
             <>

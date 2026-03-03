@@ -396,19 +396,29 @@ export default function RushScreen({
   const body = (
     <>
       {embedded && (
-        <div className="classicPlayTopbar classicModeBar rushEmbeddedActions">
-          <button className="btn smooth hover-lift press" onClick={onExit}>
-            Accueil
-          </button>
-          <div className="classicPlayTitleWrap">
+        <section className="classicPlayTopbar classicModeBar rushEmbeddedActions mobileModeHero mobileModeHeroRush">
+          <div className="mobileModeHeroTop">
+            <button className="btn smooth hover-lift press" onClick={onExit}>
+              Accueil
+            </button>
+            <div className="mobileModeHeroPills">
+              <span className="pill">Rush</span>
+              <span className="pill">Arcade</span>
+            </div>
+          </div>
+
+          <div className="classicPlayTitleWrap mobileModeTitleWrap">
             <div className="classicModeEyebrow">Arcade mobile</div>
             <div className="classicPlayTitle">Rush 60s</div>
-            <div className="small">Score max, combo et multiplicateur</div>
+            <div className="small">Score max, combo, multiplicateur et decisions instantanees.</div>
           </div>
-          <button className="btn smooth hover-lift press" onClick={resetRush}>
-            Réinitialiser
-          </button>
-        </div>
+
+          <div className="classicPlayActions mobileModeActionGrid">
+            <button className="btn smooth hover-lift press" onClick={resetRush}>
+              Reinitialiser
+            </button>
+          </div>
+        </section>
       )}
 
       {!embedded && (

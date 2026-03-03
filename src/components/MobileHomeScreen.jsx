@@ -1,4 +1,4 @@
-﻿export default function MobileHomeScreen({
+export default function MobileHomeScreen({
   avatar,
   authUser,
   profileRank,
@@ -27,127 +27,180 @@
   onStartStudy5,
   onOpenChest,
 }) {
-  const dailyPct = Math.round(((dailyProgress || 0) / Math.max(1, dailyChallenge?.target ?? 1)) * 100);
+  const dailyTarget = Math.max(1, dailyChallenge?.target ?? 1);
+  const dailyPct = Math.round(((dailyProgress || 0) / dailyTarget) * 100);
+  const chestPct = Math.round(((chestProgress || 0) / 15) * 100);
 
   return (
-    <div className="mobileStack mobileHomeRefresh">
-      <div className="card smooth mobileHomeHero mobileHomeHeroRefresh">
-        <div className="mobileHomeRow">
+    <div className="mobileStack mobileHomeRefresh mobileHomeTotalRefresh">
+      <section className="card smooth mobileHomeHero mobileHomeHeroRefresh mobileHeroPanel">
+        <div className="mobileHeroGlow" aria-hidden="true" />
+
+        <div className="mobileHomeRow mobileHeroTopRow">
           <div className="mobileHomeIdentity">
-            <div className="mobileAvatar">{avatar.emoji}</div>
+            <div className="mobileAvatar mobileHeroAvatar">{avatar.emoji}</div>
             <div>
-              <div className="mobileHomeEyebrow">Hub mobile</div>
-              <div className="mobileHomeTitle">Math Royale</div>
+              <div className="mobileHomeEyebrow">Experience mobile</div>
+              <div className="mobileHomeTitle mobileHeroMainTitle">Math Royale</div>
               <div className="small">
                 <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
               </div>
-              <div className="small">🔥 Streak login: {loginStreak}/7</div>
             </div>
           </div>
-          <button className="btn smooth hover-lift press" onClick={onOpenSettings}>
-            Réglages
+
+          <button className="btn smooth hover-lift press mobileHeroSettingsBtn" onClick={onOpenSettings}>
+            Reglages
           </button>
         </div>
 
-        <div className="mobileQuickStats mobileQuickStatsRefresh">
-          <div className="mobileStatPill">🪙 {coins} pièces</div>
-          <div className="mobileStatPill">Niv. {level}</div>
-          <div className="mobileStatPill">XP {xp}</div>
-          <div className="mobileStatPill">Combo {streak}</div>
-          <div className="mobileStatPill">Précision {accuracy}%</div>
+        <div className="mobileHeroHeadline">
+          <div className="mobileHeroKicker">Hub principal</div>
+          <div className="mobileHeroSentence">Tout le parcours mobile est centre ici: lancer, progresser, ouvrir, rejouer.</div>
         </div>
 
-        <div className="mobileActionRow mobilePrimaryActions">
-          <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenPlay}>
-            ▶️ Jouer
+        <div className="mobileDashboardGrid">
+          <div className="mobileDashboardCard">
+            <span className="mobileDashboardLabel">Pieces</span>
+            <b>{coins}</b>
+          </div>
+          <div className="mobileDashboardCard">
+            <span className="mobileDashboardLabel">Niveau</span>
+            <b>{level}</b>
+          </div>
+          <div className="mobileDashboardCard">
+            <span className="mobileDashboardLabel">Combo</span>
+            <b>{streak}</b>
+          </div>
+          <div className="mobileDashboardCard">
+            <span className="mobileDashboardLabel">Precision</span>
+            <b>{accuracy}%</b>
+          </div>
+        </div>
+
+        <div className="mobileHeroMetaStrip">
+          <div className="mobileHeroMetaChip">XP {xp}</div>
+          <div className="mobileHeroMetaChip">Login {loginStreak}/7</div>
+          <div className="mobileHeroMetaChip">{currentWorld.icon} {currentWorld.name}</div>
+        </div>
+
+        <div className="mobilePrimaryGrid">
+          <button className="btn btnPrimary smooth hover-lift press mobilePrimaryBtn" onClick={onOpenPlay}>
+            Jouer maintenant
           </button>
-          <button className="btn smooth hover-lift press" onClick={onOpenArena}>
-            🏟️ Mode Arène
+          <button className="btn smooth hover-lift press mobilePrimaryBtn" onClick={onOpenRush}>
+            Rush 60s
           </button>
-          <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
-            ⚡ Rush 60s
-          </button>
-          <button className="btn smooth hover-lift press" onClick={onOpenShop}>
-            🛍️ Boutique
-          </button>
-          <button className="btn smooth hover-lift press" onClick={onOpenProfile}>
-            👤 Profil
+          <button className="btn smooth hover-lift press mobilePrimaryBtn" onClick={onOpenArena}>
+            Mode Arene
           </button>
         </div>
-      </div>
+      </section>
 
       {canInstallApp && (
-        <div className="card smooth mobileInstallBanner mobileSurfaceCard">
+        <section className="card smooth mobileInstallBanner mobileSurfaceCard mobileAnnouncementCard">
           <div>
-            <div className="cardTitle">
-              <span>Installer l’app</span>
-              <span className="pill">mobile</span>
-            </div>
+            <div className="mobileSectionEyebrow">PWA</div>
+            <div className="mobileSectionTitle">Installer la version mobile</div>
             <div className="small" style={{ marginTop: 8 }}>
-              Ajoute Math Royale à ton écran d'accueil pour jouer en plein écran, avec un lancement plus rapide et un rendu
-              plus proche d'une vraie app mobile.
+              Ajoute l'app a l'ecran d'accueil pour un demarrage plus rapide, une interface plus propre et une sensation
+              plus native.
             </div>
           </div>
           <button className="btn btnPrimary smooth hover-lift press mobileInstallBtn" onClick={onInstallApp}>
-            Installer maintenant
+            Installer
           </button>
-        </div>
+        </section>
       )}
 
-      <div className="card smooth mobileSurfaceCard">
-        <div className="cardTitle">
-          <span>
-            {currentWorld.icon} {currentWorld.name}
-          </span>
+      <section className="card smooth mobileSurfaceCard mobileFeaturePanel">
+        <div className="mobileSectionHead">
+          <div>
+            <div className="mobileSectionEyebrow">Progression</div>
+            <div className="mobileSectionTitle">
+              {currentWorld.icon} {currentWorld.name}
+            </div>
+          </div>
           <span className="pill">Niv. {worldLevel}/30</span>
         </div>
-        <div className="mobileStatusGrid" style={{ marginTop: 10 }}>
-          <div className="mobileStatusItem">
+
+        <div className="mobileFeatureGrid">
+          <div className="mobileFeatureCell">
             <span className="small">Boss final</span>
-            <b>{worldBossDone ? "Vaincu" : worldBossReady ? "Prêt" : "En progression"}</b>
+            <b>{worldBossDone ? "Vaincu" : worldBossReady ? "Pret" : "En progression"}</b>
           </div>
-          <div className="mobileStatusItem">
-            <span className="small">Monde</span>
-            <b>{worldLevel}/30</b>
+          <div className="mobileFeatureCell">
+            <span className="small">Objectif</span>
+            <b>{worldBossDone ? "Badge gagne" : "Monter niveau 30"}</b>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="card smooth mobileSurfaceCard">
-        <div className="cardTitle">
-          <span>Défi du jour</span>
+      <section className="card smooth mobileSurfaceCard mobileFeaturePanel">
+        <div className="mobileSectionHead">
+          <div>
+            <div className="mobileSectionEyebrow">Mission</div>
+            <div className="mobileSectionTitle">Defi du jour</div>
+          </div>
           <span className="pill">+{dailyChallenge?.rewardXp ?? 0} XP</span>
         </div>
-        <div className="small" style={{ marginTop: 8 }}>{dailyChallenge?.desc}</div>
-        <div className="barWrap" style={{ marginTop: 10 }}>
-          <div className="bar" style={{ width: `${dailyPct}%` }} />
-        </div>
-        <div className="small" style={{ marginTop: 8 }}>
-          {Math.min(dailyProgress, dailyChallenge?.target ?? 0)} / {dailyChallenge?.target ?? 0}
-        </div>
-      </div>
 
-      <div className="card smooth mobileSurfaceCard">
-        <div className="cardTitle">
-          <span>Récompenses</span>
-          <span className="pill">{chestPending} coffre(s)</span>
+        <div className="small" style={{ marginTop: 8 }}>{dailyChallenge?.desc}</div>
+        <div className="barWrap mobileBarWide" style={{ marginTop: 12 }}>
+          <div className="bar" style={{ width: `${Math.min(100, dailyPct)}%` }} />
         </div>
-        <div className="small" style={{ marginTop: 8 }}>
-          Progression coffre : <b>{chestProgress}/15</b> bonnes réponses
+        <div className="mobileSplitMeta">
+          <span>{Math.min(dailyProgress || 0, dailyTarget)} / {dailyTarget}</span>
+          <span>{dailyPct}%</span>
         </div>
-        <div className="mobileActionRow mobileRewardActions" style={{ marginTop: 12 }}>
-          <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenChest} disabled={chestPending <= 0}>
-            Ouvrir coffre
+      </section>
+
+      <section className="card smooth mobileSurfaceCard mobileFeaturePanel">
+        <div className="mobileSectionHead">
+          <div>
+            <div className="mobileSectionEyebrow">Recompenses</div>
+            <div className="mobileSectionTitle">Coffres et boost</div>
+          </div>
+          <span className="pill">{chestPending} dispo</span>
+        </div>
+
+        <div className="barWrap mobileBarWide" style={{ marginTop: 12 }}>
+          <div className="bar" style={{ width: `${Math.min(100, chestPct)}%` }} />
+        </div>
+        <div className="mobileSplitMeta">
+          <span>Progression coffre</span>
+          <span>{chestProgress}/15</span>
+        </div>
+
+        <div className="mobileSecondaryGrid">
+          <button className="btn btnPrimary smooth hover-lift press mobileSecondaryBtn" onClick={onOpenChest} disabled={chestPending <= 0}>
+            Ouvrir un coffre
           </button>
-          <button className="btn smooth hover-lift press" onClick={onStartStudy5}>
-            Défi 5 min
+          <button className="btn smooth hover-lift press mobileSecondaryBtn" onClick={onStartStudy5}>
+            Defi 5 min
           </button>
         </div>
-      </div>
+      </section>
+
+      <section className="card smooth mobileSurfaceCard mobileFeaturePanel">
+        <div className="mobileSectionHead">
+          <div>
+            <div className="mobileSectionEyebrow">Navigation</div>
+            <div className="mobileSectionTitle">Raccourcis utiles</div>
+          </div>
+        </div>
+
+        <div className="mobileQuickLinkGrid">
+          <button className="btn smooth hover-lift press mobileQuickLinkBtn" onClick={onOpenShop}>
+            Boutique
+          </button>
+          <button className="btn smooth hover-lift press mobileQuickLinkBtn" onClick={onOpenProfile}>
+            Profil
+          </button>
+          <button className="btn smooth hover-lift press mobileQuickLinkBtn" onClick={onOpenSettings}>
+            Reglages
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
-
-
-
-
