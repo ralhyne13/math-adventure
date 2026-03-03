@@ -24,7 +24,7 @@ export default function Shop({
 
   return (
     <Modal title="Boutique - Skins & Avatars" onClose={onClose} presentation={presentation}>
-      <div className="tabs">
+      <div className="panelTabs panelTabsRefresh">
         <button className={`btn smooth hover-lift press ${shopTab === "skins" ? "btnPrimary" : ""}`} onClick={() => setShopTab("skins")}>
           Skins
         </button>
@@ -38,8 +38,8 @@ export default function Shop({
       </div>
 
       {shopTab === "skins" && (
-        <>
-          <div className="small" style={{ marginBottom: 12 }}>
+        <div className="panelSectionStack">
+          <div className="panelIntroCard small" style={{ marginBottom: 12 }}>
             Achète des skins avec tes pièces. Les skins premium demandent un abonnement.
           </div>
 
@@ -49,7 +49,7 @@ export default function Shop({
               const equipped = skinId === s.id;
               const premiumLocked = !!s.premiumOnly && !isPremium;
               return (
-                <div key={s.id} className="shopCard smooth hover-lift">
+                <div key={s.id} className="shopCard smooth hover-lift panelCard">
                   <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
                   <div className="shopRow">
                     <div className="shopLeft">
@@ -83,12 +83,12 @@ export default function Shop({
               );
             })}
           </div>
-        </>
+        </div>
       )}
 
       {shopTab === "avatars" && (
-        <>
-          <div className="small" style={{ marginBottom: 12 }}>
+        <div className="panelSectionStack">
+          <div className="panelIntroCard small" style={{ marginBottom: 12 }}>
             Achète et équipe un avatar.
           </div>
 
@@ -100,7 +100,7 @@ export default function Shop({
               const premiumLocked = !!a.premiumOnly && !isPremium;
 
               return (
-                <div key={a.id} className={`shopCard smooth hover-lift ${isExclusive ? "premium" : ""}`}>
+                <div key={a.id} className={`shopCard smooth hover-lift panelCard ${isExclusive ? "premium" : ""}`}>
                   <div className="shopRibbonWrap">{isExclusive && <div className="ribbon">Exclusif</div>}</div>
                   <div className="shopRow">
                     <div className="shopLeft">
@@ -138,7 +138,7 @@ export default function Shop({
               );
             })}
           </div>
-        </>
+        </div>
       )}
     </Modal>
   );

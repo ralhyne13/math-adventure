@@ -396,11 +396,12 @@ export default function RushScreen({
   const body = (
     <>
       {embedded && (
-        <div className="classicPlayTopbar rushEmbeddedActions">
+        <div className="classicPlayTopbar classicModeBar rushEmbeddedActions">
           <button className="btn smooth hover-lift press" onClick={onExit}>
             Accueil
           </button>
           <div className="classicPlayTitleWrap">
+            <div className="classicModeEyebrow">Arcade mobile</div>
             <div className="classicPlayTitle">Rush 60s</div>
             <div className="small">Score max, combo et multiplicateur</div>
           </div>
@@ -411,16 +412,16 @@ export default function RushScreen({
       )}
 
       {!embedded && (
-        <div className="topbar rushTopbar">
-          <div className="brand">
+        <div className="topbar topbarRefresh rushTopbar">
+          <div className="brand brandRefresh">
             <div className="logo smooth" />
-            <div>
+            <div className="brandCopy">
               <div className="h1">Rush 60s</div>
               <div className="sub">Score max, combo et multiplicateur</div>
             </div>
           </div>
 
-          <div className="hudRight rushTopbarActions">
+          <div className="hudActions rushTopbarActions">
             <button className="btn smooth hover-lift press" onClick={onExit}>
               Retour
             </button>
@@ -432,13 +433,18 @@ export default function RushScreen({
       )}
 
       {phase === "start" && (
-        <div className="card smooth rushStartCard rushPhasePanel">
+        <div className="card smooth rushStartCard rushPhasePanel rushStartRefresh">
           <div className="cardTitle">
             <span>Prêt ?</span>
             <span className="pill">Mode arcade</span>
           </div>
 
-          <div className="filters" style={{ marginTop: 12 }}>
+          <div className="rushConfigPanel" style={{ marginTop: 12 }}>
+            <div className="rushConfigIntro">
+              <div className="questionEyebrow">Configuration</div>
+              <div className="small">Choisis un mode, un niveau et une difficulté avant de lancer la minute.</div>
+            </div>
+            <div className="filters">
             <select className="select smooth" value={modeId} onChange={(e) => setModeId(e.target.value)}>
               {MODES.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -462,9 +468,10 @@ export default function RushScreen({
                 </option>
               ))}
             </select>
+            </div>
           </div>
 
-          <div className="toast" style={{ marginTop: 14 }}>
+          <div className="toast rushRuleCard" style={{ marginTop: 14 }}>
             <div>
               <strong>Règles</strong>
               <div className="sub" style={{ marginTop: 8 }}>
@@ -487,8 +494,8 @@ export default function RushScreen({
       )}
 
       {phase === "play" && (
-        <div className="card smooth rushPlayCard rushPhasePanel">
-          <div className="rushHud">
+        <div className="card smooth rushPlayCard rushPhasePanel rushPlayRefresh">
+          <div className="rushHud rushHudRefresh">
             <div className="rushHudLeft">
               <div className={`rushTime ${dangerTime ? "danger" : ""}`}>Temps {(timeLeft / 1000).toFixed(1)}s</div>
               <div className={`rushBarWrap ${dangerTime ? "danger" : ""}`}>
@@ -507,7 +514,7 @@ export default function RushScreen({
               <div className="rushMult">x{mult}</div>
             </div>
 
-            <div className="rushHudRight">
+            <div className="rushHudRight rushScorePanel">
               <div className="rushScore">{rushScore}</div>
               <div className="small">
                 Meilleur combo : <b>{bestCombo}</b>
@@ -516,8 +523,11 @@ export default function RushScreen({
           </div>
 
           <div className={`heroQuestion rushQuestionShell ${dangerTime ? "rushQuestionDanger" : ""}`} style={{ marginTop: 12 }}>
-            <div className="heroTop">
-              <div className="qPrompt">{q.prompt}</div>
+            <div className="heroTop heroTopRefresh">
+              <div className="questionPromptBlock">
+                <div className="questionEyebrow">Question flash</div>
+                <div className="qPrompt">{q.prompt}</div>
+              </div>
               <div className="heroMeta">
                 <span className="metaPill rushModePill">Rush</span>
               </div>
@@ -550,13 +560,13 @@ export default function RushScreen({
       )}
 
       {phase === "end" && (
-        <div className="card smooth rushEndCard rushPhasePanel">
+        <div className="card smooth rushEndCard rushPhasePanel rushEndRefresh">
           <div className="cardTitle">
             <span>Fin du Rush</span>
             <span className="pill">résultats</span>
           </div>
 
-          <div className="stats" style={{ marginTop: 12 }}>
+          <div className="stats rushEndStats" style={{ marginTop: 12 }}>
             <div className="statBox smooth">
               <div className="statLabel">Score</div>
               <div className="statValue">{rushScore}</div>
@@ -567,7 +577,7 @@ export default function RushScreen({
             </div>
           </div>
 
-          <div className="toast" style={{ marginTop: 14 }}>
+          <div className="toast rushResultCard" style={{ marginTop: 14 }}>
             <div>
               <strong>Record Rush</strong>
               <div className="sub" style={{ marginTop: 8 }}>
@@ -578,7 +588,7 @@ export default function RushScreen({
             <span className="pill">Rush</span>
           </div>
 
-          <div className="toast" style={{ marginTop: 12 }}>
+          <div className="toast rushResultCard" style={{ marginTop: 12 }}>
             <div>
               <strong>Ligue</strong>
               <div className="sub" style={{ marginTop: 8 }}>

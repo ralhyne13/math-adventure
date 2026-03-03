@@ -49,15 +49,15 @@ export default function TopBar({
   }
 
   return (
-    <div className="topbar">
-      <div className="brand">
+    <div className="topbar topbarRefresh">
+      <div className="brand brandRefresh">
         <div className="logo smooth" />
-        <div>
+        <div className="brandCopy">
           <div className="h1">
             Math Royale <span style={{ opacity: 0.92 }}>{avatar.emoji}</span>
           </div>
-          <div className="sub">
-            Connecté : <b>{authUser.pseudoDisplay}</b> | Streak login : <b>{loginStreak}/7</b>
+          <div className="sub brandSub">
+            Profil: <b>{authUser.pseudoDisplay}</b> | Presence: <b>{loginStreak}/7</b>
           </div>
           <div className="rankTag">
             {profileRank.icon} {profileRank.label}
@@ -65,8 +65,8 @@ export default function TopBar({
         </div>
       </div>
 
-      <div className="hud">
-        <div className="hudLeft">
+      <div className="hud hudRefresh">
+        <div className="hudLeft hudPanel">
           <div className="coins chip coinChip smooth" title="Pièces">
             <span className="coinDot" />
             <span>{coins}</span>
@@ -86,7 +86,7 @@ export default function TopBar({
           </div>
         </div>
 
-        <div className="hudPills" aria-label="informations">
+        <div className="hudPills hudPanel" aria-label="informations">
           <span className="pill">Q#{questionIndex}</span>
           <span className="pill">Record: {bestScore}</span>
           <span className="pill">
@@ -94,7 +94,7 @@ export default function TopBar({
           </span>
         </div>
 
-        <div className="hudRight">
+        <div className="hudRight hudActions">
           {canInstallApp && (
             <button className="btn btnPrimary smooth hover-lift press" onClick={onInstallApp} title="Installer l'application">
               Installer l'app

@@ -2385,3 +2385,685 @@ body.reduce-motion.anim-skin::before{ animation:none !important; }
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* UI refresh: global language */
+:root{
+  --bg1:#0b1020;
+  --bg2:#121a30;
+  --card:rgba(14,22,40,.80);
+  --card2:rgba(9,15,28,.92);
+  --stroke:rgba(173,196,255,.12);
+  --text:#f5f7ff;
+  --muted:rgba(222,230,255,.72);
+  --accent:#3b82f6;
+  --accent2:#14b8a6;
+  --shadow:0 18px 48px rgba(2,8,23,.34);
+  --shadowSoft:0 10px 24px rgba(2,8,23,.24);
+  --radius:22px;
+}
+
+body{
+  font-family:"Trebuchet MS","Segoe UI",sans-serif;
+  background:
+    radial-gradient(900px 520px at 0% 0%, rgba(59,130,246,.16), transparent 62%),
+    radial-gradient(900px 520px at 100% 10%, rgba(20,184,166,.12), transparent 62%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+}
+
+.shell{
+  max-width:1180px;
+  padding:20px;
+}
+
+.card{
+  border-radius:var(--radius);
+  border:1px solid var(--stroke);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)),
+    linear-gradient(180deg, var(--card), var(--card2));
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(14px);
+}
+
+.card::before{
+  opacity:.38;
+  background:
+    radial-gradient(420px 220px at 10% 0%, rgba(59,130,246,.08), transparent 60%),
+    radial-gradient(520px 260px at 90% 10%, rgba(20,184,166,.06), transparent 64%);
+}
+
+.cardTitle{
+  font-size:14px;
+  letter-spacing:.2px;
+}
+
+.topbarRefresh{
+  gap:16px;
+  margin-bottom:16px;
+  padding:14px 16px;
+  border-radius:24px;
+  border:1px solid var(--stroke);
+  background:linear-gradient(180deg, rgba(13,20,36,.82), rgba(9,14,26,.9));
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(16px);
+}
+
+.brandRefresh{
+  gap:14px;
+}
+
+.brandCopy{
+  display:grid;
+  gap:4px;
+}
+
+.brandSub{
+  font-size:12px;
+}
+
+.logo{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  background:
+    radial-gradient(22px 22px at 30% 30%, rgba(255,255,255,.36), transparent 60%),
+    linear-gradient(135deg, var(--accent), var(--accent2));
+}
+
+.logo::after{
+  font-size:24px;
+}
+
+.hudRefresh{
+  gap:12px;
+}
+
+.hudPanel{
+  padding:6px;
+  border-radius:18px;
+  border:1px solid rgba(173,196,255,.08);
+  background:rgba(255,255,255,.03);
+}
+
+.hudActions{
+  padding-left:4px;
+}
+
+.chip,
+.coins,
+.pill{
+  border-color:rgba(173,196,255,.12);
+  background:rgba(255,255,255,.045);
+}
+
+.btn{
+  border-radius:14px;
+  border:1px solid rgba(173,196,255,.12);
+  background:rgba(255,255,255,.04);
+  box-shadow:none;
+}
+
+.btn:hover{
+  background:rgba(255,255,255,.09);
+  box-shadow:var(--shadowSoft);
+}
+
+.btnPrimary{
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow:0 12px 28px rgba(59,130,246,.22);
+}
+
+.input,
+.select{
+  border-radius:14px;
+  border-color:rgba(173,196,255,.12);
+  background:rgba(255,255,255,.04);
+}
+
+.landingWrap{
+  max-width:1180px;
+  padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+}
+
+.landingHeroRefresh{
+  padding:24px;
+}
+
+.landingHeroGrid{
+  display:grid;
+  grid-template-columns:minmax(0, 1.35fr) minmax(280px, .65fr);
+  gap:20px;
+  align-items:stretch;
+}
+
+.landingHeroSide{
+  display:grid;
+  gap:14px;
+  align-content:start;
+}
+
+.landingFeatureCard{
+  border-radius:18px;
+  border:1px solid rgba(173,196,255,.10);
+  background:rgba(255,255,255,.035);
+  padding:16px;
+}
+
+.landingFeatureEyebrow{
+  font-size:11px;
+  font-weight:1100;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  color:rgba(222,230,255,.72);
+}
+
+.landingFeatureTitle{
+  margin-top:6px;
+  font-size:20px;
+  font-weight:1200;
+}
+
+.landingTitle{
+  max-width:12ch;
+  font-size:clamp(34px, 5vw, 58px);
+  line-height:.98;
+}
+
+.landingLead{
+  margin-top:14px;
+  max-width:58ch;
+  font-size:15px;
+}
+
+.landingStats{
+  margin-top:18px;
+}
+
+.authShell{
+  max-width:980px;
+}
+
+.authHero{
+  display:grid;
+  gap:14px;
+  margin-bottom:16px;
+  padding:22px;
+}
+
+.authHeroCopy{
+  display:grid;
+  gap:8px;
+}
+
+.authHeroTitle{
+  font-size:clamp(28px, 4vw, 44px);
+  line-height:1;
+  font-weight:1200;
+}
+
+.authHeroLead{
+  font-size:14px;
+}
+
+.authHeroStats{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.authGrid{
+  gap:16px;
+}
+
+.authPanel{
+  padding:18px;
+}
+
+.authForm{
+  margin-top:14px;
+  display:grid;
+  gap:12px;
+  max-width:560px;
+}
+
+.authIntro{
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.authActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.authActions .btn{
+  min-width:160px;
+}
+
+@media (max-width: 900px){
+  .landingHeroGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width: 820px){
+  .shell{
+    padding:14px;
+  }
+
+  .topbarRefresh{
+    padding:12px;
+    border-radius:18px;
+  }
+
+  .authHero,
+  .authPanel,
+  .landingHeroRefresh{
+    padding:16px;
+  }
+
+  .authActions .btn{
+    min-width:0;
+    width:100%;
+  }
+}
+
+/* Question card refresh */
+.questionHeaderRefresh{
+  align-items:center;
+  padding-bottom:8px;
+}
+
+.questionPanelShell,
+.questionCompactStats,
+.progressPanel,
+.historyPanel{
+  position:relative;
+  z-index:1;
+}
+
+.questionControlDeck{
+  margin-top:10px;
+  padding:16px 18px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03)),
+    rgba(10,15,30,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.questionControlIntro{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.questionControlTitle{
+  font-size:14px;
+  font-weight:900;
+  color:rgba(244,247,255,.94);
+  letter-spacing:.15px;
+}
+
+.questionStatusStrip{
+  margin-top:12px;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+}
+
+.progressPanel{
+  margin-top:12px;
+  padding:10px 12px;
+  border-radius:18px;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.06);
+}
+
+.historyPanel{
+  margin-top:10px;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.03);
+}
+
+.historyPanel .miniHistoryWrap,
+.progressPanel .barWrap{
+  margin-top:0;
+}
+
+.questionPromptBlock{
+  display:grid;
+  gap:6px;
+}
+
+.questionActionStack{
+  margin-top:18px;
+  display:grid;
+  gap:12px;
+}
+
+.choiceGridCard{
+  padding:14px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(7,11,24,.34);
+}
+
+.choiceCard{
+  min-height:88px;
+  border-radius:22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)),
+    rgba(255,255,255,.04);
+}
+
+.choiceCard .choiceValue{
+  font-size:clamp(22px, 2vw, 28px);
+}
+
+.questionResultToast{
+  margin-top:16px;
+  border-radius:22px;
+}
+
+.questionCardCompact .questionCompactStats{
+  margin-top:8px;
+}
+
+.questionCardCompact .progressPanelCompact,
+.questionCardCompact .historyPanelCompact{
+  padding:8px 10px;
+  border-radius:14px;
+}
+
+.questionCardCompact .choiceGridCard{
+  padding:10px;
+  border-radius:18px;
+}
+
+.desktopSidePanel{
+  padding:18px;
+}
+
+.worldStatusCard{
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.03)),
+    rgba(11,16,32,.58);
+}
+
+.worldStatusActions{
+  padding-top:2px;
+}
+
+@media (max-width: 820px){
+  .questionControlDeck{
+    padding:14px;
+  }
+
+  .questionControlIntro{
+    display:block;
+    margin-bottom:12px;
+  }
+
+  .questionControlTitle{
+    margin-top:4px;
+  }
+
+  .questionStatusStrip,
+  .progressPanel,
+  .historyPanel{
+    padding:10px 12px;
+  }
+
+  .choiceCard{
+    min-height:76px;
+  }
+}
+
+/* Mobile shell refresh */
+.mobileHomeRefresh{
+  gap:14px;
+}
+
+.mobileHomeHeroRefresh{
+  padding:18px;
+  border-radius:24px;
+}
+
+.mobileHomeEyebrow{
+  margin-bottom:4px;
+  font-size:11px;
+  font-weight:1100;
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  color:rgba(222,230,255,.72);
+}
+
+.mobileQuickStatsRefresh{
+  margin-top:14px;
+  gap:8px;
+}
+
+.mobilePrimaryActions,
+.mobileRewardActions{
+  margin-top:14px;
+}
+
+.mobileSurfaceCard{
+  border-radius:22px;
+}
+
+.mobileStatusGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+
+.mobileStatusItem{
+  padding:12px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.035);
+  display:grid;
+  gap:6px;
+}
+
+.classicModeBar{
+  padding:14px 16px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
+    rgba(8,12,25,.48);
+  box-shadow:0 16px 32px rgba(0,0,0,.18);
+}
+
+.classicModeEyebrow{
+  margin-bottom:4px;
+  font-size:11px;
+  font-weight:1100;
+  letter-spacing:.65px;
+  text-transform:uppercase;
+  color:rgba(222,230,255,.7);
+}
+
+.arenaModeBar{
+  border-color:rgba(255,255,255,.1);
+  background:
+    radial-gradient(240px 120px at 100% 0%, rgba(245,158,11,.1), transparent 70%),
+    linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
+    rgba(8,12,25,.52);
+}
+
+@media (max-width: 820px){
+  .mobileHomeHeroRefresh,
+  .mobileSurfaceCard,
+  .classicModeBar{
+    padding:14px;
+  }
+
+  .mobileStatusGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Rush refresh */
+.rushTopbar{
+  margin-bottom:14px;
+}
+
+.rushTopbarActions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.rushStartRefresh,
+.rushPlayRefresh,
+.rushEndRefresh{
+  border-radius:24px;
+}
+
+.rushConfigPanel{
+  padding:16px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(8,12,25,.34);
+}
+
+.rushConfigIntro{
+  margin-bottom:12px;
+}
+
+.rushRuleCard,
+.rushResultCard{
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.035);
+}
+
+.rushHudRefresh{
+  padding:14px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(10,14,28,.42);
+}
+
+.rushScorePanel{
+  padding:10px 12px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.035);
+}
+
+.rushEndStats .statBox{
+  border-radius:20px;
+}
+
+@media (max-width: 820px){
+  .rushTopbarActions{
+    width:100%;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+  }
+
+  .rushConfigPanel,
+  .rushHudRefresh{
+    padding:14px;
+  }
+
+  .rushScorePanel{
+    padding:8px 10px;
+  }
+}
+
+/* Modal panel refresh */
+.panelTabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.panelTabsRefresh{
+  margin-bottom:14px;
+  padding:12px 14px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(8,12,25,.34);
+}
+
+.panelSectionStack{
+  display:grid;
+  gap:12px;
+}
+
+.panelCard{
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(255,255,255,.025);
+}
+
+.panelIntroCard{
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.03);
+}
+
+.panelSectionLabel{
+  font-weight:900;
+  color:rgba(232,238,255,.82);
+}
+
+.settingsPanelCard{
+  padding:16px;
+}
+
+.settingsSectionTitle{
+  font-weight:1100;
+  margin-bottom:8px;
+}
+
+.settingsToggleList{
+  display:grid;
+  gap:10px;
+}
+
+.settingsRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+@media (max-width: 820px){
+  .panelTabsRefresh,
+  .settingsPanelCard{
+    padding:12px;
+    border-radius:18px;
+  }
+
+  .panelTabs .coins,
+  .panelTabs .chip{
+    margin-left:0 !important;
+  }
+}

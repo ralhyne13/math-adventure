@@ -90,73 +90,103 @@ export default function QuestionCard({
         ))}
       </div>
 
-      <div className={`cardTitle ${compact ? "cardTitleCompact" : ""}`}>
-        <span>Réponds</span>
-        {!compact && <span className="pill">une étape à la fois</span>}
+      <div className={`cardTitle questionHeader questionHeaderRefresh ${compact ? "cardTitleCompact" : ""}`}>
+        <span>{compact ? "Jeu" : "Session active"}</span>
+        {!compact && <span className="pill">reponse rapide</span>}
       </div>
 
       {!compact ? (
-        <>
-        <div className="filters" style={{ marginTop: 10 }}>
-          <select className="select smooth" value={modeId} onChange={(e) => setModeId(e.target.value)}>
-            {MODES.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.icon} {m.label}
-              </option>
-            ))}
-          </select>
-          <select className="select smooth" value={selectedWorldId} onChange={(e) => setSelectedWorldId(e.target.value)}>
-            {worlds.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.icon} {w.name}
-              </option>
-            ))}
-          </select>
-          <select className="select smooth" value={diffId} onChange={(e) => setDiffId(e.target.value)}>
-            {DIFFS.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-          <button className="btn smooth hover-lift press" onClick={resetSession}>
-            Recommencer
-          </button>
+        <div className="questionPanelShell">
+          <div className="questionControlDeck">
+            <div className="questionControlIntro">
+              <div className="questionEyebrow">Configuration rapide</div>
+              <div className="questionControlTitle">Ajuste la session avant chaque serie.</div>
+            </div>
+            <div className="questionToolbar">
+              <div className="questionToolbarGroup">
+                <label className="questionSelectLabel">
+                  <span>Mode</span>
+                  <select className="select smooth" value={modeId} onChange={(e) => setModeId(e.target.value)}>
+                    {MODES.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.icon} {m.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="questionSelectLabel">
+                  <span>Monde</span>
+                  <select className="select smooth" value={selectedWorldId} onChange={(e) => setSelectedWorldId(e.target.value)}>
+                    {worlds.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.icon} {w.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="questionSelectLabel">
+                  <span>Difficulte</span>
+                  <select className="select smooth" value={diffId} onChange={(e) => setDiffId(e.target.value)}>
+                    {DIFFS.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <button className="btn smooth hover-lift press" onClick={resetSession}>
+                Recommencer
+              </button>
+            </div>
+          </div>
+
+          <div className="questionStatusStrip">
+            <div className="questionStatusRow questionStatusGrid">
+              <span className="pill">Adaptatif {adaptiveOn ? "actif" : "off"}</span>
+              <span className="pill">Monde {worldLevel}/30</span>
+              <span className="pill">{modeLabel}</span>
+              {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final pret</span> : null}
+            </div>
+          </div>
         </div>
-        <div className="questionStatusRow">
-          <span className="pill">Adaptatif {adaptiveOn ? "activé" : "désactivé"}</span>
-          <span className="pill">Monde {worldLevel}/30</span>
-          {worldBossDone ? <span className="pill">Boss final vaincu</span> : worldBossReady ? <span className="pill">Boss final prêt</span> : null}
-        </div>
-        </>
       ) : (
-        <div className="questionCompactTop">
-          <span className="pill">{worldLabel?.icon} {worldLevel}/30</span>
-          <span className="pill">{diffLabel}</span>
+        <div className="questionCompactStats">
+          <div className="questionCompactTop">
+            <span className="pill">{worldLabel?.icon} {worldLevel}/30</span>
+            <span className="pill">{diffLabel}</span>
+          </div>
         </div>
       )}
 
-      <div className={`barWrap ${compact ? "barWrapCompact" : ""}`} aria-label="xp">
-        <div className="bar" style={{ width: `${xpPct}%` }} />
-      </div>
-
-      <div className={`miniHistoryWrap ${compact ? "miniHistoryCompact" : ""}`} aria-label="historique des 10 dernières réponses">
-        <div className="miniHistoryLabel">
-          {compact ? "Récent" : "Rythme"} : <span className="miniHistoryCount">{Math.min(sessionAnswered, historySlots)}/{historySlots}</span>
-        </div>
-        <div className="miniHistory">
-          {[...Array(historySlots)].map((_, i) => {
-            const item = lastAnswers[i];
-            const cls = item ? (item.ok ? "ok" : "bad") : "empty";
-            return <span key={i} className={`miniDot ${cls}`} />;
-          })}
+      <div className={`progressPanel ${compact ? "progressPanelCompact" : ""}`}>
+        <div className={`barWrap ${compact ? "barWrapCompact" : ""}`} aria-label="xp">
+          <div className="bar" style={{ width: `${xpPct}%` }} />
         </div>
       </div>
 
-      <div className={`heroQuestion ${compact ? "heroQuestionCompact" : ""} ${rushDanger ? "rushDanger" : ""}`} data-status={status}>
-        <div className="heroTop">
-          <div className="qPrompt">{q.prompt}</div>
-          <div className="heroMeta">
+      <div className={`historyPanel ${compact ? "historyPanelCompact" : ""}`}>
+        <div className={`miniHistoryWrap ${compact ? "miniHistoryCompact" : ""}`} aria-label="historique des 10 dernières réponses">
+          <div className="miniHistoryLabel">
+            {compact ? "Récent" : "Rythme"} : <span className="miniHistoryCount">{Math.min(sessionAnswered, historySlots)}/{historySlots}</span>
+          </div>
+          <div className="miniHistory">
+            {[...Array(historySlots)].map((_, i) => {
+              const item = lastAnswers[i];
+              const cls = item ? (item.ok ? "ok" : "bad") : "empty";
+              return <span key={i} className={`miniDot ${cls}`} />;
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className={`heroQuestion questionHeroRefresh ${compact ? "heroQuestionCompact" : ""} ${rushDanger ? "rushDanger" : ""}`} data-status={status}>
+        <div className="heroTop heroTopRefresh">
+          <div className="questionPromptBlock">
+            <div className="questionEyebrow">Question en cours</div>
+            <div className="qPrompt">{q.prompt}</div>
+          </div>
+          <div className="heroMeta heroMetaRefresh">
             <span className="metaPill">
               <span className="metaIcon">Combo</span> <b>{streak}</b>
             </span>
@@ -207,7 +237,8 @@ export default function QuestionCard({
           </>
         )}
 
-        <div className="qRow">
+        <div className="qStage">
+          <div className="qRow">
           {q.row.kind === "op" && (
             <>
               <div className="bigOp">{q.row.a}</div>
@@ -258,48 +289,51 @@ export default function QuestionCard({
               <div className="bigOp">{q.row.b}</div>
             </>
           )}
-        </div>
-
-        <div className={`learningRow ${compact ? "learningRowCompact" : ""}`}>
-          <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
-            {compact ? "Indice" : `Indice ${hintLevel + 1}/${hintList.length}`}
-            {!compact && canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} pièce${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
-          </button>
-          {!compact && <span className="small">Les indices aident, mais coûtent des pièces (sauf le 1er en facile).</span>}
-        </div>
-        {hintMsg && !visibleHints.length && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
-
-        {!!visibleHints.length && (
-          <div className="hintBox">
-            {visibleHints.map((h, i) => (
-              <div key={i} className="small">
-                <b>Indice {i + 1}.</b> {h}
-              </div>
-            ))}
-            {hintMsg && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
           </div>
-        )}
+        </div>
 
-        <div className={`controls ${compact ? "controlsCompact" : ""}`}>
-          {q.choices.map((c) => {
-            const isPressed = picked === c;
-            const stateCls = showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";
-            return (
-              <button key={String(c)} className={`choice choiceCard smooth press ${stateCls}`} onClick={() => submit(c)} aria-pressed={isPressed} disabled={disableChoices}>
-                <span className="choiceValue">{String(c)}</span>
-              </button>
-            );
-          })}
-
-          {showExplain && (
-            <button className="btn btnPrimary smooth hover-lift press" onClick={goNext}>
-              Suivant
+        <div className="questionActionStack">
+          <div className={`learningRow questionHintBar ${compact ? "learningRowCompact" : ""}`}>
+            <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
+              {compact ? "Indice" : `Indice ${hintLevel + 1}/${hintList.length}`}
+              {!compact && canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} pièce${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
             </button>
+            {!compact && <span className="small">Les indices t'aident a avancer sans casser le rythme.</span>}
+          </div>
+          {hintMsg && !visibleHints.length && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
+
+          {!!visibleHints.length && (
+            <div className="hintBox">
+              {visibleHints.map((h, i) => (
+                <div key={i} className="small">
+                  <b>Indice {i + 1}.</b> {h}
+                </div>
+              ))}
+              {hintMsg && <div className="small" style={{ marginTop: 8 }}>{hintMsg}</div>}
+            </div>
           )}
+
+          <div className={`controls controlsRefresh choiceGridCard ${compact ? "controlsCompact" : ""}`}>
+            {q.choices.map((c) => {
+              const isPressed = picked === c;
+              const stateCls = showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";
+              return (
+                <button key={String(c)} className={`choice choiceCard smooth press ${stateCls}`} onClick={() => submit(c)} aria-pressed={isPressed} disabled={disableChoices}>
+                  <span className="choiceValue">{String(c)}</span>
+                </button>
+              );
+            })}
+
+            {showExplain && (
+              <button className="btn btnPrimary smooth hover-lift press" onClick={goNext}>
+                Suivant
+              </button>
+            )}
+          </div>
         </div>
 
         {showExplain && (
-          <div className={`toast ${status === "ok" ? "ok" : "bad"}`}>
+          <div className={`toast questionResultToast ${status === "ok" ? "ok" : "bad"}`}>
             <div>
               {status === "ok" ? <strong>Bien joué</strong> : <strong>Oups</strong>}
               <div className="sub" style={{ marginTop: 4 }}>

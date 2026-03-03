@@ -30,12 +30,13 @@
   const dailyPct = Math.round(((dailyProgress || 0) / Math.max(1, dailyChallenge?.target ?? 1)) * 100);
 
   return (
-    <div className="mobileStack">
-      <div className="card smooth mobileHomeHero">
+    <div className="mobileStack mobileHomeRefresh">
+      <div className="card smooth mobileHomeHero mobileHomeHeroRefresh">
         <div className="mobileHomeRow">
           <div className="mobileHomeIdentity">
             <div className="mobileAvatar">{avatar.emoji}</div>
             <div>
+              <div className="mobileHomeEyebrow">Hub mobile</div>
               <div className="mobileHomeTitle">Math Royale</div>
               <div className="small">
                 <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
@@ -48,7 +49,7 @@
           </button>
         </div>
 
-        <div className="mobileQuickStats">
+        <div className="mobileQuickStats mobileQuickStatsRefresh">
           <div className="mobileStatPill">🪙 {coins} pièces</div>
           <div className="mobileStatPill">Niv. {level}</div>
           <div className="mobileStatPill">XP {xp}</div>
@@ -56,7 +57,7 @@
           <div className="mobileStatPill">Précision {accuracy}%</div>
         </div>
 
-        <div className="mobileActionRow">
+        <div className="mobileActionRow mobilePrimaryActions">
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenPlay}>
             ▶️ Jouer
           </button>
@@ -76,7 +77,7 @@
       </div>
 
       {canInstallApp && (
-        <div className="card smooth mobileInstallBanner">
+        <div className="card smooth mobileInstallBanner mobileSurfaceCard">
           <div>
             <div className="cardTitle">
               <span>Installer l’app</span>
@@ -93,19 +94,26 @@
         </div>
       )}
 
-      <div className="card smooth">
+      <div className="card smooth mobileSurfaceCard">
         <div className="cardTitle">
           <span>
             {currentWorld.icon} {currentWorld.name}
           </span>
           <span className="pill">Niv. {worldLevel}/30</span>
         </div>
-        <div className="small" style={{ marginTop: 8 }}>
-          Boss final: <b>{worldBossDone ? "Vaincu" : worldBossReady ? "Prêt" : "En progression"}</b>
+        <div className="mobileStatusGrid" style={{ marginTop: 10 }}>
+          <div className="mobileStatusItem">
+            <span className="small">Boss final</span>
+            <b>{worldBossDone ? "Vaincu" : worldBossReady ? "Prêt" : "En progression"}</b>
+          </div>
+          <div className="mobileStatusItem">
+            <span className="small">Monde</span>
+            <b>{worldLevel}/30</b>
+          </div>
         </div>
       </div>
 
-      <div className="card smooth">
+      <div className="card smooth mobileSurfaceCard">
         <div className="cardTitle">
           <span>Défi du jour</span>
           <span className="pill">+{dailyChallenge?.rewardXp ?? 0} XP</span>
@@ -119,7 +127,7 @@
         </div>
       </div>
 
-      <div className="card smooth">
+      <div className="card smooth mobileSurfaceCard">
         <div className="cardTitle">
           <span>Récompenses</span>
           <span className="pill">{chestPending} coffre(s)</span>
@@ -127,7 +135,7 @@
         <div className="small" style={{ marginTop: 8 }}>
           Progression coffre : <b>{chestProgress}/15</b> bonnes réponses
         </div>
-        <div className="mobileActionRow" style={{ marginTop: 12 }}>
+        <div className="mobileActionRow mobileRewardActions" style={{ marginTop: 12 }}>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenChest} disabled={chestPending <= 0}>
             Ouvrir coffre
           </button>

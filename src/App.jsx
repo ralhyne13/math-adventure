@@ -2765,7 +2765,7 @@ export default function App() {
   /* ------------------------ Not logged in screen ------------------------ */
   if (!isLoggedIn) {
     return (
-      <div className="shell">
+      <div className="shell authShell">
         <div className="mathBg" aria-hidden="true">
           {FLOATERS.map((t, i) => (
             <span
@@ -2783,39 +2783,43 @@ export default function App() {
           ))}
         </div>
 
-        <div className="topbar">
-          <div className="brand">
-            <div className="logo smooth" />
-            <div>
-              <div className="h1">Math Royale</div>
-              <div className="sub">Connexion simple pour retrouver ta progression</div>
-            </div>
+        <section className="card smooth authHero">
+          <div className="authHeroCopy">
+            <span className="landingBadge">Math Royale</span>
+            <div className="h1 authHeroTitle">Reconnecte-toi et reprends ton aventure.</div>
+            <div className="sub authHeroLead">Un acces simple a ton profil, tes mondes et tes progres.</div>
           </div>
-        </div>
+          <div className="authHeroStats">
+            <span className="pill">Connexion rapide</span>
+            <span className="pill">Progression sauvegardee</span>
+            <span className="pill">Retour immediat au jeu</span>
+          </div>
+        </section>
 
-        <div className="grid" style={{ gridTemplateColumns: "1fr" }}>
-          <div className="card smooth">
+        <div className="grid authGrid" style={{ gridTemplateColumns: "1fr" }}>
+          <div className="card smooth authPanel">
             <div className="cardTitle">
               <span>{authMode === "login" ? "Connexion" : "Inscription"}</span>
-              <span className="pill">{authMode === "login" ? "accès au profil" : "création rapide"}</span>
+              <span className="pill">{authMode === "login" ? "retour au profil" : "creation rapide"}</span>
             </div>
 
-            <div style={{ marginTop: 12, display: "grid", gap: 10, maxWidth: 520 }}>
-              <div className="toast" style={{ marginTop: 0 }}>
+            <div className="authForm">
+              <div className="toast authIntro" style={{ marginTop: 0 }}>
                 <div>
-                  <strong>{authMode === "login" ? "Entre dans ton espace" : "Crée ton profil joueur"}</strong>
+                  <strong>{authMode === "login" ? "Entre dans ton espace" : "Cree ton profil joueur"}</strong>
                   <div className="sub" style={{ marginTop: 6 }}>
                     {authMode === "login"
-                      ? "Saisis ton pseudo et ton mot de passe pour reprendre exactement là où tu t'es arrêté."
-                      : "Choisis un pseudo simple et un mot de passe facile à retenir."}
+                      ? "Saisis ton pseudo et ton mot de passe pour reprendre exactement la ou tu t'es arrete."
+                      : "Choisis un pseudo simple et un mot de passe facile a retenir."}
                   </div>
                 </div>
+                <span className="pill">{authMode === "login" ? "profil" : "nouveau joueur"}</span>
               </div>
 
-              <input className="input smooth" placeholder="Pseudo (ex: Emma)" value={authPseudo} onChange={(e) => setAuthPseudo(e.target.value)} />
+              <input className="input smooth" placeholder="Ton pseudo (ex: Emma)" value={authPseudo} onChange={(e) => setAuthPseudo(e.target.value)} />
               <input
                 className="input smooth"
-                placeholder={authMode === "login" ? "Mot de passe" : "Mot de passe (4 caractères min.)"}
+                placeholder={authMode === "login" ? "Ton mot de passe" : "Choisis un mot de passe (4 caracteres min.)"}
                 type="password"
                 value={authPass}
                 onChange={(e) => setAuthPass(e.target.value)}
@@ -2823,7 +2827,7 @@ export default function App() {
 
               {authMsg && <div className="authMsg">{authMsg}</div>}
 
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <div className="authActions">
                 {authMode === "login" ? (
                   <button className="btn btnPrimary smooth hover-lift press" onClick={doLogin}>
                     Se connecter
@@ -2860,7 +2864,7 @@ export default function App() {
                 )}
               </div>
 
-              {pwMode === "forgot" && (
+                  {pwMode === "forgot" && (
                 <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
                   {cloudEnabled ? (
                     <>
@@ -2936,9 +2940,7 @@ export default function App() {
                 </div>
               )}
 
-              <div className="small">
-                Tes données restent sur cet appareil tant que tu utilises le mode local.
-              </div>
+              <div className="small">En mode local, tes donnees restent sur cet appareil.</div>
             </div>
           </div>
         </div>
@@ -3466,13 +3468,13 @@ export default function App() {
 
               <div className="grid appFrame">
                 <QuestionCard {...questionCardProps} />
-                <div className="card smooth">
+                <div className="card smooth desktopSidePanel">
                   <div className="cardTitle">
                     <span>{currentWorld.name}</span>
                     <span className="pill">{worldBossDone ? "Badge acquis" : "Aventure"}</span>
                   </div>
 
-                  <div className="toast" style={{ marginTop: 12 }}>
+                  <div className="toast worldStatusCard" style={{ marginTop: 12 }}>
                     <div style={{ width: "100%" }}>
                       <strong>Progression du monde</strong>
                       <div className="small" style={{ marginTop: 6 }}>
@@ -3485,7 +3487,7 @@ export default function App() {
                       <div className="small" style={{ marginTop: 6 }}>
                         Badge special: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non debloque"}</b>
                       </div>
-                      <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <div className="worldStatusActions" style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                         <button className="btn btnPrimary smooth hover-lift press" onClick={startWorldBoss} disabled={!worldBossReady}>
                           Lancer boss final
                         </button>
