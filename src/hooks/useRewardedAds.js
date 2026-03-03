@@ -96,7 +96,7 @@ export default function useRewardedAds({
       showCoachPopup({
         title: "Cooldown pub",
         lines: [`Attends encore ${left}s avant une autre pub optionnelle.`],
-        hint: "Le cooldown evite le spam de recompenses.",
+        hint: "Le délai évite le spam de récompenses.",
       });
       return false;
     }
@@ -105,7 +105,7 @@ export default function useRewardedAds({
     if (!isPremium && used >= OPTIONAL_AD_LIMITS.total) {
       showCoachPopup({
         title: "Quota pub atteint",
-        lines: [`Version gratuite: ${OPTIONAL_AD_LIMITS.total} pubs optionnelles par jour.`],
+        lines: [`Version gratuite : ${OPTIONAL_AD_LIMITS.total} pubs optionnelles par jour.`],
         hint: "Reviens demain ou passe Premium.",
       });
       return false;
@@ -115,7 +115,7 @@ export default function useRewardedAds({
     if (!isPremium && usedByKind >= kindLimit) {
       showCoachPopup({
         title: "Quota type atteint",
-        lines: [`Cette recompense est limitee a ${kindLimit} pubs par jour.`],
+        lines: [`Cette récompense est limitée à ${kindLimit} pubs par jour.`],
         hint: "Choisis un autre bonus ou reviens demain.",
       });
       return false;
@@ -131,7 +131,7 @@ export default function useRewardedAds({
     setAdSim({
       kind,
       provider: "simulation_locale",
-      title: summary?.title ?? "Publicite optionnelle",
+      title: summary?.title ?? "Publicité optionnelle",
       lines: summary?.lines ?? ["Lecture en cours..."],
       secondsLeft: 3,
       usedAfterStart,
@@ -153,8 +153,8 @@ export default function useRewardedAds({
         setAdSim({
           kind,
           provider: "regie_externe",
-          title: "Connexion regie publicitaire",
-          lines: ["Demande envoyee a la regie configuree.", "Fallback automatique si indisponible."],
+          title: "Connexion régie publicitaire",
+          lines: ["Demande envoyée à la régie configurée.", "Bascule automatique si indisponible."],
           secondsLeft: 1,
           usedAfterStart,
           usedKindAfterStart,
@@ -166,9 +166,9 @@ export default function useRewardedAds({
             setAdSim(null);
             if (granted === false) {
               showCoachPopup({
-                title: "Pub ignoree",
-                lines: ["Aucune recompense accordee."],
-                hint: "Tu peux reessayer plus tard.",
+                title: "Pub ignorée",
+                lines: ["Aucune récompense accordée."],
+                hint: "Tu peux réessayer plus tard.",
               });
               return;
             }

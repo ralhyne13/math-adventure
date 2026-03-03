@@ -46,7 +46,7 @@ export default function LandingPage({ onEnterApp }) {
 
     if (parentName.length < 2) return setMsg("Nom parent trop court.");
     if (!email.includes("@")) return setMsg("Email invalide.");
-    if (!childAge) return setMsg("Age enfant requis.");
+    if (!childAge) return setMsg("Âge enfant requis.");
 
     const entry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -70,7 +70,7 @@ export default function LandingPage({ onEnterApp }) {
     }
 
     setForm(getInitialForm());
-    setMsg(cloudEnabled ? "OK. Inscription beta enregistree." : "OK. Inscription beta locale enregistree.");
+    setMsg(cloudEnabled ? "OK. Inscription bêta enregistrée." : "OK. Inscription bêta locale enregistrée.");
   }
 
   return (
@@ -78,26 +78,26 @@ export default function LandingPage({ onEnterApp }) {
       <section className="landingHero card smooth">
         <span className="landingBadge">Math Royale</span>
         <h1 className="landingTitle">Le jeu de maths qui donne envie de progresser.</h1>
-        <p className="landingLead">Entrainement adaptatif, defis, mondes, boss et progression claire pour primaire + college.</p>
+        <p className="landingLead">Entraînement adaptatif, défis, mondes, boss et progression claire pour primaire + collège.</p>
         <div className="landingCtas">
           <button className="btn btnPrimary smooth hover-lift press" onClick={onEnterApp}>
             Entrer dans l'app
           </button>
           <a className="btn smooth hover-lift press" href="#beta-parents">
-            Rejoindre la beta parents
+            Rejoindre la bêta parents
           </a>
         </div>
         <div className="landingStats">
           <span className="pill">Modes adaptatifs</span>
           <span className="pill">Mondes progressifs</span>
-          <span className="pill">Beta parents: {betaCount}</span>
-          <span className="pill">{cloudEnabled ? "Sync cloud active" : "Mode local"}</span>
+          <span className="pill">Bêta parents : {betaCount}</span>
+          <span className="pill">{cloudEnabled ? "Sync cloud activée" : "Mode local"}</span>
         </div>
       </section>
 
       <section id="beta-parents" className="landingBeta card smooth">
         <div className="cardTitle">
-          <span>Beta Test Parents</span>
+          <span>Bêta test parents</span>
           <span className="pill">Inscription rapide</span>
         </div>
 
@@ -117,7 +117,7 @@ export default function LandingPage({ onEnterApp }) {
           />
           <input
             className="input smooth"
-            placeholder="Age de l'enfant (ex: 8)"
+            placeholder="Âge de l'enfant (ex: 8)"
             value={form.childAge}
             onChange={(e) => updateField("childAge", e.target.value)}
           />
@@ -132,7 +132,7 @@ export default function LandingPage({ onEnterApp }) {
 
           <div className="landingFormActions">
             <button className="btn btnPrimary smooth hover-lift press" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Envoi..." : "Rejoindre la beta"}
+              {isSubmitting ? "Envoi..." : "Rejoindre la bêta"}
             </button>
             <button className="btn smooth hover-lift press" type="button" onClick={onEnterApp}>
               Aller au jeu
@@ -143,4 +143,3 @@ export default function LandingPage({ onEnterApp }) {
     </div>
   );
 }
-

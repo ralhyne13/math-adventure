@@ -50,7 +50,7 @@
 
         <div className="mobileQuickStats">
           <div className="mobileStatPill">🪙 {coins} pièces</div>
-          <div className="mobileStatPill">Lv {level}</div>
+          <div className="mobileStatPill">Niv. {level}</div>
           <div className="mobileStatPill">XP {xp}</div>
           <div className="mobileStatPill">Combo {streak}</div>
           <div className="mobileStatPill">Précision {accuracy}%</div>
@@ -61,7 +61,7 @@
             ▶️ Jouer
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenArena}>
-            🏟️ Mode Arena
+            🏟️ Mode Arène
           </button>
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
             ⚡ Rush 60s

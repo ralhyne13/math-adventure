@@ -49,10 +49,10 @@ export default function Settings({
       <div className="shopCard" style={{ marginTop: 12 }}>
         <div style={{ fontWeight: 1100, marginBottom: 8 }}>Rythme</div>
         <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-          <span>Auto-suivant apres explication</span>
+          <span>Auto-suivant après explication</span>
           <input type="checkbox" checked={autoNextOn} onChange={(e) => setAutoNextOn(e.target.checked)} />
         </label>
-        <div className="small" style={{ marginTop: 8 }}>Delai (ms) : {autoNextMs}</div>
+        <div className="small" style={{ marginTop: 8 }}>Délai (ms) : {autoNextMs}</div>
         <input
           type="range"
           min={600}
@@ -65,13 +65,13 @@ export default function Settings({
       </div>
 
       <div className="shopCard" style={{ marginTop: 12 }}>
-        <div style={{ fontWeight: 1100, marginBottom: 8 }}>Accessibilite</div>
+        <div style={{ fontWeight: 1100, marginBottom: 8 }}>Accessibilité</div>
         <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-          <span>Reduire les animations</span>
+          <span>Réduire les animations</span>
           <input type="checkbox" checked={reduceMotion} onChange={(e) => setReduceMotion(e.target.checked)} />
         </label>
         <div className="small" style={{ marginTop: 8 }}>
-          Skins animes : {skinAnimated ? <b>disponible</b> : <b>skin statique</b>} (desactive si reduction active)
+          Skins animés : {skinAnimated ? <b>disponible</b> : <b>skin statique</b>} (désactivé si réduction active)
         </div>
       </div>
 
@@ -82,7 +82,7 @@ export default function Settings({
           <input type="checkbox" checked={adaptiveOn} onChange={(e) => setAdaptiveOn(e.target.checked)} />
         </label>
         <div className="small" style={{ marginTop: 8 }}>
-          Sur 20 reponses : plus de 85% = difficulte +1, moins de 55% = difficulte -1 plus entrainement cible.
+          Sur 20 réponses : plus de 85% = difficulté +1, moins de 55% = difficulté -1 plus entraînement ciblé.
         </div>
       </div>
 
@@ -93,13 +93,13 @@ export default function Settings({
           <input type="checkbox" checked={noPenaltyOnWrong} onChange={(e) => setNoPenaltyOnWrong(e.target.checked)} />
         </label>
         <div className="small" style={{ marginTop: 8 }}>
-          Recommande pour CP/CE1 : l'erreur ne retire aucune piece.
+          Recommandé pour CP/CE1 : l'erreur ne retire aucune pièce.
         </div>
       </div>
 
       <div className="shopCard" style={{ marginTop: 12 }}>
-        <div style={{ fontWeight: 1100, marginBottom: 8 }}>Securite</div>
-        <div className="small" style={{ marginBottom: 10 }}>Changer ton mot de passe (stocke hache en local).</div>
+        <div style={{ fontWeight: 1100, marginBottom: 8 }}>Sécurité</div>
+        <div className="small" style={{ marginBottom: 10 }}>Changer ton mot de passe (stocké haché en local).</div>
         <div style={{ display: "grid", gap: 10, maxWidth: 520 }}>
           <input className="input smooth" placeholder="Mot de passe actuel" type="password" value={pwCurrent} onChange={(e) => setPwCurrent(e.target.value)} />
           <input
@@ -118,7 +118,7 @@ export default function Settings({
           />
           {pwChangeMsg && <div className={pwChangeMsg.startsWith("OK") || pwChangeMsg.startsWith("âœ…") ? "authMsg authMsgOk" : "authMsg"}>{pwChangeMsg}</div>}
           <button className="btn btnPrimary smooth hover-lift press" onClick={changePasswordLoggedIn}>
-            Mettre a jour
+            Mettre à jour
           </button>
         </div>
       </div>

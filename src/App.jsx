@@ -1717,7 +1717,7 @@ export default function App() {
       },
       {
         title: "Publicité en cours",
-        lines: ["Preparation d'une vie de survie.", "Fin de la simulation dans 3 secondes."],
+        lines: ["Préparation d'une vie de survie.", "Fin de la simulation dans 3 secondes."],
       }
     );
   }
@@ -1727,7 +1727,7 @@ export default function App() {
     setPremiumPlan(plan);
     if (!premiumSinceTs) setPremiumSinceTs(Date.now());
     showCoachPopup({
-      title: "Premium active",
+      title: "Premium activé",
       lines: [plan === "lifetime" ? "Plan à vie activé" : "Plan mensuel activé"],
       hint: "Skins/avatars premium + Rush illimité + stats avancées.",
     });
@@ -1819,7 +1819,7 @@ export default function App() {
           kind: "up",
           nextDiffId: nextDiff,
           lines: [`Précision sur 20 questions: ${acc20}%. On monte en difficulté (${nextDiff}).`],
-          hint: "Tu progresses tres bien, on augmente le challenge.",
+          hint: "Tu progresses très bien, on augmente le challenge.",
         };
       }
       return null;
@@ -1835,7 +1835,7 @@ export default function App() {
         lines: [
           `Précision sur 20 questions: ${acc20}%.`,
           nextDiff !== diffId ? `On baisse la difficulté (${nextDiff}) pour consolider.` : "On garde la difficulté actuelle.",
-          weakMode ? `Entrainement cible conseille: ${modeName(weakMode)}.` : "Continue sur ce mode pour consolider.",
+          weakMode ? `Entraînement ciblé conseillé : ${modeName(weakMode)}.` : "Continue sur ce mode pour consolider.",
         ],
         hint: weakMode ? modeHint(weakMode) : modeHint(modeId),
       };
@@ -1970,7 +1970,7 @@ export default function App() {
             awardXp(220);
             showBadgePopup({
               icon: "\uD83C\uDFC6",
-              title: `Monde complete: ${currentWorld.name}`,
+              title: `Monde complété : ${currentWorld.name}`,
               desc: `${currentWorld.badge} débloqué | +180 pièces | +220 XP`,
               reward: 180,
             });
@@ -2656,7 +2656,7 @@ export default function App() {
     if (pseudoKey.length < 3) return setPwMsg("Pseudo invalide.");
     if (rec.length < 3) return setPwMsg("Code de récupération manquant.");
     if (next.length < 4) return setPwMsg("Nouveau mot de passe trop court (min 4).");
-    if (next !== next2) return setPwMsg("Confirmation differente.");
+      if (next !== next2) return setPwMsg("Confirmation différente.");
 
     const idx = getUsersIndex();
     const u = idx.users?.[pseudoKey];
@@ -2691,7 +2691,7 @@ export default function App() {
       const next = String(pwChangeNew || "");
       const next2 = String(pwChangeNew2 || "");
       if (next.length < 4) return setPwChangeMsg("Nouveau mot de passe trop court (min 4).");
-      if (next !== next2) return setPwChangeMsg("Confirmation differente.");
+      if (next !== next2) return setPwChangeMsg("Confirmation différente.");
       const upd = await cloudAuthUpdatePassword(authUser.accessToken, next);
       if (!upd?.ok) return setPwChangeMsg("Impossible de changer le mot de passe cloud.");
       setPwCurrent("");
@@ -2708,7 +2708,7 @@ export default function App() {
 
     if (!cur) return setPwChangeMsg("Mot de passe actuel manquant.");
     if (next.length < 4) return setPwChangeMsg("Nouveau mot de passe trop court (min 4).");
-    if (next !== next2) return setPwChangeMsg("Confirmation differente.");
+    if (next !== next2) return setPwChangeMsg("Confirmation différente.");
 
     const idx = getUsersIndex();
     const u = idx.users?.[authUser.pseudoKey];
@@ -3329,7 +3329,7 @@ export default function App() {
               <>
                 <div className="chestIconBig chestRolling" aria-hidden="true" />
                 <div className="chestPopTitle">Ouverture...</div>
-                <div className="chestPopSub">Le coffre tourne avant la revelation.</div>
+                <div className="chestPopSub">Le coffre tourne avant la révélation.</div>
               </>
             ) : (
               <>
@@ -3547,7 +3547,7 @@ export default function App() {
 
           <div className="toast" style={{ marginTop: 12 }}>
             <div style={{ width: "100%" }}>
-              <strong>Mode Arena (principal)</strong>
+              <strong>Mode Arène (principal)</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 État: <b>{arenaOn ? "Actif" : "OFF"}</b> | Série infinie | Boss toutes les 10 questions | Multiplicateur combo jusqu'à <b>x4</b>
               </div>
@@ -3556,7 +3556,7 @@ export default function App() {
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className={`btn smooth hover-lift press ${arenaOn ? "btnPrimary" : ""}`} onClick={() => setArenaOn((v) => !v)}>
-                  {arenaOn ? "Arena ON" : "Arena OFF"}
+                  {arenaOn ? "Arène activée" : "Arène désactivée"}
                 </button>
               </div>
             </div>
@@ -4041,7 +4041,7 @@ export default function App() {
           <span>Jouer</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={openArenaScreen}>
-          <span>Arena</span>
+          <span>Arène</span>
         </button>
         <button
           className={`mobileDockBtn ${mobileRoute === "rush" ? "isActive" : ""}`}
