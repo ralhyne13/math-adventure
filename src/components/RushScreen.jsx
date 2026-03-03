@@ -443,11 +443,28 @@ export default function RushScreen({
       )}
 
       {phase === "start" && (
-        <div className="card smooth rushStartCard rushPhasePanel rushStartRefresh">
+        <div className={`card smooth rushStartCard rushPhasePanel rushStartRefresh ${embedded ? "rushStartMobile" : ""}`}>
           <div className="cardTitle">
             <span>Prêt ?</span>
             <span className="pill">Mode arcade</span>
           </div>
+
+          {embedded && (
+            <div className="rushMobileOverview">
+              <div className="rushMobileOverviewCard">
+                <span className="small">Format</span>
+                <b>60 sec</b>
+              </div>
+              <div className="rushMobileOverviewCard">
+                <span className="small">Objectif</span>
+                <b>Max score</b>
+              </div>
+              <div className="rushMobileOverviewCard">
+                <span className="small">Combo max</span>
+                <b>x5</b>
+              </div>
+            </div>
+          )}
 
           <div className="rushConfigPanel" style={{ marginTop: 12 }}>
             <div className="rushConfigIntro">
@@ -504,8 +521,8 @@ export default function RushScreen({
       )}
 
       {phase === "play" && (
-        <div className="card smooth rushPlayCard rushPhasePanel rushPlayRefresh">
-          <div className="rushHud rushHudRefresh">
+        <div className={`card smooth rushPlayCard rushPhasePanel rushPlayRefresh ${embedded ? "rushPlayMobile" : ""}`}>
+          <div className={`rushHud rushHudRefresh ${embedded ? "rushHudMobile" : ""}`}>
             <div className="rushHudLeft">
               <div className={`rushTime ${dangerTime ? "danger" : ""}`}>Temps {(timeLeft / 1000).toFixed(1)}s</div>
               <div className={`rushBarWrap ${dangerTime ? "danger" : ""}`}>
@@ -532,7 +549,20 @@ export default function RushScreen({
             </div>
           </div>
 
-          <div className={`heroQuestion rushQuestionShell ${dangerTime ? "rushQuestionDanger" : ""}`} style={{ marginTop: 12 }}>
+          {embedded && (
+            <div className="rushMobilePulseRow">
+              <div className="rushMobilePulseCard">
+                <span className="small">Cadence</span>
+                <b>{dangerTime ? "Critique" : "Stable"}</b>
+              </div>
+              <div className="rushMobilePulseCard">
+                <span className="small">Reponse</span>
+                <b>{lock ? "Validee" : "En cours"}</b>
+              </div>
+            </div>
+          )}
+
+          <div className={`heroQuestion rushQuestionShell ${dangerTime ? "rushQuestionDanger" : ""} ${embedded ? "rushQuestionShellMobile" : ""}`} style={{ marginTop: 12 }}>
             <div className="heroTop heroTopRefresh">
               <div className="questionPromptBlock">
                 <div className="questionEyebrow">Question flash</div>
@@ -570,13 +600,13 @@ export default function RushScreen({
       )}
 
       {phase === "end" && (
-        <div className="card smooth rushEndCard rushPhasePanel rushEndRefresh">
+        <div className={`card smooth rushEndCard rushPhasePanel rushEndRefresh ${embedded ? "rushEndMobile" : ""}`}>
           <div className="cardTitle">
             <span>Fin du Rush</span>
             <span className="pill">résultats</span>
           </div>
 
-          <div className="stats rushEndStats" style={{ marginTop: 12 }}>
+          <div className={`stats rushEndStats ${embedded ? "rushEndStatsMobile" : ""}`} style={{ marginTop: 12 }}>
             <div className="statBox smooth">
               <div className="statLabel">Score</div>
               <div className="statValue">{rushScore}</div>
@@ -586,6 +616,19 @@ export default function RushScreen({
               <div className="statValue">{bestCombo}</div>
             </div>
           </div>
+
+          {embedded && (
+            <div className="rushMobileOverview">
+              <div className="rushMobileOverviewCard">
+                <span className="small">Record</span>
+                <b>{rushBest}</b>
+              </div>
+              <div className="rushMobileOverviewCard">
+                <span className="small">Ligue</span>
+                <b>{leagueFromScore(rushBest ?? 0).name}</b>
+              </div>
+            </div>
+          )}
 
           <div className="toast rushResultCard" style={{ marginTop: 14 }}>
             <div>
@@ -646,7 +689,7 @@ export default function RushScreen({
             </div>
           )}
 
-          <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className={embedded ? "rushEndActionsMobile" : ""} style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button className="btn btnPrimary smooth hover-lift press" onClick={startRush}>
               Rejouer
             </button>

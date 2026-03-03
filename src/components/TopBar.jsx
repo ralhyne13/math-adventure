@@ -1,4 +1,4 @@
-﻿import { ACHIEVEMENTS } from "../config/gameData";
+import { ACHIEVEMENTS } from "../config/gameData";
 
 export default function TopBar({
   avatar,
@@ -21,30 +21,44 @@ export default function TopBar({
 }) {
   if (compact) {
     return (
-      <div className="topbar topbarCompact">
-        <div className="topbarCompactLeft">
-          <div className="mobileAvatar topbarCompactAvatar">{avatar.emoji}</div>
-          <div>
-            <div className="topbarCompactTitle">Math Royale</div>
-            <div className="small">
-              <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
+      <section className="topbar topbarCompact topbarCompactRefresh">
+        <div className="topbarCompactShell">
+          <div className="topbarCompactLeft">
+            <div className="mobileAvatar topbarCompactAvatar">{avatar.emoji}</div>
+            <div className="topbarCompactIdentity">
+              <div className="topbarCompactEyebrow">Mobile</div>
+              <div className="topbarCompactTitle">Math Royale</div>
+              <div className="small">
+                <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="topbarCompactRight">
-          <div className="mobileStatPill">\uD83E\uDE99 {coins}</div>
-          <div className="mobileStatPill">Lv {level}</div>
-          {canInstallApp && (
-            <button className="btn btnPrimary smooth hover-lift press topbarCompactBtn" onClick={onInstallApp} aria-label="Installer l'app">
-              {"\uD83D\uDCF2"}
+          <div className="topbarCompactStats">
+            <div className="topbarCompactChip">Pieces {coins}</div>
+            <div className="topbarCompactChip">Niv. {level}</div>
+            <div className="topbarCompactChip">XP {xp}</div>
+            <div className="topbarCompactChip">Login {loginStreak}/7</div>
+          </div>
+
+          <div className="topbarCompactActions">
+            <button className="btn smooth hover-lift press topbarCompactBtn topbarCompactWideBtn" onClick={onOpenShop}>
+              Boutique
             </button>
-          )}
-          <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Réglages">
-              {"\u2699\uFE0F"}
-          </button>
+            <button className="btn smooth hover-lift press topbarCompactBtn topbarCompactWideBtn" onClick={onOpenProfile}>
+              Profil
+            </button>
+            {canInstallApp && (
+              <button className="btn btnPrimary smooth hover-lift press topbarCompactBtn" onClick={onInstallApp} aria-label="Installer l'app">
+                App
+              </button>
+            )}
+            <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Reglages">
+              Regl.
+            </button>
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -117,6 +131,3 @@ export default function TopBar({
     </div>
   );
 }
-
-
-

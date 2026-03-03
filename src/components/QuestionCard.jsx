@@ -90,9 +90,9 @@ export default function QuestionCard({
         ))}
       </div>
 
-      <div className={`cardTitle questionHeader questionHeaderRefresh ${compact ? "cardTitleCompact" : ""}`}>
-        <span>{compact ? "Jeu" : "Session active"}</span>
-        {!compact && <span className="pill">reponse rapide</span>}
+      <div className={`cardTitle questionHeader questionHeaderRefresh ${compact ? "cardTitleCompact questionHeaderCompactRefresh" : ""}`}>
+        <span>{compact ? "Session mobile" : "Session active"}</span>
+        {compact ? <span className="pill">Question</span> : <span className="pill">reponse rapide</span>}
       </div>
 
       {!compact ? (
@@ -151,10 +151,16 @@ export default function QuestionCard({
           </div>
         </div>
       ) : (
-        <div className="questionCompactStats">
+        <div className="questionCompactStats questionCompactStatsRefresh">
           <div className="questionCompactTop">
             <span className="pill">{worldLabel?.icon} {worldLevel}/30</span>
             <span className="pill">{diffLabel}</span>
+            <span className="pill">{modeLabel}</span>
+          </div>
+          <div className="questionCompactMetaRow">
+            <span>Precision {accuracy}%</span>
+            <span>Combo {streak}</span>
+            {rushOn ? <span>Rush {Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</span> : null}
           </div>
         </div>
       )}
@@ -256,7 +262,7 @@ export default function QuestionCard({
           {q.row.kind === "fracEq" && (
             <>
               <Fraction n={q.row.aN} d={q.row.aD} />
-              <div className="bigOp opSep">â‰¡</div>
+              <div className="bigOp opSep">=</div>
               <Fraction n={q.row.bN} d={q.row.bD} />
             </>
           )}
@@ -293,7 +299,7 @@ export default function QuestionCard({
         </div>
 
         <div className="questionActionStack">
-          <div className={`learningRow questionHintBar ${compact ? "learningRowCompact" : ""}`}>
+        <div className={`learningRow questionHintBar ${compact ? "learningRowCompact questionHintBarCompactRefresh" : ""}`}>
             <button className="btn smooth hover-lift press" onClick={useHint} disabled={!canAskHint}>
               {compact ? "Indice" : `Indice ${hintLevel + 1}/${hintList.length}`}
               {!compact && canAskHint && ` (${getHintCost(hintLevel + 1) === 0 ? "gratuit" : `-${getHintCost(hintLevel + 1)} pièce${getHintCost(hintLevel + 1) > 1 ? "s" : ""}`})`}
@@ -313,7 +319,7 @@ export default function QuestionCard({
             </div>
           )}
 
-          <div className={`controls controlsRefresh choiceGridCard ${compact ? "controlsCompact" : ""}`}>
+          <div className={`controls controlsRefresh choiceGridCard ${compact ? "controlsCompact controlsCompactRefresh" : ""}`}>
             {q.choices.map((c) => {
               const isPressed = picked === c;
               const stateCls = showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";

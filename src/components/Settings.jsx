@@ -29,12 +29,24 @@ export default function Settings({
   changePasswordLoggedIn,
 }) {
   if (!show) return null;
+
+  const isMobilePage = presentation === "page";
   const modalTitle = "Reglages";
 
   return (
     <Modal title={modalTitle} onClose={onClose} presentation={presentation}>
-      <div className="panelSectionStack">
-        <div className="shopCard panelCard settingsPanelCard">
+      <div className={`panelSectionStack ${isMobilePage ? "mobilePanelStack" : ""}`}>
+        {isMobilePage && (
+          <section className="panelCard mobilePageHeroCard">
+            <div className="mobileSectionEyebrow">Configuration</div>
+            <div className="mobileSectionTitle">Adapte l'experience mobile</div>
+            <div className="small" style={{ marginTop: 8 }}>
+              Ajuste le rythme, l'accessibilite et la securite sans sortir du parcours mobile.
+            </div>
+          </section>
+        )}
+
+        <div className={`shopCard panelCard settingsPanelCard ${isMobilePage ? "mobileSettingsCard" : ""}`}>
           <div className="settingsSectionTitle">Audio et vibrations</div>
           <div className="settingsToggleList">
             <label className="settingsRow">
@@ -48,7 +60,7 @@ export default function Settings({
           </div>
         </div>
 
-        <div className="shopCard panelCard settingsPanelCard">
+        <div className={`shopCard panelCard settingsPanelCard ${isMobilePage ? "mobileSettingsCard" : ""}`}>
           <div className="settingsSectionTitle">Rythme</div>
           <label className="settingsRow">
             <span>Auto-suivant apres explication</span>
@@ -66,7 +78,7 @@ export default function Settings({
           />
         </div>
 
-        <div className="shopCard panelCard settingsPanelCard">
+        <div className={`shopCard panelCard settingsPanelCard ${isMobilePage ? "mobileSettingsCard" : ""}`}>
           <div className="settingsSectionTitle">Accessibilite</div>
           <label className="settingsRow">
             <span>Reduire les animations</span>
@@ -77,7 +89,7 @@ export default function Settings({
           </div>
         </div>
 
-        <div className="shopCard panelCard settingsPanelCard">
+        <div className={`shopCard panelCard settingsPanelCard ${isMobilePage ? "mobileSettingsCard" : ""}`}>
           <div className="settingsSectionTitle">Apprentissage adaptatif</div>
           <label className="settingsRow">
             <span>Activer le mode adaptatif</span>
@@ -88,7 +100,7 @@ export default function Settings({
           </div>
         </div>
 
-        <div className="shopCard panelCard settingsPanelCard">
+        <div className={`shopCard panelCard settingsPanelCard ${isMobilePage ? "mobileSettingsCard" : ""}`}>
           <div className="settingsSectionTitle">Jeunes joueurs</div>
           <label className="settingsRow">
             <span>Sans malus (pas de -1 coin en erreur)</span>
@@ -99,10 +111,10 @@ export default function Settings({
           </div>
         </div>
 
-        <div className="shopCard panelCard settingsPanelCard">
+        <div className={`shopCard panelCard settingsPanelCard ${isMobilePage ? "mobileSettingsCard" : ""}`}>
           <div className="settingsSectionTitle">Securite</div>
           <div className="small" style={{ marginBottom: 10 }}>Changer ton mot de passe (stocke hache en local).</div>
-          <div style={{ display: "grid", gap: 10, maxWidth: 520 }}>
+          <div className={`mobileSettingsForm ${isMobilePage ? "mobileSettingsFormRefresh" : ""}`} style={{ display: "grid", gap: 10, maxWidth: 520 }}>
             <input className="input smooth" placeholder="Mot de passe actuel" type="password" value={pwCurrent} onChange={(e) => setPwCurrent(e.target.value)} />
             <input className="input smooth" placeholder="Nouveau mot de passe" type="password" value={pwChangeNew} onChange={(e) => setPwChangeNew(e.target.value)} />
             <input className="input smooth" placeholder="Confirmer nouveau mot de passe" type="password" value={pwChangeNew2} onChange={(e) => setPwChangeNew2(e.target.value)} />

@@ -799,6 +799,317 @@ body.reduce-motion .rushPhasePanel{
   }
 }
 
+/* Mobile topbar and compact game refresh */
+.topbarCompactRefresh{
+  margin-bottom: 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(220px 120px at 100% 0%, rgba(92,242,204,.1), transparent 72%),
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(8,12,25,.56);
+  box-shadow: 0 18px 36px rgba(0,0,0,.18);
+}
+
+.topbarCompactShell{
+  display: grid;
+  gap: 12px;
+}
+
+.topbarCompactIdentity{
+  min-width: 0;
+}
+
+.topbarCompactEyebrow{
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 1100;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(222,230,255,.62);
+}
+
+.topbarCompactStats{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.topbarCompactChip{
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.04);
+  font-size: 12px;
+  font-weight: 1100;
+}
+
+.topbarCompactActions{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.topbarCompactWideBtn{
+  grid-column: span 2;
+}
+
+.questionHeaderCompactRefresh{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.questionCompactStatsRefresh{
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  display: grid;
+  gap: 10px;
+}
+
+.questionCompactMetaRow{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 1000;
+  color: rgba(237,243,255,.78);
+}
+
+.questionHintBarCompactRefresh{
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.035);
+}
+
+.controlsCompactRefresh{
+  padding: 10px;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.04), rgba(255,255,255,.02)),
+    rgba(8,12,25,.34);
+}
+
+@media (max-width: 820px){
+  .topbarCompact{
+    padding: 14px;
+  }
+
+  .topbarCompactLeft,
+  .topbarCompactRight{
+    width: 100%;
+  }
+
+  .topbarCompactRight{
+    display: block;
+  }
+
+  .topbarCompactStats{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .topbarCompactActions{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .topbarCompactWideBtn{
+    grid-column: span 1;
+  }
+
+  .topbarCompactBtn{
+    width: 100%;
+    min-height: 48px;
+    padding: 0 10px;
+  }
+
+  .mobileDock{
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    gap: 6px;
+    padding: 8px;
+    border-radius: 20px;
+    background:
+      linear-gradient(180deg, rgba(13,18,38,.96), rgba(8,11,26,.94));
+    box-shadow: 0 18px 36px rgba(0,0,0,.28);
+  }
+
+  .mobileDockBtn{
+    min-height: 54px;
+    border-radius: 14px;
+    font-size: 10px;
+  }
+
+  .mobileDockBtn.isActive{
+    background: rgba(255,255,255,.1);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+
+  .mobileDockIcon{
+    margin-bottom: 3px;
+    font-size: 11px;
+    font-weight: 1100;
+  }
+
+  .questionCardCompact{
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .progressPanelCompact,
+  .historyPanelCompact{
+    margin-top: 10px;
+  }
+
+  .heroQuestionCompact{
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .heroQuestionCompact .heroTop{
+    gap: 10px;
+  }
+
+  .heroQuestionCompact .heroMeta{
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .heroQuestionCompact .qRow{
+    min-height: 92px;
+  }
+
+  .controlsCompact{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .controlsCompact .btn.btnPrimary{
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile page panels */
+.mobilePanelStack{
+  gap: 14px;
+}
+
+.mobilePageHeroCard{
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(220px 120px at 100% 0%, rgba(91,124,250,.1), transparent 72%),
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(8,12,25,.48);
+  box-shadow: 0 16px 32px rgba(0,0,0,.18);
+}
+
+.mobilePageHeroStats{
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mobilePageHeroChip{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  font-size: 12px;
+  font-weight: 1100;
+}
+
+.mobilePageTabs{
+  gap: 8px;
+}
+
+.mobilePageCoins{
+  width: 100%;
+}
+
+.mobilePageIntroCard,
+.mobilePageSummaryCard{
+  border-radius: 18px;
+}
+
+.mobileShopGrid,
+.mobileCollectionGrid{
+  grid-template-columns: 1fr;
+}
+
+.mobileShopCard,
+.mobileCollectionCard,
+.mobileProfileRecordCard,
+.mobileBadgeCard,
+.mobileSettingsCard{
+  border-radius: 20px;
+}
+
+.mobileShopRow{
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.mobileShopActions{
+  width: 100%;
+  align-items: stretch;
+}
+
+.mobileShopActions .btn{
+  width: 100%;
+}
+
+.mobileBadgeGrid{
+  grid-template-columns: 1fr;
+}
+
+.mobileRecordGridRefresh{
+  grid-template-columns: 1fr 1fr;
+}
+
+.mobileSettingsFormRefresh{
+  max-width: none !important;
+}
+
+@media (max-width: 820px){
+  .pageSheetBodyMobile .panelTabs{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .pageSheetBodyMobile .panelTabs .btn{
+    width: 100%;
+  }
+
+  .pageSheetBodyMobile .panelTabs .chip,
+  .pageSheetBodyMobile .panelTabs .coins{
+    grid-column: 1 / -1;
+  }
+
+  .mobilePageHeroCard,
+  .mobileShopCard,
+  .mobileCollectionCard,
+  .mobileProfileRecordCard,
+  .mobileBadgeCard,
+  .mobileSettingsCard{
+    padding: 14px;
+  }
+
+  .mobileRecordGridRefresh{
+    grid-template-columns: 1fr;
+  }
+}
+
 /* background float */
 .mathBg{
   position: fixed;
@@ -3339,6 +3650,66 @@ body{
   border-radius:20px;
 }
 
+.rushStartMobile,
+.rushPlayMobile,
+.rushEndMobile{
+  border-radius: 26px;
+  background:
+    radial-gradient(240px 120px at 100% 0%, rgba(34,197,94,.08), transparent 72%),
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(8,12,25,.52);
+}
+
+.rushMobileOverview,
+.rushMobilePulseRow{
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rushMobilePulseRow{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rushMobileOverviewCard,
+.rushMobilePulseCard{
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.04);
+  display: grid;
+  gap: 6px;
+}
+
+.rushMobileOverviewCard b,
+.rushMobilePulseCard b{
+  font-size: 15px;
+  font-weight: 1200;
+}
+
+.rushHudMobile{
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.rushQuestionShellMobile{
+  border-radius: 22px;
+  padding: 14px;
+  background:
+    radial-gradient(200px 120px at 100% 0%, rgba(255,255,255,.04), transparent 72%),
+    rgba(10,14,28,.48);
+}
+
+.rushEndStatsMobile{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rushEndActionsMobile{
+  display: grid !important;
+  grid-template-columns: 1fr;
+}
+
 @media (max-width: 820px){
   .rushTopbarActions{
     width:100%;
@@ -3353,6 +3724,16 @@ body{
 
   .rushScorePanel{
     padding:8px 10px;
+  }
+
+  .rushMobileOverview,
+  .rushMobilePulseRow,
+  .rushEndStatsMobile{
+    grid-template-columns: 1fr;
+  }
+
+  .rushQuestionShellMobile .controls{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
