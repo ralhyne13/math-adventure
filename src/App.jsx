@@ -3467,109 +3467,46 @@ export default function App() {
               <div className="grid appFrame">
                 <QuestionCard {...questionCardProps} />
                 <div className="card smooth">
-          <div className="cardTitle">
-            <span>Tableau de bord</span>
-            <span className="pill">
-              {skin.name}
-              {skin.animated ? " *" : ""}
-            </span>
-          </div>
+                  <div className="cardTitle">
+                    <span>{currentWorld.name}</span>
+                    <span className="pill">{worldBossDone ? "Badge acquis" : "Aventure"}</span>
+                  </div>
 
-          <div className="stats">
-            <div className="statBox smooth">
-              <div className="statLabel">Score session</div>
-              <div className="statValue">{score}</div>
-            </div>
-            <div className="statBox smooth">
-              <div className="statLabel">Combo</div>
-              <div className="statValue">{streak}</div>
-            </div>
-            <div className="statBox smooth">
-              <div className="statLabel">Précision</div>
-              <div className="statValue">{accuracy}%</div>
-            </div>
-            <div className="statBox smooth">
-              <div className="statLabel">Connexion (7 jours)</div>
-              <div className="statValue" style={{ fontSize: 18 }}>
-                Streak {loginStreak}/7
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Dernière connexion : <b>{lastLoginDayKey ?? "-"}</b>
-              </div>
-            </div>
-          </div>
+                  <div className="toast" style={{ marginTop: 12 }}>
+                    <div style={{ width: "100%" }}>
+                      <strong>Progression du monde</strong>
+                      <div className="small" style={{ marginTop: 6 }}>
+                        Niveau actuel: <b>{worldLevel}/30</b>
+                        {!worldBossDone && worldLevel < 30 ? ` | ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
+                      </div>
+                      <div className="small" style={{ marginTop: 6 }}>
+                        Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Pret" : "Verrouille"}</b>
+                      </div>
+                      <div className="small" style={{ marginTop: 6 }}>
+                        Badge special: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non debloque"}</b>
+                      </div>
+                      <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <button className="btn btnPrimary smooth hover-lift press" onClick={startWorldBoss} disabled={!worldBossReady}>
+                          Lancer boss final
+                        </button>
+                      </div>
+                    </div>
+                  </div>
 
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>
-                {currentWorld.name}
-              </strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>Niveau {worldLevel}/30</b>
-                {!worldBossDone && worldLevel < 30 ? ` | ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Prêt" : "Verrouillé"}</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Badge spécial: <b>{currentWorldState.badgeWon ? currentWorld.badge : "Non débloqué"}</b>
-              </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button className="btn btnPrimary smooth hover-lift press" onClick={startWorldBoss} disabled={!worldBossReady}>
-                  Lancer boss final
-                </button>
-              </div>
-            </div>
-            <span className="pill">{worldBossDone ? "Badge acquis" : "Aventure"}</span>
-          </div>
-
-          <div className="toast" style={{ marginTop: 12 }}>
-            <div style={{ width: "100%" }}>
-              <strong>{"\u23F1\uFE0F "}Défi 5 minutes</strong>
-              <div className="small" style={{ marginTop: 6 }}>
-                Temps: <b>{formatClock(study5TimeLeft)}</b> | Questions: <b>{study5Answered}</b> | Précision: <b>{study5Accuracy}%</b>
-              </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Bonnes: <b>{study5Right}</b> | Erreurs: <b>{study5Wrong}</b> | Meilleur combo: <b>{study5BestStreak}</b>
-              </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {!study5On ? (
-                  <button className="btn btnPrimary smooth hover-lift press" onClick={startStudy5}>
-                    Lancer Défi 5 min
-                  </button>
-                ) : (
-                  <button className="btn smooth hover-lift press" onClick={() => setStudy5On(false)}>
-                    Arrêter Défi 5 min
-                  </button>
-                )}
-                <button className="btn smooth hover-lift press" onClick={copyStudy5Summary} disabled={!study5LastSummary}>
-                  Copier résumé parent
-                </button>
-              </div>
-              {study5LastSummary && (
-                <div className="small" style={{ marginTop: 8 }}>
-                  Dernier résumé: {new Date(study5LastSummary.endedAt).toLocaleString("fr-FR")} | {study5LastSummary.answered} questions |{" "}
-                  {study5LastSummary.accuracy}% de précision
-                </div>
-              )}
-            </div>
-            <span className="pill">Parents</span>
-          </div>
-
-          <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button className="btn smooth hover-lift press" onClick={() => navigator.clipboard?.writeText(String(score)).catch(() => {})}>
-              Copier score
-            </button>
-            <button
-              className="btn smooth hover-lift press"
-              onClick={() => {
-                localStorage.removeItem(userKey(authUser.pseudoKey));
-                window.location.reload();
-              }}
-            >
-              Réinitialiser le profil
-            </button>
-          </div>
+                  <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    <button className="btn smooth hover-lift press" onClick={() => navigator.clipboard?.writeText(String(score)).catch(() => {})}>
+                      Copier score
+                    </button>
+                    <button
+                      className="btn smooth hover-lift press"
+                      onClick={() => {
+                        localStorage.removeItem(userKey(authUser.pseudoKey));
+                        window.location.reload();
+                      }}
+                    >
+                      Réinitialiser le profil
+                    </button>
+                  </div>
                 </div>
               </div>
             </>

@@ -3,18 +3,22 @@ export default function LandingPage({ onEnterApp }) {
     <div className="landingWrap">
       <section className="landingHero card smooth">
         <span className="landingBadge">Math Royale</span>
-        <h1 className="landingTitle">Un jeu de maths simple, clair et motivant.</h1>
-        <p className="landingLead">Entraîne-toi à ton rythme, progresse par mondes, puis retrouve ta partie en un clic.</p>
+        <h1 className="landingTitle">Retrouve ton espace en un clic.</h1>
+        <p className="landingLead">Lance l'app, connecte-toi, puis reprends directement tes mondes et ta progression.</p>
+        <div className="toast" style={{ marginTop: 0 }}>
+          <div>
+            <strong>Acces rapide</strong>
+            <div className="sub" style={{ marginTop: 6 }}>
+              Pas d'etapes inutiles: entree directe vers l'ecran de connexion et le jeu.
+            </div>
+          </div>
+        </div>
         <div className="landingCtas">
           <button className="btn btnPrimary smooth hover-lift press" onClick={onEnterApp}>
-            Entrer dans l'app
+            Ouvrir l'app
           </button>
         </div>
-        <div className="landingStats">
-          <span className="pill">Progression claire</span>
-          <span className="pill">Défis adaptés</span>
-          <span className="pill">Mode local simple</span>
-        </div>
+        <div className="small">Version simple: progression, connexion et reprise rapide.</div>
       </section>
     </div>
   );
