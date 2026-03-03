@@ -183,7 +183,7 @@ export default function QuestionCard({
         {bossActive && (
           <>
             <div className={`bossPanel ${bossPhaseClass} ${bossHitFx ? "hit" : ""} ${bossAttackFx ? "attack" : ""}`}>
-              <div className="bossAvatar" aria-hidden="true">{bossProfile?.emoji ?? "👹"}</div>
+              <div className="bossAvatar" aria-hidden="true">{bossProfile?.emoji ?? "BOSS"}</div>
               <div style={{ flex: 1 }}>
                 <div className="small" style={{ color: "rgba(234,240,255,.92)" }}>
                   Boss Arena

@@ -1,4 +1,4 @@
-ï»¿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { clamp } from "../utils/math";
 import { playBeep } from "../utils/audio";
 import { DIFFS, GRADES, MODES, questionSignature } from "../questions";
@@ -72,9 +72,9 @@ function pickSkinReward(rarity, ownedSkins) {
 function pickAvatarReward(rarity, ownedAvatars) {
   const pool =
     rarity === "epic"
-      ? AVATARS.filter((a) => a.rarity === "Ã‰pique" || a.rarity === "Exclusif")
+      ? AVATARS.filter((a) => a.rarity === "Épique" || a.rarity === "Exclusif")
       : rarity === "rare"
-        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Ã‰pique")
+        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Épique")
         : AVATARS.filter((a) => a.rarity === "Commun" || a.rarity === "Rare");
 
   const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
@@ -588,7 +588,7 @@ export default function RushScreen({
                 </b>
                 {leagueUp && (
                   <div className="small" style={{ marginTop: 6 }}>
-                    Promotion : {LEAGUES.find((l) => l.id === leagueUp.from)?.icon} {"->"} {LEAGUES.find((l) => l.id === leagueUp.to)?.icon}
+                    Promotion : {LEAGUES.find((l) => l.id === leagueUp.from)?.icon} {"=>"} {LEAGUES.find((l) => l.id === leagueUp.to)?.icon}
                   </div>
                 )}
               </div>

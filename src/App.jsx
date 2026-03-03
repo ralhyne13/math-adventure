@@ -74,7 +74,7 @@ function rewardRoll(streakDay, ownedAvatars) {
   if (roll < avatarChance) {
     const commons = AVATARS.filter((a) => a.rarity === "Commun");
     const rares = AVATARS.filter((a) => a.rarity === "Rare");
-    const epics = AVATARS.filter((a) => a.rarity === "ï¿½pique");
+    const epics = AVATARS.filter((a) => a.rarity === "Epique");
 
     const tierRoll = Math.random();
     let pool = commons;
@@ -93,10 +93,10 @@ function rewardRoll(streakDay, ownedAvatars) {
 }
 
 const LEAGUES = [
-  { id: "bronze", name: "Bronze", icon: "??", min: 0 },
-  { id: "silver", name: "Argent", icon: "??", min: 1200 },
-  { id: "gold", name: "Or", icon: "??", min: 2600 },
-  { id: "diamond", name: "Diamant", icon: "??", min: 4200 },
+  { id: "bronze", name: "Bronze", icon: "BR", min: 0 },
+  { id: "silver", name: "Argent", icon: "AR", min: 1200 },
+  { id: "gold", name: "Or", icon: "OR", min: 2600 },
+  { id: "diamond", name: "Diamant", icon: "DI", min: 4200 },
 ];
 
 function leagueFromScore(score) {
@@ -181,7 +181,7 @@ function chestTypeFromRoll(score = 0) {
 function rarityRank(raw) {
   const r = String(raw || "").toLowerCase();
   if (r.includes("exclusif")) return 5;
-  if (r.includes("epique") || r.includes("ï¿½pique")) return 4;
+  if (r.includes("epique")) return 4;
   if (r.includes("rare")) return 3;
   return 1;
 }
@@ -208,9 +208,9 @@ function pickSkinReward(rarity, ownedSkins) {
 function pickAvatarReward(rarity, ownedAvatars) {
   const pool =
     rarity === "epic"
-      ? AVATARS.filter((a) => a.rarity === "ï¿½pique" || a.rarity === "Exclusif")
+      ? AVATARS.filter((a) => a.rarity === "Epique" || a.rarity === "Exclusif")
       : rarity === "rare"
-        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "ï¿½pique")
+        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Epique")
         : AVATARS.filter((a) => a.rarity === "Commun" || a.rarity === "Rare");
 
   const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
@@ -344,25 +344,25 @@ function speedBonus(rtMs) {
 
 function rewardVisualMeta(reward, chestType) {
   if (reward.kind === "dust") {
-    return { icon: "??", label: `${reward.dust} diamants cosmetiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
+    return { icon: "DM", label: `${reward.dust} diamants cosmetiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
   }
   if (reward.kind === "coins") {
-    return { icon: "??", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
+    return { icon: "PC", label: `${reward.coins} pieces`, tone: chestType, rarity: chestType, preview: { type: "coin" } };
   }
   if (reward.kind === "avatar") {
     const avatar = AVATARS.find((a) => a.id === reward.avatarId);
     return {
-      icon: avatar?.emoji ?? "??",
+      icon: avatar?.emoji ?? "AV",
       label: reward.text,
       tone: "rare",
       rarity: avatar?.rarity ?? "Rare",
-      preview: { type: "emoji", value: avatar?.emoji ?? "??" },
+      preview: { type: "emoji", value: avatar?.emoji ?? "AV" },
     };
   }
   if (reward.kind === "skin") {
     const skin = SKINS.find((s) => s.id === reward.skinId);
     return {
-      icon: "??",
+      icon: "SK",
       label: reward.text,
       tone: "epic",
       rarity: skin?.price > 170 ? "Legendaire" : "Epique",
@@ -370,19 +370,19 @@ function rewardVisualMeta(reward, chestType) {
     };
   }
   if (reward.kind === "xpBoost") {
-    return { icon: "?", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
+    return { icon: "XP", label: reward.text, tone: "rare", rarity: "Rare", preview: { type: "bolt" } };
   }
   if (reward.kind === "effect") {
     const fx = ANSWER_EFFECTS.find((e) => e.id === reward.effectId);
     return {
-      icon: "??",
+      icon: "FX",
       label: reward.text,
       tone: "legendary",
       rarity: "Legendaire",
       preview: { type: "effect", value: fx?.label ?? "Effet" },
     };
   }
-  return { icon: "??", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
+  return { icon: "GF", label: reward.text, tone: chestType, rarity: chestType, preview: { type: "gift" } };
 }
 
 function dustForDuplicate(kind) {
@@ -393,17 +393,17 @@ function dustForDuplicate(kind) {
 }
 
 const ARENA_BOSSES = [
-  { id: "hydra", name: "Hydre des Tables", emoji: "??" },
-  { id: "golem", name: "Golem du Calcul", emoji: "??" },
-  { id: "phantom", name: "Fantome des Fractions", emoji: "??" },
-  { id: "titan", name: "Titan Algebra", emoji: "??" },
+  { id: "hydra", name: "Hydre des Tables", emoji: "HY" },
+  { id: "golem", name: "Golem du Calcul", emoji: "GO" },
+  { id: "phantom", name: "Fantome des Fractions", emoji: "PH" },
+  { id: "titan", name: "Titan Algebra", emoji: "TI" },
 ];
 
 function evolvedOwlForLevel(level) {
-  if (level >= 30) return { emoji: "??????", name: "Hibou legendaire" };
-  if (level >= 20) return { emoji: "????", name: "Hibou dore" };
-  if (level >= 10) return { emoji: "?????", name: "Hibou armure" };
-  return { emoji: "??", name: "Petit hibou" };
+  if (level >= 30) return { emoji: "OWL4", name: "Hibou legendaire" };
+  if (level >= 20) return { emoji: "OWL3", name: "Hibou dore" };
+  if (level >= 10) return { emoji: "OWL2", name: "Hibou armure" };
+  return { emoji: "OWL1", name: "Petit hibou" };
 }
 
 function displayAvatarByLevel(baseAvatar, avatarId, level) {
@@ -1215,7 +1215,7 @@ export default function App() {
     showBadgePopup({
       icon: "??",
       title: "Effet debloque",
-      desc: `${fx.label} ï¿½ -${cost} diamants`,
+      desc: `${fx.label} | -${cost} diamants`,
       reward: 0,
     });
   }
@@ -1971,7 +1971,7 @@ export default function App() {
             showBadgePopup({
               icon: currentWorld.icon,
               title: `Monde complete: ${currentWorld.name}`,
-              desc: `${currentWorld.badge} debloque ï¿½ +180 pieces ï¿½ +220 XP`,
+              desc: `${currentWorld.badge} debloque | +180 pieces | +220 XP`,
               reward: 180,
             });
           }
@@ -2299,7 +2299,7 @@ export default function App() {
     showBadgePopup({
       icon: ch.icon ?? "??",
       title: `Defi ${isDaily ? "journalier" : "hebdo"} complete`,
-      desc: `${ch.title} ï¿½ +${ch.rewardCoins} pieces ï¿½ +${ch.rewardXp} XP`,
+      desc: `${ch.title} | +${ch.rewardCoins} pieces | +${ch.rewardXp} XP`,
       reward: ch.rewardCoins,
     });
 
@@ -2320,7 +2320,7 @@ export default function App() {
     showBadgePopup({
       icon: "??",
       title: "Defi college complete",
-      desc: "12 bonnes reponses en difficile ï¿½ +90 pieces ï¿½ +120 XP",
+      desc: "12 bonnes reponses en difficile | +90 pieces | +120 XP",
       reward: 90,
     });
   }
@@ -2423,7 +2423,7 @@ export default function App() {
   const canAskHint = !disableChoices && hintLevel < hintList.length;
 
   const FLOATERS = useMemo(
-    () => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", "-", "ï¿½", "ï¿½", "=", "<", ">", "?", "p", "%", "??", "?"],
+    () => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "+", "-", "x", "/", "=", "<", ">", "S", "pi", "%", "AB", "*"],
     []
   );
 
@@ -2860,7 +2860,7 @@ export default function App() {
                             Entre ton pseudo ou ton email. On t'envoie un lien de reinitialisation.
                           </div>
                         </div>
-                        <span className="pill">?? cloud</span>
+                        <span className="pill">cloud</span>
                       </div>
 
                       <input
@@ -2885,7 +2885,7 @@ export default function App() {
                             Utilise ton <b>code de recuperation</b> (donne a l'inscription).
                           </div>
                         </div>
-                        <span className="pill">?? recovery</span>
+                        <span className="pill">recovery</span>
                       </div>
 
                       <input
@@ -3197,12 +3197,12 @@ export default function App() {
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
             <div className="levelBadge" aria-hidden="true">
-              ??
+              Gift
             </div>
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">Connexion quotidienne</div>
               <div className="levelPopSub">
-                Jour <b>{loginRewardPop.day}</b>/7 ï¿½ <span className="levelCoins">{loginRewardPop.text}</span>
+                Jour <b>{loginRewardPop.day}</b>/7 | <span className="levelCoins">{loginRewardPop.text}</span>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 {loginRewardPop.detail}
@@ -3219,19 +3219,19 @@ export default function App() {
         <div className="levelPop" role="status" aria-live="polite">
           <div className="levelPopInner smooth">
             <div className="levelBadge" aria-hidden="true">
-              ??
+              Lv
             </div>
             <div style={{ flex: 1 }}>
               <div className="levelPopTitle">LEVEL UP !</div>
               <div className="levelPopSub">
                 Niveau <b>{levelPop.toLevel}</b>
-                {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} ï¿½
+                {levelPop.gainedLevels > 1 ? ` (+${levelPop.gainedLevels})` : ""} |
                 <span className="levelCoins">
                   <span className="coinDot" /> +{levelPop.gainedCoins} pieces
                 </span>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Continue comme ca ??
+                Continue comme ca !
               </div>
             </div>
             <button className="btn btnPrimary smooth hover-lift press" onClick={() => setLevelPop(null)}>
@@ -3245,7 +3245,7 @@ export default function App() {
         <div className="coachPop" role="status" aria-live="polite">
           <div className="coachPopInner smooth">
             <div className="coachBadge" aria-hidden="true">
-              ??
+              Coach
             </div>
             <div style={{ flex: 1 }}>
               <div className="coachPopTitle">{coachPop.title}</div>
@@ -3279,7 +3279,7 @@ export default function App() {
                 <div style={{ width: "100%" }}>
                   <strong>{adSim.title}</strong>
                   <div className="small" style={{ marginTop: 6 }}>
-                    Source: <b>{adSim.provider === "regie_externe" ? "Regie configuree" : "Simulation locale"}</b> ï¿½ Format:{" "}
+                    Source: <b>{adSim.provider === "regie_externe" ? "Regie configuree" : "Simulation locale"}</b> | Format:{" "}
                     <b>{adSim.provider === "regie_externe" ? "rewarded" : "3s"}</b>
                   </div>
                   <div className="small" style={{ marginTop: 8 }}>
@@ -3460,13 +3460,13 @@ export default function App() {
             <>
               <div className="mobileHeroStrip">
                 <button className="btn btnPrimary smooth hover-lift press" onClick={() => setScreen("rush")}>
-                  ? Rush 60s
+                  Rush 60s
                 </button>
                 <button className="btn smooth hover-lift press" onClick={openShopPanel}>
-                  ?? Boutique
+                  Boutique
                 </button>
                 <button className="btn smooth hover-lift press" onClick={openProfilePanel}>
-                  ?? Profil
+                  Profil
                 </button>
               </div>
 
@@ -3477,7 +3477,7 @@ export default function App() {
             <span>Tableau de bord</span>
             <span className="pill">
               {skin.name}
-              {skin.animated ? " ?" : ""}
+              {skin.animated ? " *" : ""}
             </span>
           </div>
 
@@ -3497,7 +3497,7 @@ export default function App() {
             <div className="statBox smooth">
               <div className="statLabel">Connexion (7 jours)</div>
               <div className="statValue" style={{ fontSize: 18 }}>
-                ?? {loginStreak}/7
+                Streak {loginStreak}/7
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Derniere connexion : <b>{lastLoginDayKey ?? "-"}</b>
@@ -3512,7 +3512,7 @@ export default function App() {
               </strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Progression: <b>Niveau {worldLevel}/30</b>
-                {!worldBossDone && worldLevel < 30 ? ` ï¿½ ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
+                {!worldBossDone && worldLevel < 30 ? ` | ${currentWorldState.progress}/${WORLD_STEP_CORRECT} vers le prochain niveau` : ""}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Boss final: <b>{worldBossDone ? "Vaincu" : worldBossActive ? `En cours (${worldBossRemaining}/3)` : worldBossReady ? "Pret" : "Verrouille"}</b>
@@ -3533,10 +3533,10 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Defi 5 minutes</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Temps: <b>{formatClock(study5TimeLeft)}</b> ï¿½ Questions: <b>{study5Answered}</b> ï¿½ Precision: <b>{study5Accuracy}%</b>
+                Temps: <b>{formatClock(study5TimeLeft)}</b> | Questions: <b>{study5Answered}</b> | Precision: <b>{study5Accuracy}%</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Bonnes: <b>{study5Right}</b> ï¿½ Erreurs: <b>{study5Wrong}</b> ï¿½ Meilleur combo: <b>{study5BestStreak}</b>
+                Bonnes: <b>{study5Right}</b> | Erreurs: <b>{study5Wrong}</b> | Meilleur combo: <b>{study5BestStreak}</b>
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {!study5On ? (
@@ -3554,7 +3554,7 @@ export default function App() {
               </div>
               {study5LastSummary && (
                 <div className="small" style={{ marginTop: 8 }}>
-                  Dernier resume: {new Date(study5LastSummary.endedAt).toLocaleString("fr-FR")} ï¿½ {study5LastSummary.answered} questions ï¿½{" "}
+                  Dernier resume: {new Date(study5LastSummary.endedAt).toLocaleString("fr-FR")} | {study5LastSummary.answered} questions |{" "}
                   {study5LastSummary.accuracy}% de precision
                 </div>
               )}
@@ -3566,7 +3566,7 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Mode Arena (principal)</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Etat: <b>{arenaOn ? "ACTIF" : "OFF"}</b> ï¿½ Serie infinie ï¿½ Boss toutes les 10 questions ï¿½ Multiplicateur combo jusqu'a <b>x4</b>
+                Etat: <b>{arenaOn ? "ACTIF" : "OFF"}</b> | Serie infinie | Boss toutes les 10 questions | Multiplicateur combo jusqua <b>x4</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Multiplicateur actuel: <b>x{arenaMultNow}</b>
@@ -3583,16 +3583,16 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Rush 60s</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> ï¿½ Score: <b>{rushScore}</b> ï¿½ Combo: <b>{rushCombo}</b> ï¿½ Record: <b>{rushBestScore}</b>
+                Temps: <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> | Score: <b>{rushScore}</b> | Combo: <b>{rushCombo}</b> | Record: <b>{rushBestScore}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Multiplicateur rush: <b>x{rushMultNow}</b> ï¿½ Meilleur combo: <b>{rushBestCombo}</b> (x2/x3/x4/x5)
+                Multiplicateur rush: <b>x{rushMultNow}</b> | Meilleur combo: <b>{rushBestCombo}</b> (x2/x3/x4/x5)
               </div>
               {rushFeedback && (
                 <div className="small" style={{ marginTop: 6 }}>
                   Feedback vitesse: <b>{rushFeedback.label}</b>
-                  {rushFeedback.bonus > 0 ? ` ï¿½ +${rushFeedback.bonus} bonus vitesse` : ""}
-                  {typeof rushFeedback.rtMs === "number" ? ` ï¿½ ${rushFeedback.rtMs}ms` : ""}
+                  {rushFeedback.bonus > 0 ? ` | +${rushFeedback.bonus} bonus vitesse` : ""}
+                  {typeof rushFeedback.rtMs === "number" ? ` | ${rushFeedback.rtMs}ms` : ""}
                 </div>
               )}
               {rushDanger && (
@@ -3621,7 +3621,7 @@ export default function App() {
               </div>
               {!!rushLeaderboard?.length && (
                 <div className="small" style={{ marginTop: 10 }}>
-                  Local top: {rushLeaderboard.slice(0, 3).map((r, idx) => `${idx + 1}. ${r.pseudo} ${r.score}`).join(" ï¿½ ")}
+                  Local top: {rushLeaderboard.slice(0, 3).map((r, idx) => `${idx + 1}. ${r.pseudo} ${r.score}`).join(" | ")}
                 </div>
               )}
             </div>
@@ -3631,11 +3631,11 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Ligue saisonniere</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                {leagueTier.icon} <b>{leagueTier.label}</b> ï¿½ Points: <b>{league?.points ?? 0}</b> ï¿½ Fin de saison: <b>{seasonDaysLeft}j</b>
+                {leagueTier.icon} <b>{leagueTier.label}</b> | Points: <b>{league?.points ?? 0}</b> | Fin de saison: <b>{seasonDaysLeft}j</b>
               </div>
               {isPremium ? (
                 <div className="small" style={{ marginTop: 6 }}>
-                  Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> ï¿½ Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> ï¿½ Best streak: <b>{league?.bestStreak ?? 0}</b>
+                  Precision: <b>{league?.games ? Math.round((league.right / league.games) * 100) : 0}%</b> | Score moyen: <b>{league?.games ? Math.round(league.scoreSum / league.games) : 0}</b> | Best streak: <b>{league?.bestStreak ?? 0}</b>
                 </div>
               ) : (
                 <div className="small" style={{ marginTop: 6 }}>Stats avancees reservees Premium.</div>
@@ -3651,7 +3651,7 @@ export default function App() {
               </div>
               {!!localCompetition.rows.length && (
                 <div className="small" style={{ marginTop: 8 }}>
-                  {localCompetition.rows.slice(0, 5).map((r, idx) => `${idx + 1}. ${r.pseudoDisplay} (${r.points} pts, ${r.accuracy}%)`).join(" ï¿½ ")}
+                  {localCompetition.rows.slice(0, 5).map((r, idx) => `${idx + 1}. ${r.pseudoDisplay} (${r.points} pts, ${r.accuracy}%)`).join(" | ")}
                 </div>
               )}
             </div>
@@ -3691,10 +3691,10 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Coffres</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Progression: <b>{chestProgress}/15</b> bonnes reponses ï¿½ Coffres prets: <b>{chestPending}</b>
+                Progression: <b>{chestProgress}/15</b> bonnes reponses | Coffres prets: <b>{chestPending}</b>
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                {CHEST_TYPES.common.icon} {chestTypeCounts.common} ï¿½ {CHEST_TYPES.rare.icon} {chestTypeCounts.rare} ï¿½ {CHEST_TYPES.epic.icon} {chestTypeCounts.epic} ï¿½{" "}
+                {CHEST_TYPES.common.icon} {chestTypeCounts.common} | {CHEST_TYPES.rare.icon} {chestTypeCounts.rare} | {CHEST_TYPES.epic.icon} {chestTypeCounts.epic} |{" "}
                 {CHEST_TYPES.legendary.icon} {chestTypeCounts.legendary}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
@@ -3748,17 +3748,17 @@ export default function App() {
             <div style={{ width: "100%" }}>
               <strong>Premium</strong>
               <div className="small" style={{ marginTop: 6 }}>
-                Plan actuel: <b>{premiumLabel}</b> ï¿½ {isPremium ? "Pubs supprimees" : "Pubs optionnelles actives"}
+                Plan actuel: <b>{premiumLabel}</b> | {isPremium ? "Pubs supprimees" : "Pubs optionnelles actives"}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
                 Premium: skins/avatars exclusifs, Rush illimite, stats avancees, themes speciaux.
               </div>
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button className="btn btnPrimary smooth hover-lift press" onClick={() => activatePremium("monthly")}>
-                  Premium 4,99ï¿½/mois
+                  Premium 4,99 EUR/mois
                 </button>
                 <button className="btn smooth hover-lift press" onClick={() => activatePremium("lifetime")}>
-                  Lifetime 19ï¿½
+                  Lifetime 19 EUR
                 </button>
                 {isPremium && (
                   <button className="btn smooth hover-lift press" onClick={disablePremium}>
@@ -3779,8 +3779,8 @@ export default function App() {
                   : `Quota gratuit: ${Math.max(0, OPTIONAL_AD_LIMITS.total - adTodayUsed)} restantes aujourd'hui.`}
               </div>
               <div className="small" style={{ marginTop: 6 }}>
-                Coffre: <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0) - (adUsageToday.instant_chest ?? 0))}</b> ï¿½ Bonus x2:{" "}
-                <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0) - (adUsageToday.double_reward ?? 0))}</b> ï¿½ Vie:{" "}
+                Coffre: <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.instant_chest ?? 0) - (adUsageToday.instant_chest ?? 0))}</b> | Bonus x2:{" "}
+                <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.double_reward ?? 0) - (adUsageToday.double_reward ?? 0))}</b> | Vie:{" "}
                 <b>{Math.max(0, (OPTIONAL_AD_LIMITS.byKind.survival_life ?? 0) - (adUsageToday.survival_life ?? 0))}</b>
               </div>
               {adCooldownLeftSec > 0 && (
@@ -3827,7 +3827,7 @@ export default function App() {
               <strong>Boss Fight</strong>
               <div className="small" style={{ marginTop: 6 }}>
                 Etat: <b>{bossActive ? "ACTIF" : "attente"}</b>
-                {bossActive ? ` ï¿½ HP: ${bossRemaining}% ï¿½ Temps: ${bossTimeLeft}s` : ` ï¿½ Prochain boss toutes les 10 questions`}
+                {bossActive ? ` | HP: ${bossRemaining}% | Temps: ${bossTimeLeft}s` : ` | Prochain boss toutes les 10 questions`}
               </div>
               {bossActive && (
                 <div className="small" style={{ marginTop: 6 }}>
@@ -3866,7 +3866,7 @@ export default function App() {
                 })}
               </div>
               <div className="small" style={{ marginTop: 8 }}>
-                Jours joues : <b>{playedDays}/{activitySpan}</b> ï¿½ Streak visuel : <b>{visualStreak}</b>
+                Jours joues : <b>{playedDays}/{activitySpan}</b> | Streak visuel : <b>{visualStreak}</b>
               </div>
             </div>
           </div>
@@ -3932,7 +3932,7 @@ export default function App() {
                 Connecte-toi 7 jours d'affilee pour maximiser les recompenses. Recompense donnee automatiquement au 1er lancement du jour.
               </div>
             </div>
-            <span className="pill">?? aleatoire</span>
+            <span className="pill">aleatoire</span>
           </div>
 
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -4048,7 +4048,7 @@ export default function App() {
             navigateMobile("home");
           }}
         >
-          <span className="mobileDockIcon">??</span>
+          <span className="mobileDockIcon">HM</span>
           <span>Accueil</span>
         </button>
         <button
@@ -4057,11 +4057,11 @@ export default function App() {
             navigateMobile("classic-play");
           }}
         >
-          <span className="mobileDockIcon">?</span>
+          <span className="mobileDockIcon">PL</span>
           <span>Jouer</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={openArenaScreen}>
-          <span className="mobileDockIcon">??</span>
+          <span className="mobileDockIcon">AR</span>
           <span>Arena</span>
         </button>
         <button
@@ -4070,19 +4070,19 @@ export default function App() {
             navigateMobile("rush");
           }}
         >
-          <span className="mobileDockIcon">?</span>
+          <span className="mobileDockIcon">RU</span>
           <span>Rush</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={openShopPanel}>
-          <span className="mobileDockIcon">??</span>
+          <span className="mobileDockIcon">SH</span>
           <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={openProfilePanel}>
-          <span className="mobileDockIcon">??</span>
+          <span className="mobileDockIcon">PF</span>
           <span>Profil</span>
         </button>
         <button className={`mobileDockBtn ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={openSettingsPanel}>
-          <span className="mobileDockIcon">??</span>
+          <span className="mobileDockIcon">RG</span>
           <span>Reglages</span>
         </button>
       </div>
