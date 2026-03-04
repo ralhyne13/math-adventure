@@ -1,31 +1,18 @@
 import QuestionCard from "./QuestionCard";
+import MobileModeHeader from "./MobileModeHeader";
 
 export default function ArenaScreen({ onBack, onOpenRush, questionCardProps }) {
   return (
     <div className="appFrame classicPlayScreen arenaScreen mobileModeScreen mobileArenaScreen">
-      <section className="classicPlayTopbar classicModeBar arenaModeBar mobileModeHero mobileModeHeroArena">
-        <div className="mobileModeHeroTop">
-          <button className="btn smooth hover-lift press" onClick={onBack}>
-            Accueil
-          </button>
-          <div className="mobileModeHeroPills">
-            <span className="pill">Arena</span>
-            <span className="pill">Boss</span>
-          </div>
-        </div>
-
-        <div className="classicPlayTitleWrap mobileModeTitleWrap">
-          <div className="classicModeEyebrow">Combat continu</div>
-          <div className="classicPlayTitle">Mode Arena</div>
-          <div className="small">Serie longue, pression constante et boss toutes les 10 questions.</div>
-        </div>
-
-        <div className="classicPlayActions mobileModeActionGrid">
-          <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenRush}>
-            Basculer en Rush
-          </button>
-        </div>
-      </section>
+      <MobileModeHeader
+        heroClassName="arenaModeBar mobileModeHeroArena"
+        onBack={onBack}
+        pills={["Arena", "Boss"]}
+        eyebrow="Combat continu"
+        title="Mode Arena"
+        description="Serie longue, pression constante et boss toutes les 10 questions."
+        actions={[{ label: "Basculer en Rush", onClick: onOpenRush, primary: true }]}
+      />
 
       <div className="mobileModeQuestionWrap">
         <QuestionCard {...questionCardProps} compact />

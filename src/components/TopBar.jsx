@@ -81,10 +81,10 @@ export default function TopBar({
 
       <div className="hud hudRefresh">
         <div className="hudLeft hudPanel">
-          <div className="coins chip coinChip smooth" title="Pièces">
+          <div className="coins chip coinChip smooth" title="Pieces">
             <span className="coinDot" />
             <span>{coins}</span>
-            <span className="chipLabel">pièces</span>
+            <span className="chipLabel">pieces</span>
           </div>
 
           <div className="chip smooth" title="Niveau">
@@ -115,7 +115,7 @@ export default function TopBar({
             </button>
           )}
           <button className="btn smooth hover-lift press" onClick={onOpenSettings}>
-            Réglages
+            Reglages
           </button>
           <button className="btn smooth hover-lift press" onClick={onOpenProfile}>
             Profil
@@ -123,8 +123,8 @@ export default function TopBar({
           <button className="btn btnPrimary smooth hover-lift press" onClick={onOpenShop}>
             Boutique
           </button>
-          <button className="btn smooth hover-lift press" onClick={onLogout} title="Se déconnecter">
-            Déconnexion
+          <button className="btn smooth hover-lift press" onClick={onLogout} title="Se deconnecter">
+            Deconnexion
           </button>
         </div>
       </div>

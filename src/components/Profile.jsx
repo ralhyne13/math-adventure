@@ -49,7 +49,7 @@ export default function Profile({
             <div className="mobileSectionEyebrow">Joueur</div>
             <div className="mobileSectionTitle">{authUser.pseudoDisplay}</div>
             <div className="small" style={{ marginTop: 8 }}>
-              Suis ta progression, tes recompenses et tout ce que tu as debloque depuis le mobile.
+              Suis ta progression, tes recompenses et tout ce que tu as debloque depuis ton mobile.
             </div>
             <div className="mobilePageHeroStats">
               <div className="mobilePageHeroChip">Niv. {level}</div>
@@ -187,7 +187,7 @@ export default function Profile({
                     <div className="preview" style={{ background: `linear-gradient(135deg, ${s.vars["--accent"]}, ${s.vars["--accent2"]})` }} />
                     <div className="shopTitle">{owned ? s.name : "Skin verrouille"}</div>
                     <div className="small" style={{ marginTop: 6 }}>{owned ? s.desc : `Prix boutique : ${s.price} pieces`}</div>
-                    {equipped && <div className="badgeMeta"><span className="badgeProgress">Equipe</span></div>}
+                    {equipped && <div className="badgeMeta"><span className="badgeProgress">Actif</span></div>}
                   </div>
                 );
               })}
@@ -203,7 +203,7 @@ export default function Profile({
                     <div className="avatarBig">{owned ? a.emoji : "Lock"}</div>
                     <div className="shopTitle">{owned ? a.name : "Avatar verrouille"}</div>
                     <div className="small" style={{ marginTop: 6 }}>{owned ? a.rarity : `Prix boutique : ${a.price} pieces`}</div>
-                    {equipped && <div className="badgeMeta"><span className="badgeProgress">Equipe</span></div>}
+                    {equipped && <div className="badgeMeta"><span className="badgeProgress">Actif</span></div>}
                   </div>
                 );
               })}
@@ -221,7 +221,7 @@ export default function Profile({
                     <div className="shopTitle">{owned ? fx.label : "Effet verrouille"}</div>
                     <div className="small" style={{ marginTop: 6 }}>{owned ? fx.desc : `Deblocage : ${cost} diamants`}</div>
                     <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      {equipped && <span className="badgeProgress">Equipe</span>}
+                      {equipped && <span className="badgeProgress">Actif</span>}
                       {!owned && fx.id !== "default" && (
                         <button className="btn btnPrimary smooth hover-lift press" onClick={() => unlockEffectWithDust(fx.id)} disabled={cosmeticDust < cost}>
                           Debloquer

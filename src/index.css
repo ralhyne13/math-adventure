@@ -81,6 +81,20 @@ body.reduce-motion *{
   0%{ opacity: 0; transform: translateY(10px); }
   100%{ opacity: 1; transform: translateY(0); }
 }
+@keyframes mobileHaloFloat{
+  0%{ transform: translate3d(0,0,0) scale(1); opacity:.72; }
+  50%{ transform: translate3d(0,-8px,0) scale(1.035); opacity:.9; }
+  100%{ transform: translate3d(0,0,0) scale(1); opacity:.72; }
+}
+@keyframes mobileActiveGlow{
+  0%{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 0 0 rgba(255,255,255,0); }
+  50%{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 8px 18px rgba(255,255,255,.05); }
+  100%{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 0 0 rgba(255,255,255,0); }
+}
+@keyframes mobileChipLift{
+  0%{ opacity:0; transform:translateY(8px) scale(.98); }
+  100%{ opacity:1; transform:translateY(0) scale(1); }
+}
 
 .shell{
   max-width: 1080px;
@@ -115,6 +129,7 @@ body.reduce-motion *{
   color: var(--text);
   background: rgba(255,255,255,.07);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  animation: mobileActiveGlow 2.8s ease-in-out infinite;
 }
 .mobileDockIcon{
   display:block;
@@ -132,6 +147,11 @@ body.reduce-motion *{
   opacity: .62;
 }
 
+.mobileDockBtn.isActive .mobileDockGlyph{
+  opacity:.94;
+  transform:translateY(-1px);
+}
+
 .pageSheet{
   margin-top: 12px;
   border-radius: 22px;
@@ -140,6 +160,28 @@ body.reduce-motion *{
   box-shadow: 0 22px 60px rgba(0,0,0,.55);
   overflow: hidden;
   animation: pageSheetIn 340ms var(--ease-out) 1;
+}
+
+.mobileRouteScreen-home{
+  animation: mobileRouteHomeIn 420ms var(--ease-out) 1;
+}
+
+.mobileShellFrame-classic-play .appFrame{
+  animation: mobileRoutePlayIn 400ms var(--ease-out) 1;
+}
+
+.mobileShellFrame-arena .appFrame{
+  animation: mobileRouteArenaIn 400ms var(--ease-out) 1;
+}
+
+.mobileShellFrame-rush .appFrame{
+  animation: mobileRouteRushIn 420ms var(--ease-out) 1;
+}
+
+.mobileViewFrame-shop .pageSheet,
+.mobileViewFrame-profile .pageSheet,
+.mobileViewFrame-settings .pageSheet{
+  animation: mobileRouteSheetIn 360ms var(--ease-out) 1;
 }
 .pageSheetMobile{
   position: relative;
@@ -509,6 +551,27 @@ body.reduce-motion *{
   0%{ opacity:0; transform: translateX(18px) scale(.992); }
   100%{ opacity:1; transform: translateX(0) scale(1); }
 }
+@keyframes mobileRouteHomeIn{
+  0%{ opacity:0; transform: translateY(14px) scale(.986); }
+  100%{ opacity:1; transform: translateY(0) scale(1); }
+}
+@keyframes mobileRoutePlayIn{
+  0%{ opacity:0; transform: translateX(14px) scale(.988); }
+  100%{ opacity:1; transform: translateX(0) scale(1); }
+}
+@keyframes mobileRouteArenaIn{
+  0%{ opacity:0; transform: translateX(-14px) scale(.988); }
+  100%{ opacity:1; transform: translateX(0) scale(1); }
+}
+@keyframes mobileRouteRushIn{
+  0%{ opacity:0; transform: translateY(10px) scale(.984); }
+  45%{ opacity:1; transform: translateY(-2px) scale(1.006); }
+  100%{ opacity:1; transform: translateY(0) scale(1); }
+}
+@keyframes mobileRouteSheetIn{
+  0%{ opacity:0; transform: translateX(20px) scale(.992); }
+  100%{ opacity:1; transform: translateX(0) scale(1); }
+}
 @keyframes mobileBootIn{
   0%{ opacity:0; transform: translateY(12px) scale(.975); }
   100%{ opacity:1; transform: translateY(0) scale(1); }
@@ -546,6 +609,7 @@ body.reduce-motion .rushPhasePanel{
   pointer-events: none;
   z-index: -1;
   opacity: .9;
+  animation: mobileHaloFloat 8.8s ease-in-out infinite;
 }
 
 .mobileViewFrame-home::before{
@@ -554,10 +618,18 @@ body.reduce-motion .rushPhasePanel{
     radial-gradient(260px 180px at 0% 24%, rgba(91,124,250,.08), transparent 72%);
 }
 
+.mobileViewFrame-home::before{
+  animation-duration: 9.2s;
+}
+
 .mobileShellFrame-classic-play::before{
   background:
     radial-gradient(340px 180px at 100% 0%, rgba(91,124,250,.12), transparent 72%),
     radial-gradient(260px 180px at 0% 30%, rgba(255,255,255,.04), transparent 74%);
+}
+
+.mobileShellFrame-classic-play::before{
+  animation-duration: 8.4s;
 }
 
 .mobileShellFrame-arena::before{
@@ -566,10 +638,18 @@ body.reduce-motion .rushPhasePanel{
     radial-gradient(220px 160px at 0% 26%, rgba(239,68,68,.08), transparent 74%);
 }
 
+.mobileShellFrame-arena::before{
+  animation-duration: 7.2s;
+}
+
 .mobileShellFrame-rush::before{
   background:
     radial-gradient(340px 180px at 100% 0%, rgba(34,197,94,.14), transparent 72%),
     radial-gradient(220px 160px at 0% 26%, rgba(92,242,204,.08), transparent 74%);
+}
+
+.mobileShellFrame-rush::before{
+  animation-duration: 6.4s;
 }
 
 .mobileHeroPanel{
@@ -590,6 +670,7 @@ body.reduce-motion .rushPhasePanel{
   border-radius: 999px;
   background: radial-gradient(circle, rgba(255,255,255,.08), transparent 68%);
   pointer-events: none;
+  animation: mobileHaloFloat 7.4s ease-in-out infinite;
 }
 
 .mobileHeroTopRow,
@@ -690,6 +771,7 @@ body.reduce-motion .rushPhasePanel{
   background: rgba(0,0,0,.18);
   font-size: 12px;
   font-weight: 1000;
+  animation: mobileChipLift 320ms var(--ease-out) 1 both;
 }
 
 .mobilePrimaryGrid,
@@ -715,6 +797,28 @@ body.reduce-motion .rushPhasePanel{
 .mobileSecondaryBtn,
 .mobileQuickLinkBtn{
   min-height: 52px;
+}
+
+.mobilePrimaryGrid .mobilePrimaryBtn:nth-child(1),
+.mobilePrimaryGrid .mobilePrimaryBtn:nth-child(2),
+.mobilePrimaryGrid .mobilePrimaryBtn:nth-child(3),
+.mobileSecondaryGrid .mobileSecondaryBtn:nth-child(1),
+.mobileSecondaryGrid .mobileSecondaryBtn:nth-child(2),
+.mobileQuickLinkGrid .mobileQuickLinkBtn:nth-child(1),
+.mobileQuickLinkGrid .mobileQuickLinkBtn:nth-child(2),
+.mobileQuickLinkGrid .mobileQuickLinkBtn:nth-child(3){
+  animation: mobileCardDrift 360ms var(--ease-out) 1 both;
+}
+
+.mobilePrimaryGrid .mobilePrimaryBtn:nth-child(2),
+.mobileSecondaryGrid .mobileSecondaryBtn:nth-child(2),
+.mobileQuickLinkGrid .mobileQuickLinkBtn:nth-child(2){
+  animation-delay: 40ms;
+}
+
+.mobilePrimaryGrid .mobilePrimaryBtn:nth-child(3),
+.mobileQuickLinkGrid .mobileQuickLinkBtn:nth-child(3){
+  animation-delay: 80ms;
 }
 
 .mobileAnnouncementCard,
@@ -828,6 +932,7 @@ body.reduce-motion .rushPhasePanel{
 .mobileModeQuestionWrap{
   display: grid;
   gap: 12px;
+  animation: mobilePanelRise 380ms var(--ease-out) 1;
 }
 
 @media (max-width: 820px){
@@ -893,6 +998,26 @@ body.reduce-motion .rushPhasePanel{
   .mobileDashboardCard:nth-child(2){ animation-delay: 35ms; }
   .mobileDashboardCard:nth-child(3){ animation-delay: 70ms; }
   .mobileDashboardCard:nth-child(4){ animation-delay: 105ms; }
+
+  .mobileFeaturePanel:nth-of-type(1),
+  .mobileFeaturePanel:nth-of-type(2),
+  .mobileFeaturePanel:nth-of-type(3),
+  .mobileFeaturePanel:nth-of-type(4){
+    animation: mobilePanelRise 420ms var(--ease-out) 1 both;
+  }
+
+  .mobileFeaturePanel:nth-of-type(2){ animation-delay: 45ms; }
+  .mobileFeaturePanel:nth-of-type(3){ animation-delay: 90ms; }
+  .mobileFeaturePanel:nth-of-type(4){ animation-delay: 135ms; }
+
+  .mobileHeroMetaChip:nth-child(1),
+  .mobileHeroMetaChip:nth-child(2),
+  .mobileHeroMetaChip:nth-child(3){
+    animation: mobileChipLift 320ms var(--ease-out) 1 both;
+  }
+
+  .mobileHeroMetaChip:nth-child(2){ animation-delay: 40ms; }
+  .mobileHeroMetaChip:nth-child(3){ animation-delay: 80ms; }
 
   .mobileHeroMainTitle,
   .mobileSectionTitle{
@@ -4022,6 +4147,31 @@ body{
 
 .questionCardCompact .questionCompactStats{
   margin-top:8px;
+  padding:12px 13px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(10,14,28,.48);
+  box-shadow:
+    0 12px 22px rgba(0,0,0,.14),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.questionCardCompact .questionCompactTop{
+  align-items:flex-start;
+  gap:8px;
+}
+
+.questionCardCompact .questionCompactMetaRow{
+  gap:6px;
+}
+
+.questionCardCompact .heroQuestionCompact{
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:
+    0 18px 30px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.04);
 }
 
 .questionCardCompact .progressPanelCompact,
@@ -4033,6 +4183,25 @@ body{
 .questionCardCompact .choiceGridCard{
   padding:10px;
   border-radius:18px;
+}
+
+.questionCardCompact .choiceCard{
+  min-height:82px;
+  border-color:rgba(255,255,255,.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 10px 18px rgba(0,0,0,.08);
+}
+
+.questionCardCompact .choiceCard .choiceValue{
+  font-size:clamp(20px, 7vw, 28px);
+}
+
+.questionCardCompact .questionResultToast{
+  border-width:1px;
+  box-shadow:
+    0 14px 24px rgba(0,0,0,.14),
+    inset 0 1px 0 rgba(255,255,255,.04);
 }
 
 .desktopSidePanel{
@@ -4084,6 +4253,14 @@ body{
 .mobileHomeHeroRefresh{
   padding:18px;
   border-radius:24px;
+  border:1px solid rgba(255,255,255,.1);
+  background:
+    radial-gradient(220px 120px at 100% 0%, rgba(92,242,204,.1), transparent 72%),
+    linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.025)),
+    rgba(8,12,25,.56);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,.2),
+    inset 0 1px 0 rgba(255,255,255,.05);
 }
 
 .mobileHomeEyebrow{
@@ -4100,6 +4277,17 @@ body{
   gap:8px;
 }
 
+.mobileHomeHeroRefresh .mobileSectionTitle,
+.mobileHomeHeroRefresh .mobileHomeTitle{
+  line-height:1.04;
+  text-wrap:balance;
+}
+
+.mobileHomeHeroRefresh .small,
+.mobileHomeRefresh .small{
+  color:rgba(226,233,255,.74);
+}
+
 .mobilePrimaryActions,
 .mobileRewardActions{
   margin-top:14px;
@@ -4107,6 +4295,13 @@ body{
 
 .mobileSurfaceCard{
   border-radius:22px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(9,13,27,.5);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.04);
 }
 
 .mobileStatusGrid{
@@ -4122,6 +4317,7 @@ body{
   background:rgba(255,255,255,.035);
   display:grid;
   gap:6px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
 }
 
 .classicModeBar{
@@ -4132,6 +4328,11 @@ body{
     linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
     rgba(8,12,25,.48);
   box-shadow:0 16px 32px rgba(0,0,0,.18);
+}
+
+.classicModeBar .small,
+.arenaModeBar .small{
+  color:rgba(226,233,255,.74);
 }
 
 .classicModeEyebrow{
@@ -4261,6 +4462,11 @@ body{
 .rushHudMobile{
   grid-template-columns: 1fr;
   gap: 10px;
+  border-color: rgba(34,197,94,.12);
+  background:
+    radial-gradient(220px 120px at 100% 0%, rgba(34,197,94,.08), transparent 72%),
+    linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    rgba(10,14,28,.54);
 }
 
 .rushQuestionShellMobile{
@@ -4269,6 +4475,10 @@ body{
   background:
     radial-gradient(200px 120px at 100% 0%, rgba(255,255,255,.04), transparent 72%),
     rgba(10,14,28,.48);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:
+    0 16px 28px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04);
 }
 
 .rushEndStatsMobile{

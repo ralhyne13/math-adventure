@@ -33,9 +33,9 @@ export default function Shop({
         {isMobilePage && (
           <section className="panelCard mobilePageHeroCard">
             <div className="mobileSectionEyebrow">Collection</div>
-            <div className="mobileSectionTitle">Debloque, equipe et personnalise</div>
+            <div className="mobileSectionTitle">Debloque, equipe, personnalise</div>
             <div className="small" style={{ marginTop: 8 }}>
-              Choisis ton rendu visuel, gere tes achats et equipe directement depuis le hub mobile.
+              Choisis ton rendu visuel, gere tes achats et equipe directement depuis ton hub mobile.
             </div>
             <div className="mobilePageHeroStats">
               <div className="mobilePageHeroChip">Pieces {coins}</div>
@@ -87,7 +87,7 @@ export default function Shop({
                         </span>
                         {owned ? (
                           <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipSkin(s.id)}>
-                            {equipped ? "Equipe" : "Equiper"}
+                            {equipped ? "Actif" : "Equiper"}
                           </button>
                         ) : premiumLocked ? (
                           <button className="btn smooth" disabled>
@@ -100,7 +100,7 @@ export default function Shop({
                         )}
                       </div>
                     </div>
-                    {!owned && !premiumLocked && !canBuy(s.price) && <div className="small" style={{ marginTop: 10 }}>Pas assez de pieces</div>}
+                    {!owned && !premiumLocked && !canBuy(s.price) && <div className="small" style={{ marginTop: 10 }}>Pas assez de pieces pour ce skin</div>}
                   </div>
                 );
               })}
@@ -141,7 +141,7 @@ export default function Shop({
 
                         {owned ? (
                           <button className={`btn smooth hover-lift press ${equipped ? "btnPrimary" : ""}`} onClick={() => equipAvatar(a.id)}>
-                            {equipped ? "Equipe" : "Equiper"}
+                            {equipped ? "Actif" : "Equiper"}
                           </button>
                         ) : premiumLocked ? (
                           <button className="btn smooth" disabled>
@@ -155,7 +155,7 @@ export default function Shop({
                       </div>
                     </div>
 
-                    {!owned && !premiumLocked && !canBuy(a.price) && <div className="small" style={{ marginTop: 10 }}>Continue a jouer pour gagner des pieces</div>}
+                    {!owned && !premiumLocked && !canBuy(a.price) && <div className="small" style={{ marginTop: 10 }}>Continue a jouer pour gagner plus de pieces</div>}
                   </div>
                 );
               })}
