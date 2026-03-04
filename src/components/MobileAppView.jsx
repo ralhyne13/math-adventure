@@ -35,31 +35,45 @@ export default function MobileAppView({
 
       <div className="mobileDock" aria-label="Navigation mobile">
         <button className={`mobileDockBtn route-home ${mobileRoute === "home" ? "isActive" : ""}`} onClick={onNavigateHome}>
-          <span className="mobileDockGlyph">Home</span>
+          <span className="mobileDockIcon" aria-hidden="true">
+            🏠
+          </span>
           <span>Accueil</span>
         </button>
         <button className={`mobileDockBtn route-play ${mobileRoute === "classic-play" ? "isActive" : ""}`} onClick={onNavigatePlay}>
-          <span className="mobileDockGlyph">Play</span>
+          <span className="mobileDockIcon" aria-hidden="true">
+            🎯
+          </span>
           <span>Jouer</span>
         </button>
         <button className={`mobileDockBtn route-arena ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={onOpenArena}>
-          <span className="mobileDockGlyph">Arena</span>
+          <span className="mobileDockIcon" aria-hidden="true">
+            ⚔️
+          </span>
           <span>Arena</span>
         </button>
         <button className={`mobileDockBtn route-rush ${mobileRoute === "rush" ? "isActive" : ""}`} onClick={onNavigateRush}>
-          <span className="mobileDockGlyph">Rush</span>
+          <span className="mobileDockIcon" aria-hidden="true">
+            ⚡
+          </span>
           <span>Rush</span>
         </button>
         <button className={`mobileDockBtn route-shop ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
-          <span className="mobileDockGlyph">Shop</span>
+          <span className="mobileDockIcon" aria-hidden="true">
+            🛍️
+          </span>
           <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn route-profile ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={onOpenProfile}>
-          <span className="mobileDockGlyph">Profile</span>
+          <span className="mobileDockIcon" aria-hidden="true">
+            👤
+          </span>
           <span>Profil</span>
         </button>
         <button className={`mobileDockBtn route-settings ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={onOpenSettings}>
-          <span className="mobileDockGlyph">Setup</span>
+          <span className="mobileDockIcon" aria-hidden="true">
+            ⚙️
+          </span>
           <span>Reglages</span>
         </button>
       </div>
