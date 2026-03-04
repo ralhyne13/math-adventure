@@ -587,18 +587,18 @@ export default function RushScreen({
       )}
 
       {phase === "end" && (
-        <div className={`card smooth rushEndCard rushPhasePanel rushEndRefresh ${embedded ? "rushEndMobile" : ""}`}>
+        <div className={`card smooth rushEndCard rushPhasePanel rushEndRefresh ${newBest ? "rushEndNewBest" : ""} ${embedded ? "rushEndMobile" : ""}`}>
           <div className="cardTitle">
             <span>Fin du Rush</span>
             <span className="pill">résultats</span>
           </div>
 
           <div className={`stats rushEndStats ${embedded ? "rushEndStatsMobile" : ""}`} style={{ marginTop: 12 }}>
-            <div className="statBox smooth">
+            <div className="statBox smooth rushEndStatScore">
               <div className="statLabel">Score</div>
               <div className="statValue">{rushScore}</div>
             </div>
-            <div className="statBox smooth">
+            <div className="statBox smooth rushEndStatCombo">
               <div className="statLabel">Meilleur combo</div>
               <div className="statValue">{bestCombo}</div>
             </div>
@@ -617,7 +617,7 @@ export default function RushScreen({
             </div>
           )}
 
-          <div className="toast rushResultCard" style={{ marginTop: 14 }}>
+          <div className={`toast rushResultCard rushRecordCard ${newBest ? "isNewBest" : ""}`} style={{ marginTop: 14 }}>
             <div>
               <strong>Record Rush</strong>
               <div className="sub" style={{ marginTop: 8 }}>
@@ -628,7 +628,7 @@ export default function RushScreen({
             <span className="pill">Rush</span>
           </div>
 
-          <div className="toast rushResultCard" style={{ marginTop: 12 }}>
+          <div className={`toast rushResultCard rushLeagueCard ${leagueUp ? "isPromotion" : ""}`} style={{ marginTop: 12 }}>
             <div>
               <strong>Ligue</strong>
               <div className="sub" style={{ marginTop: 8 }}>
@@ -647,7 +647,7 @@ export default function RushScreen({
           </div>
 
           {chest && (
-            <div className="chestCard smooth" style={{ marginTop: 12 }}>
+            <div className={`chestCard smooth rushChestCard chest-${chest.rarity} phase-${chestPhase}`} style={{ marginTop: 12 }}>
               <div className="chestTop">
                 <div>
                   <div style={{ fontWeight: 1100 }}>
@@ -660,7 +660,7 @@ export default function RushScreen({
                 <span className="pill">{chest.rarity === "epic" ? "\u2728" : chest.rarity === "rare" ? "\uD83C\uDF1F" : "\uD83C\uDF81"}</span>
               </div>
 
-              <div className={`chestBox ${chestPhase}`} aria-live="polite">
+              <div className={`chestBox rushChestBox ${chestPhase}`} aria-live="polite">
                 <div className="chestEmoji">\uD83E\uDDF0</div>
                 {chestPhase === "opened" ? (
                   <div className="chestReward">
@@ -676,7 +676,7 @@ export default function RushScreen({
             </div>
           )}
 
-          <div className={embedded ? "rushEndActionsMobile" : ""} style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className={`${embedded ? "rushEndActionsMobile" : ""} rushEndCta`} style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button className="btn btnPrimary smooth hover-lift press" onClick={startRush}>
               Rejouer
             </button>

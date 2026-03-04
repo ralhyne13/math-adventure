@@ -144,7 +144,7 @@ export default function AppOverlays({
       {chestPop && (
         <div className="chestPop chestPopRefresh" role="status" aria-live="polite" onMouseDown={onCloseChestPop}>
           <div
-            className={`chestPopInner smooth chest-${chestPop.chestType} reward-${chestPop.leadRewardKind ?? "coins"}`}
+            className={`chestPopInner smooth chest-${chestPop.chestType} reward-${chestPop.leadRewardKind ?? "coins"} phase-${chestPop.phase ?? "reveal"}`}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="chestBurst" aria-hidden="true" />

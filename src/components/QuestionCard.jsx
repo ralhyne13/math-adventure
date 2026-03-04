@@ -67,12 +67,13 @@ export default function QuestionCard({
   const worldLabel = worlds.find((w) => w.id === selectedWorldId);
   const diffLabel = DIFFS.find((d) => d.id === diffId)?.label ?? diffId;
   const modeThemeClass = rushOn ? "theme-rush" : arenaOn ? "theme-arena" : "theme-classic";
+  const comboTierClass = streak >= 10 ? "combo-fever" : streak >= 5 ? "combo-hot" : "";
 
   return (
     <div
       className={`card smooth questionCard ${compact ? "questionCardCompact" : ""} ${modeThemeClass} ${status === "ok" ? "pulse-ok" : status === "bad" ? "pulse-bad" : ""} ${bossAttackFx ? "bossAttackFx" : ""} ${
         bossHitFx ? "bossHitFx" : ""
-      } ${errorShakeFx ? "screenShakeFx" : ""}`}
+      } ${errorShakeFx ? "screenShakeFx" : ""} ${comboTierClass}`}
     >
       {bossAttackFlashFx && <div className="bossAttackFlashLayer" aria-hidden="true" />}
       {bossImpactRingFx && <div className="bossImpactRingLayer" aria-hidden="true" />}
@@ -194,7 +195,7 @@ export default function QuestionCard({
             <div className="qPrompt">{q.prompt}</div>
           </div>
           <div className="heroMeta heroMetaRefresh">
-            <span className="metaPill">
+            <span className="metaPill comboPill">
               <span className="metaIcon">Combo</span> <b>{streak}</b>
             </span>
             {!compact && !rushOn && !bossActive && (
@@ -203,12 +204,12 @@ export default function QuestionCard({
               </span>
             )}
             {arenaOn && !rushOn && !compact && (
-              <span className="metaPill">
+              <span className="metaPill arenaMultPill">
                 <span className="metaIcon">Arène</span> <b>x{arenaMultNow}</b>
               </span>
             )}
             {rushOn && (
-              <span className="metaPill">
+              <span className="metaPill rushTimePill">
                 <span className="metaIcon">Rush</span> <b>{Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</b> <b>x{rushMultNow}</b>
               </span>
             )}

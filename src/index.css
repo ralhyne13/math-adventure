@@ -120,9 +120,9 @@ body.reduce-motion *{
   border:none;
   background: transparent;
   color: rgba(237,243,255,.74);
-  min-height: 50px;
-  border-radius: 12px;
-  padding: 8px;
+  min-height: 46px;
+  border-radius: 11px;
+  padding: 6px 7px;
   font-weight: 1000;
 }
 .mobileDockBtn.isActive{
@@ -133,8 +133,9 @@ body.reduce-motion *{
 }
 .mobileDockIcon{
   display:block;
-  font-size: 18px;
-  margin-bottom: 4px;
+  font-size: 19px;
+  line-height: 1;
+  margin-bottom: 2px;
 }
 .mobileDockGlyph{
   display:block;
@@ -572,6 +573,50 @@ body.reduce-motion *{
   0%{ opacity:0; transform: translateX(20px) scale(.992); }
   100%{ opacity:1; transform: translateX(0) scale(1); }
 }
+@keyframes modeOkFlashClassic{
+  0%{ opacity:0; transform: scale(.985); }
+  30%{ opacity:.42; }
+  100%{ opacity:0; transform: scale(1.02); }
+}
+@keyframes modeOkFlashArena{
+  0%{ opacity:0; transform: scale(.985); }
+  30%{ opacity:.5; }
+  100%{ opacity:0; transform: scale(1.02); }
+}
+@keyframes modeOkFlashRush{
+  0%{ opacity:0; transform: scale(.985); }
+  22%{ opacity:.6; }
+  100%{ opacity:0; transform: scale(1.03); }
+}
+@keyframes modeBadFlash{
+  0%{ opacity:0; transform: scale(.99); }
+  28%{ opacity:.48; }
+  100%{ opacity:0; transform: scale(1.02); }
+}
+@keyframes hudUrgencyPulse{
+  0%{ transform: scale(1); text-shadow: 0 0 0 rgba(239,68,68,0); }
+  50%{ transform: scale(1.035); text-shadow: 0 0 14px rgba(239,68,68,.42); }
+  100%{ transform: scale(1); text-shadow: 0 0 0 rgba(239,68,68,0); }
+}
+@keyframes hudComboBeat{
+  0%{ transform: translateY(0) scale(1); }
+  45%{ transform: translateY(-1px) scale(1.03); }
+  100%{ transform: translateY(0) scale(1); }
+}
+@keyframes hudFeverBeat{
+  0%{ transform: translateY(0) scale(1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+  40%{ transform: translateY(-1px) scale(1.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 10px 20px rgba(255,255,255,.06); }
+  100%{ transform: translateY(0) scale(1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+}
+@keyframes hudSheenDrift{
+  0%{ transform: translateX(-68%); opacity:0; }
+  24%{ opacity:.45; }
+  100%{ transform: translateX(68%); opacity:0; }
+}
+@keyframes mobileScanDrift{
+  0%{ transform: translateY(-6%); }
+  100%{ transform: translateY(6%); }
+}
 @keyframes mobileBootIn{
   0%{ opacity:0; transform: translateY(12px) scale(.975); }
   100%{ opacity:1; transform: translateY(0) scale(1); }
@@ -588,6 +633,21 @@ body.reduce-motion .mobileBootSplashFill{
   animation:none !important;
 }
 body.reduce-motion .rushPhasePanel{
+  animation:none !important;
+}
+body.reduce-motion .questionCardCompact .heroQuestionCompact::after{
+  animation:none !important;
+  opacity:0 !important;
+}
+body.reduce-motion .rushMult,
+body.reduce-motion .rushTime.danger,
+body.reduce-motion .questionCardCompact.combo-hot .metaPill.comboPill,
+body.reduce-motion .questionCardCompact.combo-hot .metaPill.arenaMultPill,
+body.reduce-motion .questionCardCompact.combo-hot .metaPill.rushTimePill,
+body.reduce-motion .questionCardCompact.combo-fever .metaPill.comboPill,
+body.reduce-motion .questionCardCompact.combo-fever .metaPill.arenaMultPill,
+body.reduce-motion .questionCardCompact.combo-fever .metaPill.rushTimePill,
+body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDanger .metaPill.rushTimePill{
   animation:none !important;
 }
 
@@ -610,6 +670,25 @@ body.reduce-motion .rushPhasePanel{
   z-index: -1;
   opacity: .9;
   animation: mobileHaloFloat 8.8s ease-in-out infinite;
+}
+
+.mobileShellFrame::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: .22;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255,255,255,.055) 0px,
+      rgba(255,255,255,.055) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  mix-blend-mode: soft-light;
+  animation: mobileScanDrift 5.8s linear infinite alternate;
 }
 
 .mobileViewFrame-home::before{
@@ -876,6 +955,8 @@ body.reduce-motion .rushPhasePanel{
 }
 
 .mobileModeHero{
+  position: relative;
+  overflow: hidden;
   padding: 14px;
 }
 
@@ -898,6 +979,18 @@ body.reduce-motion .rushPhasePanel{
     radial-gradient(220px 110px at 100% 0%, rgba(34,197,94,.12), transparent 72%),
     linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
     rgba(8,12,25,.52);
+}
+
+.mobileModeHero::before{
+  content:"";
+  position:absolute;
+  inset:-40% auto auto -16%;
+  width:180px;
+  height:180px;
+  border-radius:999px;
+  pointer-events:none;
+  background: radial-gradient(circle, rgba(255,255,255,.09), transparent 68%);
+  filter: blur(.2px);
 }
 
 .mobileModeHeroTop{
@@ -930,9 +1023,32 @@ body.reduce-motion .rushPhasePanel{
 }
 
 .mobileModeQuestionWrap{
+  position: relative;
   display: grid;
   gap: 12px;
   animation: mobilePanelRise 380ms var(--ease-out) 1;
+}
+
+.mobileModeQuestionWrap::before{
+  content:"";
+  position:absolute;
+  inset:10px 10px auto 10px;
+  height:110px;
+  pointer-events:none;
+  border-radius:20px;
+  background:
+    radial-gradient(220px 120px at 100% 0%, rgba(91,124,250,.1), transparent 72%),
+    radial-gradient(180px 120px at 0% 0%, rgba(92,242,204,.08), transparent 74%);
+  opacity:.6;
+}
+
+.mobileModeQuestionWrap .questionCardCompact{
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow:
+    0 22px 44px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.05);
 }
 
 @media (max-width: 820px){
@@ -1058,6 +1174,8 @@ body.reduce-motion .rushPhasePanel{
 
 /* Mobile topbar and compact game refresh */
 .topbarCompactRefresh{
+  position: relative;
+  overflow: hidden;
   margin-bottom: 14px;
   border-radius: 24px;
   border: 1px solid rgba(255,255,255,.08);
@@ -1066,6 +1184,16 @@ body.reduce-motion .rushPhasePanel{
     linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
     rgba(8,12,25,.56);
   box-shadow: 0 18px 36px rgba(0,0,0,.18);
+}
+
+.topbarCompactRefresh::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background: linear-gradient(110deg, transparent 34%, rgba(255,255,255,.13) 50%, transparent 66%);
+  transform: translateX(-68%);
+  animation: hudSheenDrift 3.8s ease-in-out infinite;
 }
 
 .topbarCompactShell{
@@ -1188,18 +1316,21 @@ body.reduce-motion .rushPhasePanel{
     left: 10px;
     right: 10px;
     bottom: calc(10px + env(safe-area-inset-bottom));
-    gap: 6px;
-    padding: 8px;
-    border-radius: 20px;
+    gap: 5px;
+    padding: 7px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.1);
     background:
       linear-gradient(180deg, rgba(13,18,38,.96), rgba(8,11,26,.94));
+    backdrop-filter: blur(8px);
     box-shadow: 0 18px 36px rgba(0,0,0,.28);
   }
 
   .mobileDockBtn{
-    min-height: 54px;
-    border-radius: 14px;
+    min-height: 50px;
+    border-radius: 12px;
     font-size: 10px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
   }
 
   .mobileDockBtn.isActive{
@@ -2548,6 +2679,18 @@ body.reduce-motion .bossCallout{ animation:none !important; opacity:0; }
   .rushHudRight{
     align-items:flex-start;
   }
+  .rushMult{
+    position: relative;
+    transform-origin: center;
+    animation: hudComboBeat 1.2s ease-in-out infinite;
+  }
+  .rushTime.danger{
+    animation: hudUrgencyPulse .82s ease-in-out infinite;
+  }
+  .rushBarWrap.danger .rushBar{
+    filter: saturate(1.2) brightness(1.06);
+    box-shadow: 0 0 12px rgba(239,68,68,.4);
+  }
   .rushTime{
     font-size: 22px;
   }
@@ -2648,6 +2791,86 @@ body.reduce-motion .bossCallout{ animation:none !important; opacity:0; }
     background: rgba(34,197,94,.1);
   }
 
+  .questionCardCompact.combo-hot .metaPill.comboPill,
+  .questionCardCompact.combo-hot .metaPill.arenaMultPill,
+  .questionCardCompact.combo-hot .metaPill.rushTimePill{
+    animation: hudComboBeat 1.05s ease-in-out infinite;
+  }
+
+  .questionCardCompact.combo-fever .metaPill.comboPill,
+  .questionCardCompact.combo-fever .metaPill.arenaMultPill,
+  .questionCardCompact.combo-fever .metaPill.rushTimePill{
+    animation: hudFeverBeat .9s ease-in-out infinite;
+  }
+
+  .questionCardCompact.theme-rush .heroQuestionCompact.rushDanger .metaPill.rushTimePill{
+    animation: hudUrgencyPulse .78s ease-in-out infinite;
+  }
+
+  .questionCardCompact.theme-classic .controlsCompact .choice{
+    border-color: rgba(91,124,250,.22);
+    background:
+      linear-gradient(180deg, rgba(91,124,250,.14), rgba(255,255,255,.02)),
+      rgba(255,255,255,.03);
+  }
+
+  .questionCardCompact.theme-arena .controlsCompact .choice{
+    border-color: rgba(245,158,11,.24);
+    background:
+      linear-gradient(180deg, rgba(245,158,11,.16), rgba(255,255,255,.02)),
+      rgba(255,255,255,.03);
+  }
+
+  .questionCardCompact.theme-rush .controlsCompact .choice{
+    border-color: rgba(34,197,94,.24);
+    background:
+      linear-gradient(180deg, rgba(34,197,94,.16), rgba(255,255,255,.02)),
+      rgba(255,255,255,.03);
+  }
+
+  .questionCardCompact.theme-classic .controlsCompact .choice:hover{
+    border-color: rgba(91,124,250,.34);
+    box-shadow: 0 14px 26px rgba(91,124,250,.18);
+  }
+
+  .questionCardCompact.theme-arena .controlsCompact .choice:hover{
+    border-color: rgba(245,158,11,.36);
+    box-shadow: 0 14px 26px rgba(245,158,11,.2);
+  }
+
+  .questionCardCompact.theme-rush .controlsCompact .choice:hover{
+    border-color: rgba(34,197,94,.36);
+    box-shadow: 0 14px 26px rgba(34,197,94,.2);
+  }
+
+  .questionCardCompact.theme-classic .controlsCompact .choice.isRight{
+    border-color: rgba(92,242,204,.42);
+    background:
+      linear-gradient(180deg, rgba(92,242,204,.22), rgba(255,255,255,.02)),
+      rgba(8,24,24,.44);
+  }
+
+  .questionCardCompact.theme-arena .controlsCompact .choice.isRight{
+    border-color: rgba(245,158,11,.46);
+    background:
+      linear-gradient(180deg, rgba(245,158,11,.24), rgba(255,255,255,.02)),
+      rgba(24,18,8,.44);
+  }
+
+  .questionCardCompact.theme-rush .controlsCompact .choice.isRight{
+    border-color: rgba(34,197,94,.46);
+    background:
+      linear-gradient(180deg, rgba(34,197,94,.24), rgba(255,255,255,.02)),
+      rgba(10,22,14,.44);
+  }
+
+  .questionCardCompact .controlsCompact .choice.isWrong{
+    border-color: rgba(239,68,68,.46);
+    background:
+      linear-gradient(180deg, rgba(239,68,68,.18), rgba(255,255,255,.02)),
+      rgba(26,12,12,.44);
+  }
+
   .questionResultToast.ok{
     border-color: rgba(34,197,94,.16);
     background:
@@ -2660,6 +2883,27 @@ body.reduce-motion .bossCallout{ animation:none !important; opacity:0; }
     background:
       linear-gradient(180deg, rgba(239,68,68,.08), rgba(255,255,255,.02)),
       rgba(10,14,28,.44);
+  }
+
+  .questionCardCompact.theme-classic .questionResultToast.ok{
+    border-color: rgba(92,242,204,.28);
+    background:
+      linear-gradient(180deg, rgba(92,242,204,.12), rgba(255,255,255,.02)),
+      rgba(10,14,28,.46);
+  }
+
+  .questionCardCompact.theme-arena .questionResultToast.ok{
+    border-color: rgba(245,158,11,.3);
+    background:
+      linear-gradient(180deg, rgba(245,158,11,.14), rgba(255,255,255,.02)),
+      rgba(10,14,28,.46);
+  }
+
+  .questionCardCompact.theme-rush .questionResultToast.ok{
+    border-color: rgba(34,197,94,.3);
+    background:
+      linear-gradient(180deg, rgba(34,197,94,.14), rgba(255,255,255,.02)),
+      rgba(10,14,28,.46);
   }
 }
 
@@ -4109,10 +4353,22 @@ body{
 }
 
 .feedbackPanel{
+  position: relative;
+  overflow: hidden;
   border: 1px solid rgba(255,255,255,.08);
   box-shadow:
     0 18px 36px rgba(0,0,0,.24),
     inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.feedbackPanel::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background: linear-gradient(112deg, transparent 28%, rgba(255,255,255,.14) 50%, transparent 72%);
+  transform: translateX(-70%);
+  animation: hudSheenDrift 4.8s ease-in-out infinite;
 }
 
 .feedbackLoginPanel{
@@ -4139,10 +4395,67 @@ body{
     linear-gradient(180deg, rgba(11,20,16,.96), rgba(8,12,10,.94));
 }
 
+.levelPopLogin .levelPopTitle,
+.levelPopLevel .levelPopTitle{
+  letter-spacing:.45px;
+  text-transform: uppercase;
+}
+
+.levelPopLevel .levelCoins{
+  color: rgba(253,214,124,.94);
+  text-shadow: 0 0 12px rgba(244,178,61,.24);
+}
+
+.coachPopRefresh .coachPopSub{
+  line-height:1.5;
+}
+
 .badgePopRefresh .badgeIcon{
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.06),
     0 10px 24px rgba(0,0,0,.18);
+}
+
+.badgePopRefresh .badgePopTitle{
+  text-transform: uppercase;
+  letter-spacing:.35px;
+}
+
+.chestPopRefresh .chestPopInner{
+  border-color: rgba(255,255,255,.16);
+  box-shadow:
+    0 28px 64px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+.chestPopRefresh .chestPopInner.phase-rolling{
+  background:
+    radial-gradient(260px 140px at 50% 0%, rgba(255,255,255,.1), transparent 72%),
+    linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
+}
+
+.chestPopRefresh .chestPopInner.phase-reveal{
+  background:
+    radial-gradient(260px 140px at 50% 0%, rgba(92,242,204,.12), transparent 72%),
+    linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
+}
+
+.chestPopRefresh .chestRewardRow{
+  border-color: rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 10px 20px rgba(0,0,0,.14);
+}
+
+.chestPopRefresh .chestRewardRow.reward-skin,
+.chestPopRefresh .chestRewardRow.reward-avatar,
+.chestPopRefresh .chestRewardRow.reward-effect{
+  border-color: rgba(255,255,255,.18);
+}
+
+.chestPopRefresh .chestRarity{
+  text-transform: uppercase;
+  letter-spacing:.3px;
 }
 
 .questionCardCompact .questionCompactStats{
@@ -4172,6 +4485,40 @@ body{
   box-shadow:
     0 18px 30px rgba(0,0,0,.16),
     inset 0 1px 0 rgba(255,255,255,.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.questionCardCompact .heroQuestionCompact::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+}
+
+.questionCardCompact.theme-classic.pulse-ok .heroQuestionCompact::after{
+  background:
+    radial-gradient(260px 140px at 50% 0%, rgba(92,242,204,.34), transparent 72%);
+  animation: modeOkFlashClassic 520ms var(--ease-out) 1;
+}
+
+.questionCardCompact.theme-arena.pulse-ok .heroQuestionCompact::after{
+  background:
+    radial-gradient(260px 140px at 50% 0%, rgba(245,158,11,.38), transparent 72%);
+  animation: modeOkFlashArena 520ms var(--ease-out) 1;
+}
+
+.questionCardCompact.theme-rush.pulse-ok .heroQuestionCompact::after{
+  background:
+    radial-gradient(260px 140px at 50% 0%, rgba(34,197,94,.42), transparent 72%);
+  animation: modeOkFlashRush 520ms var(--ease-out) 1;
+}
+
+.questionCardCompact.pulse-bad .heroQuestionCompact::after{
+  background:
+    radial-gradient(260px 140px at 50% 0%, rgba(239,68,68,.36), transparent 72%);
+  animation: modeBadFlash 460ms var(--ease-out) 1;
 }
 
 .questionCardCompact .progressPanelCompact,
@@ -4419,6 +4766,124 @@ body{
 
 .rushEndStats .statBox{
   border-radius:20px;
+}
+
+.rushEndCard{
+  position: relative;
+  overflow: hidden;
+}
+
+.rushEndCard::before{
+  content:"";
+  position:absolute;
+  inset:-35% auto auto -12%;
+  width:220px;
+  height:220px;
+  border-radius:999px;
+  pointer-events:none;
+  background: radial-gradient(circle, rgba(255,255,255,.09), transparent 70%);
+}
+
+.rushEndStatScore{
+  border-color: rgba(92,242,204,.22);
+  background:
+    linear-gradient(180deg, rgba(92,242,204,.12), rgba(255,255,255,.02)),
+    rgba(9,16,20,.44);
+}
+
+.rushEndStatCombo{
+  border-color: rgba(91,124,250,.22);
+  background:
+    linear-gradient(180deg, rgba(91,124,250,.12), rgba(255,255,255,.02)),
+    rgba(9,12,22,.44);
+}
+
+.rushResultCard{
+  position: relative;
+  overflow: hidden;
+}
+
+.rushResultCard::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background: linear-gradient(112deg, transparent 30%, rgba(255,255,255,.12) 50%, transparent 70%);
+  transform: translateX(-70%);
+  animation: hudSheenDrift 4.6s ease-in-out infinite;
+}
+
+.rushRecordCard.isNewBest{
+  border-color: rgba(92,242,204,.24);
+  box-shadow:
+    0 16px 30px rgba(92,242,204,.12),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.rushLeagueCard.isPromotion{
+  border-color: rgba(245,158,11,.26);
+  box-shadow:
+    0 16px 30px rgba(245,158,11,.12),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.rushChestCard{
+  position: relative;
+  overflow: hidden;
+}
+
+.rushChestCard::before{
+  content:"";
+  position:absolute;
+  inset:-40% -20% auto auto;
+  width:240px;
+  height:200px;
+  border-radius:999px;
+  pointer-events:none;
+  opacity:.52;
+}
+
+.rushChestCard.chest-common::before{
+  background: radial-gradient(circle, rgba(255,255,255,.08), transparent 72%);
+}
+
+.rushChestCard.chest-rare::before{
+  background: radial-gradient(circle, rgba(244,178,61,.18), transparent 72%);
+}
+
+.rushChestCard.chest-epic::before{
+  background: radial-gradient(circle, rgba(34,197,94,.2), transparent 72%);
+}
+
+.rushChestBox{
+  transition: border-color .22s ease, background .22s ease, box-shadow .22s ease;
+}
+
+.rushChestCard.phase-opening .rushChestBox{
+  box-shadow:
+    0 12px 26px rgba(255,255,255,.08),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.rushChestCard.phase-opened .rushChestBox{
+  border-color: rgba(92,242,204,.34);
+  box-shadow:
+    0 16px 30px rgba(92,242,204,.14),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.rushChestCard.phase-opening .chestEmoji{
+  animation: chestShake 520ms var(--ease-out) 1;
+}
+
+.rushChestCard.phase-opened .chestEmoji{
+  box-shadow:
+    0 12px 24px rgba(92,242,204,.18),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.rushEndCta .btn.btnPrimary{
+  box-shadow: 0 14px 24px rgba(34,197,94,.18);
 }
 
 .rushStartMobile,
