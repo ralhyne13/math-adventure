@@ -668,6 +668,7 @@ export default function App() {
     () => window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true
   );
   const [showMobileBootSplash, setShowMobileBootSplash] = useState(() => window.innerWidth <= 820);
+  const [showMobileEntryMenu, setShowMobileEntryMenu] = useState(() => window.innerWidth <= 820);
 
   // Session
   const [screen, setScreen] = useState("classic"); // "classic" | "rush"
@@ -2258,6 +2259,7 @@ export default function App() {
   }
 
   function navigateMobile(route) {
+    setShowMobileEntryMenu(false);
     setMobileRoute(route);
     if (isMobileViewport) {
       return;
@@ -2267,6 +2269,11 @@ export default function App() {
       return;
     }
     setScreen("classic");
+  }
+
+  function openMobileEntryMenu() {
+    if (!isMobileViewport) return;
+    setShowMobileEntryMenu(true);
   }
 
   function openShopPanel() {
@@ -2279,7 +2286,7 @@ export default function App() {
 
   function closeShopPanel() {
     if (isMobileViewport) {
-      if (mobileRoute === "shop") navigateMobile("home");
+      if (mobileRoute === "shop") navigateMobile("classic-play");
       return;
     }
     setShowShop(false);
@@ -2295,7 +2302,7 @@ export default function App() {
 
   function closeProfilePanel() {
     if (isMobileViewport) {
-      if (mobileRoute === "profile") navigateMobile("home");
+      if (mobileRoute === "profile") navigateMobile("classic-play");
       return;
     }
     setShowProfile(false);
@@ -2311,7 +2318,7 @@ export default function App() {
 
   function closeSettingsPanel() {
     if (isMobileViewport) {
-      if (mobileRoute === "settings") navigateMobile("home");
+      if (mobileRoute === "settings") navigateMobile("classic-play");
       return;
     }
     setShowSettings(false);
@@ -2817,10 +2824,15 @@ export default function App() {
   useEffect(() => {
     if (!isLoggedIn || !isMobileViewport) {
       setShowMobileBootSplash(false);
+      setShowMobileEntryMenu(false);
       return undefined;
     }
     setShowMobileBootSplash(true);
-    const t = setTimeout(() => setShowMobileBootSplash(false), reduceMotion ? 250 : 1100);
+    setShowMobileEntryMenu(false);
+    const t = setTimeout(() => {
+      setShowMobileBootSplash(false);
+      setShowMobileEntryMenu(true);
+    }, reduceMotion ? 250 : 1100);
     return () => clearTimeout(t);
   }, [isLoggedIn, isMobileViewport, reduceMotion]);
 
@@ -3043,6 +3055,51 @@ export default function App() {
     );
   }
 
+  if (isMobileViewport && showMobileEntryMenu) {
+    return (
+      <div className="shell mobileArcadeEntry">
+        <div className="mathBg" aria-hidden="true">
+          {FLOATERS.map((t, i) => (
+            <span
+              key={i}
+              style={{
+                left: `${(i * 37) % 100}%`,
+                top: `${(i * 19) % 100}%`,
+                fontSize: `${14 + (i % 8) * 6}px`,
+                animationDuration: `${10 + (i % 10) * 2.2}s`,
+                animationDelay: `${-(i % 10) * 1.1}s`,
+              }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <div className="mobileEntryFx" aria-hidden="true">
+          {["+", "-", "x", "/", "=", "\u03A3", "\u221A", "\u03C0", "%", "1", "2", "3"].map((symbol, idx) => (
+            <span key={`${symbol}-${idx}`} style={{ "--i": idx }}>
+              {symbol}
+            </span>
+          ))}
+        </div>
+        <section className="mobileEntryCard smooth">
+          <div className="mobileEntryTitle">Math Royale</div>
+          <div className="mobileEntryLead">Choisis ton accès rapide pour démarrer.</div>
+          <div className="mobileEntryActions">
+            <button className="btn btnPrimary smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("classic-play")}>
+              Jouer
+            </button>
+            <button className="btn smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("settings")}>
+              Réglages
+            </button>
+            <button className="btn smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("profile")}>
+              Stats
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   const questionCardProps = {
     status,
     fx,
@@ -3141,7 +3198,7 @@ export default function App() {
         floaters={FLOATERS}
         topBarProps={mobileGameTopBarProps}
         activeRoute={mobileRoute}
-        onGoHome={() => navigateMobile("home")}
+        onGoHome={openMobileEntryMenu}
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
@@ -3150,7 +3207,7 @@ export default function App() {
       >
         <RushScreen
           onExit={() => {
-            navigateMobile("home");
+            openMobileEntryMenu();
           }}
           gradeId={gradeId}
           diffId={diffId}
@@ -3204,7 +3261,7 @@ export default function App() {
         floaters={FLOATERS}
         topBarProps={mobileGameTopBarProps}
         activeRoute={mobileRoute}
-        onGoHome={() => navigateMobile("home")}
+        onGoHome={openMobileEntryMenu}
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
@@ -3213,7 +3270,7 @@ export default function App() {
       >
         <ClassicPlayScreen
           onBack={() => {
-            navigateMobile("home");
+            openMobileEntryMenu();
           }}
           onOpenArena={openArenaScreen}
           onOpenRush={() => navigateMobile("rush")}
@@ -3229,7 +3286,7 @@ export default function App() {
         floaters={FLOATERS}
         topBarProps={mobileGameTopBarProps}
         activeRoute={mobileRoute}
-        onGoHome={() => navigateMobile("home")}
+        onGoHome={openMobileEntryMenu}
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
@@ -3238,7 +3295,7 @@ export default function App() {
       >
         <ArenaScreen
           onBack={() => {
-            navigateMobile("home");
+            openMobileEntryMenu();
           }}
           onOpenRush={() => navigateMobile("rush")}
           questionCardProps={questionCardProps}
@@ -3384,7 +3441,7 @@ export default function App() {
         <MobileAppView
           topBarProps={mobileGameTopBarProps}
           mobileRoute={mobileRoute}
-          onNavigateHome={() => navigateMobile("home")}
+          onNavigateHome={openMobileEntryMenu}
           onNavigatePlay={() => navigateMobile("classic-play")}
           onNavigateRush={() => navigateMobile("rush")}
           onOpenArena={openArenaScreen}
