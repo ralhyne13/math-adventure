@@ -1303,6 +1303,29 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
   color: rgba(237,243,255,.78);
 }
 
+.questionCompactWorldPicker{
+  display:grid;
+  gap:6px;
+}
+
+.questionCompactWorldLabel{
+  font-size:11px;
+  font-weight:1100;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(222,230,255,.68);
+}
+
+.questionCompactWorldSelect{
+  min-height:42px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)),
+    rgba(10,14,28,.58);
+  font-weight:1000;
+}
+
 .questionHintBarCompactRefresh{
   padding: 10px 12px;
   border-radius: 16px;

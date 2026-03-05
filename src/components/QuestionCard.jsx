@@ -164,6 +164,16 @@ export default function QuestionCard({
             <span>Combo {streak}</span>
             {rushOn ? <span>Rush {Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</span> : null}
           </div>
+          <div className="questionCompactWorldPicker">
+            <span className="questionCompactWorldLabel">Categorie</span>
+            <select className="select smooth questionCompactWorldSelect" value={selectedWorldId} onChange={(e) => setSelectedWorldId(e.target.value)}>
+              {worlds.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.icon} {w.gradeId}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       )}
 
