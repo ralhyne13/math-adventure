@@ -144,17 +144,35 @@ export default function AppOverlays({
       )}
 
       {chestPop && (
-        <div className="chestPop chestPopRefresh" role="status" aria-live="polite" onMouseDown={onCloseChestPop}>
+        <div
+          className="chestPop chestPopRefresh"
+          role="status"
+          aria-live="polite"
+          onMouseDown={chestPop.phase === "rolling" || chestPop.phase === "impact" ? undefined : onCloseChestPop}
+        >
           <div
             className={`chestPopInner smooth chest-${chestPop.chestType} reward-${chestPop.leadRewardKind ?? "coins"} phase-${chestPop.phase ?? "reveal"}`}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="chestBurst" aria-hidden="true" />
+            {chestPop.phase === "impact" && <div className={`chestCineFlash tone-${chestPop.chestType ?? "common"}`} aria-hidden="true" />}
             {chestPop.phase === "rolling" ? (
               <>
-                <div className="chestIconBig chestRolling" aria-hidden="true" />
+                <div className="chestIconBig chestRolling" aria-hidden="true">
+                  {(chestPop.reel ?? []).map((symbol, idx) => (
+                    <span key={`${symbol}-${idx}`}>{symbol}</span>
+                  ))}
+                </div>
                 <div className="chestPopTitle">Ouverture...</div>
                 <div className="chestPopSub">Le coffre tourne avant la revelation.</div>
+              </>
+            ) : chestPop.phase === "impact" ? (
+              <>
+                <div className="chestIconBig chestImpact" aria-hidden="true">
+                  {chestPop.chestIcon ?? "🎁"}
+                </div>
+                <div className="chestPopTitle">Révélation...</div>
+                <div className="chestPopSub">{chestPop.chestLabel ?? "Le coffre s'ouvre"}</div>
               </>
             ) : (
               <>
@@ -167,6 +185,7 @@ export default function AppOverlays({
                       className={`chestRewardRow tone-${item.visual.tone} reward-${item.reward.kind} ${
                         item.reward.kind === "skin" || item.reward.kind === "avatar" || item.reward.kind === "effect" ? "is-card" : ""
                       }`}
+                      style={{ "--rowDelay": `${idx * 70}ms` }}
                     >
                       <span
                         className={`chestRewardPreview preview-${item.visual.preview?.type ?? "gift"}`}
@@ -196,11 +215,13 @@ export default function AppOverlays({
                 </div>
               </>
             )}
-            <div style={{ marginTop: 12 }}>
-              <button className="btn btnPrimary smooth hover-lift press" onClick={onCloseChestPop}>
-                Super
-              </button>
-            </div>
+            {chestPop.phase !== "rolling" && chestPop.phase !== "impact" && (
+              <div style={{ marginTop: 12 }}>
+                <button className="btn btnPrimary smooth hover-lift press" onClick={onCloseChestPop}>
+                  Super
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

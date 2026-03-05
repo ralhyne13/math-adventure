@@ -159,6 +159,13 @@ const CHEST_TYPES = {
   legendary: { id: "legendary", label: "\uD83D\uDC51 Coffre légendaire", icon: "\uD83D\uDC51" },
 };
 
+function chestRevealVibration(chestType) {
+  if (chestType === "legendary") return [24, 18, 36, 16, 48, 16, 62];
+  if (chestType === "epic") return [20, 16, 30, 14, 38];
+  if (chestType === "rare") return [16, 12, 22];
+  return [14, 12, 18];
+}
+
 const ANSWER_EFFECTS = [
   { id: "default", label: "Classique", desc: "Effet de base.", dustCost: 0 },
   { id: "gold-burst", label: "Explosion dorée", desc: "Explosion dorée sur bonne réponse.", dustCost: 120 },
@@ -1207,7 +1214,7 @@ export default function App() {
   function showChestPopup(payload) {
     setChestPop(payload);
     if (chestTimerRef.current) clearTimeout(chestTimerRef.current);
-    if (payload?.phase === "rolling") return;
+    if (payload?.phase === "rolling" || payload?.phase === "impact") return;
     chestTimerRef.current = setTimeout(() => setChestPop(null), 5200);
   }
 
@@ -1651,19 +1658,32 @@ export default function App() {
     showChestPopup({
       phase: "rolling",
       openCount,
-      reel: ["common", "rare", "epic", "legendary", "rare", "epic"],
+      chestType: opened[0]?.chestType ?? "common",
+      reel: ["\uD83C\uDF81", "\uD83C\uDF1F", "\u2728", "\uD83D\uDC51", "\uD83C\uDF1F", "\u2728"],
     });
     chestRevealTimerRef.current = setTimeout(() => {
+      const revealChestType = opened[0]?.chestType ?? "common";
+      showChestPopup({
+        phase: "impact",
+        openCount,
+        chestType: revealChestType,
+        chestLabel: CHEST_TYPES[revealChestType]?.label ?? "Coffre",
+        chestIcon: CHEST_TYPES[revealChestType]?.icon ?? "\uD83C\uDF81",
+      });
+      playBeep("level", audioOn, fxVolume);
+      vibrate(chestRevealVibration(revealChestType));
+      chestRevealTimerRef.current = setTimeout(() => {
       showChestPopup({
         phase: "reveal",
         openCount,
-        chestType: opened[0]?.chestType ?? "common",
-        chestLabel: openCount === 1 ? CHEST_TYPES[opened[0]?.chestType]?.label ?? "Coffre" : `${openCount} coffres`,
-        chestIcon: "",
+        chestType: revealChestType,
+        chestLabel: openCount === 1 ? CHEST_TYPES[revealChestType]?.label ?? "Coffre" : `${openCount} coffres`,
+        chestIcon: CHEST_TYPES[revealChestType]?.icon ?? "\uD83C\uDF81",
         leadRewardKind: opened[0]?.reward?.kind ?? "coins",
         rewards: opened,
       });
-    }, reduceMotion ? 0 : 950);
+      }, reduceMotion ? 0 : 340);
+    }, reduceMotion ? 0 : 880);
 
     if (cloudEnabled) {
       cloudLogEvent({

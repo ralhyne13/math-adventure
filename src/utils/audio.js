@@ -32,34 +32,39 @@ export function playBeep(kind = "ok", enabled = true, volume = null) {
     };
 
     if (kind === "ok") {
-      pulse("triangle", 720, 980, 1240, now, 0.04, 0.18, 0.22);
-      pulse("sine", 540, 720, 860, now + 0.03, 0.03, 0.16, 0.08);
+      pulse("triangle", 620, 930, 1320, now, 0.03, 0.16, 0.24);
+      pulse("sine", 780, 1180, 1560, now + 0.045, 0.02, 0.15, 0.16);
+      pulse("sine", 460, 620, 760, now + 0.02, 0.03, 0.14, 0.08);
     } else if (kind === "boss_hit") {
-      pulse("triangle", 300, 520, 760, now, 0.03, 0.14, 0.2);
-      pulse("sine", 480, 760, 980, now + 0.04, 0.03, 0.18, 0.1);
+      pulse("triangle", 240, 420, 620, now, 0.02, 0.13, 0.24);
+      pulse("square", 360, 640, 880, now + 0.03, 0.02, 0.14, 0.16);
+      pulse("sine", 560, 860, 1040, now + 0.065, 0.02, 0.16, 0.1);
     } else if (kind === "boss_attack") {
-      pulse("square", 160, 120, 90, now, 0.03, 0.2, 0.24);
-      pulse("sawtooth", 110, 95, 72, now + 0.05, 0.02, 0.18, 0.12);
+      pulse("square", 150, 112, 82, now, 0.02, 0.21, 0.26);
+      pulse("sawtooth", 120, 95, 70, now + 0.035, 0.02, 0.2, 0.14);
+      pulse("triangle", 210, 160, 120, now + 0.06, 0.02, 0.18, 0.12);
     } else if (kind === "boss_win") {
-      pulse("triangle", 420, 680, 940, now, 0.04, 0.18, 0.2);
-      pulse("triangle", 720, 1040, 1380, now + 0.1, 0.04, 0.22, 0.18);
-      pulse("sine", 980, 1320, 1680, now + 0.2, 0.04, 0.26, 0.12);
+      pulse("triangle", 360, 560, 820, now, 0.03, 0.16, 0.2);
+      pulse("triangle", 560, 860, 1180, now + 0.08, 0.03, 0.18, 0.2);
+      pulse("triangle", 840, 1220, 1660, now + 0.16, 0.03, 0.22, 0.18);
+      pulse("sine", 1040, 1520, 1960, now + 0.22, 0.03, 0.24, 0.12);
     } else if (kind === "chest") {
-      pulse("triangle", 420, 660, 920, now, 0.05, 0.24, 0.24);
-      pulse("sine", 520, 880, 1180, now + 0.11, 0.04, 0.22, 0.1);
+      pulse("triangle", 380, 620, 980, now, 0.04, 0.22, 0.24);
+      pulse("sine", 520, 860, 1240, now + 0.08, 0.03, 0.2, 0.14);
+      pulse("triangle", 720, 1040, 1420, now + 0.16, 0.03, 0.24, 0.14);
     } else if (kind === "level") {
-      pulse("triangle", 480, 820, 1160, now, 0.05, 0.2, 0.22);
-      pulse("triangle", 760, 1180, 1560, now + 0.1, 0.05, 0.28, 0.18);
-      pulse("sine", 620, 930, 1240, now + 0.18, 0.04, 0.24, 0.1);
+      pulse("triangle", 420, 760, 1120, now, 0.04, 0.22, 0.24);
+      pulse("triangle", 620, 1040, 1460, now + 0.1, 0.04, 0.24, 0.2);
+      pulse("sine", 840, 1280, 1720, now + 0.19, 0.03, 0.24, 0.14);
     } else if (kind === "combo_up") {
-      pulse("triangle", 640, 980, 1360, now, 0.04, 0.16, 0.2);
-      pulse("sine", 860, 1220, 1640, now + 0.06, 0.03, 0.16, 0.12);
-      pulse("square", 420, 560, 760, now + 0.12, 0.02, 0.14, 0.06);
+      pulse("triangle", 700, 1020, 1480, now, 0.03, 0.14, 0.22);
+      pulse("sine", 920, 1320, 1760, now + 0.045, 0.02, 0.13, 0.16);
+      pulse("square", 520, 700, 920, now + 0.075, 0.015, 0.12, 0.07);
     } else {
-      pulse("square", 180, 140, 110, now, 0.03, 0.22, 0.22);
-      pulse("sawtooth", 140, 120, 96, now + 0.04, 0.02, 0.18, 0.08);
+      pulse("square", 180, 136, 104, now, 0.03, 0.22, 0.24);
+      pulse("sawtooth", 132, 108, 86, now + 0.045, 0.02, 0.19, 0.1);
     }
 
-    setTimeout(() => ctx.close().catch(() => {}), 420);
+    setTimeout(() => ctx.close().catch(() => {}), 560);
   } catch {}
 }
