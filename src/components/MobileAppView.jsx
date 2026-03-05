@@ -19,8 +19,18 @@ export default function MobileAppView({
   profileProps,
   settingsProps,
 }) {
+  const arcadeSymbols = ["+", "-", "x", "/", "=", "\u03A3", "\u221A", "\u03C0", "%", "7", "8", "9"];
+
   return (
     <div className={`mobileViewFrame mobileViewFrame-${mobileRoute}`}>
+      <div className="mobileMathWindowFx" aria-hidden="true">
+        {arcadeSymbols.map((symbol, idx) => (
+          <span key={`${symbol}-${idx}`} style={{ "--i": idx }}>
+            {symbol}
+          </span>
+        ))}
+      </div>
+
       <TopBar {...topBarProps} compact />
 
       {mobileRoute === "home" && (
@@ -36,43 +46,43 @@ export default function MobileAppView({
       <div className="mobileDock" aria-label="Navigation mobile">
         <button className={`mobileDockBtn route-home ${mobileRoute === "home" ? "isActive" : ""}`} onClick={onNavigateHome}>
           <span className="mobileDockIcon" aria-hidden="true">
-            🏠
+            {"\uD83C\uDFE0"}
           </span>
           <span>Accueil</span>
         </button>
         <button className={`mobileDockBtn route-play ${mobileRoute === "classic-play" ? "isActive" : ""}`} onClick={onNavigatePlay}>
           <span className="mobileDockIcon" aria-hidden="true">
-            🎯
+            {"\uD83C\uDFAF"}
           </span>
           <span>Jouer</span>
         </button>
         <button className={`mobileDockBtn route-arena ${mobileRoute === "arena" ? "isActive" : ""}`} onClick={onOpenArena}>
           <span className="mobileDockIcon" aria-hidden="true">
-            ⚔️
+            {"\u2694\uFE0F"}
           </span>
           <span>Arena</span>
         </button>
         <button className={`mobileDockBtn route-rush ${mobileRoute === "rush" ? "isActive" : ""}`} onClick={onNavigateRush}>
           <span className="mobileDockIcon" aria-hidden="true">
-            ⚡
+            {"\u26A1"}
           </span>
           <span>Rush</span>
         </button>
         <button className={`mobileDockBtn route-shop ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
           <span className="mobileDockIcon" aria-hidden="true">
-            🛍️
+            {"\uD83D\uDED2"}
           </span>
           <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn route-profile ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={onOpenProfile}>
           <span className="mobileDockIcon" aria-hidden="true">
-            👤
+            {"\uD83D\uDC64"}
           </span>
           <span>Profil</span>
         </button>
         <button className={`mobileDockBtn route-settings ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={onOpenSettings}>
           <span className="mobileDockIcon" aria-hidden="true">
-            ⚙️
+            {"\u2699\uFE0F"}
           </span>
           <span>Reglages</span>
         </button>

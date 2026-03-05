@@ -91,6 +91,12 @@ export default function QuestionCard({
           />
         ))}
       </div>
+      <div className={`arcadeFireworks ${fx === "ok" ? "on" : ""}`} aria-hidden="true">
+        {[...Array(18)].map((_, i) => (
+          <i key={i} style={{ "--i": i }} />
+        ))}
+      </div>
+      <div className={`arcadeShockRing ${fx === "ok" ? "on" : ""}`} aria-hidden="true" />
 
       <div className={`cardTitle questionHeader questionHeaderRefresh ${compact ? "cardTitleCompact questionHeaderCompactRefresh" : ""}`}>
         <span>{compact ? "Session mobile" : "Session active"}</span>

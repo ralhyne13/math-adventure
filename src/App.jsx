@@ -658,6 +658,7 @@ export default function App() {
     () => window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true
   );
   const [showMobileBootSplash, setShowMobileBootSplash] = useState(() => window.innerWidth <= 820);
+  const [showMobileEntryMenu, setShowMobileEntryMenu] = useState(() => window.innerWidth <= 820);
 
   // Session
   const [screen, setScreen] = useState("classic"); // "classic" | "rush"
@@ -2228,6 +2229,7 @@ export default function App() {
   }
 
   function navigateMobile(route) {
+    setShowMobileEntryMenu(false);
     setMobileRoute(route);
     if (isMobileViewport) {
       return;
@@ -2786,10 +2788,15 @@ export default function App() {
   useEffect(() => {
     if (!isLoggedIn || !isMobileViewport) {
       setShowMobileBootSplash(false);
+      setShowMobileEntryMenu(false);
       return undefined;
     }
     setShowMobileBootSplash(true);
-    const t = setTimeout(() => setShowMobileBootSplash(false), reduceMotion ? 250 : 1100);
+    setShowMobileEntryMenu(false);
+    const t = setTimeout(() => {
+      setShowMobileBootSplash(false);
+      setShowMobileEntryMenu(true);
+    }, reduceMotion ? 250 : 1100);
     return () => clearTimeout(t);
   }, [isLoggedIn, isMobileViewport, reduceMotion]);
 
@@ -3008,6 +3015,51 @@ export default function App() {
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (isMobileViewport && showMobileEntryMenu) {
+    return (
+      <div className="shell mobileArcadeEntry">
+        <div className="mathBg" aria-hidden="true">
+          {FLOATERS.map((t, i) => (
+            <span
+              key={i}
+              style={{
+                left: `${(i * 37) % 100}%`,
+                top: `${(i * 19) % 100}%`,
+                fontSize: `${14 + (i % 8) * 6}px`,
+                animationDuration: `${10 + (i % 10) * 2.2}s`,
+                animationDelay: `${-(i % 10) * 1.1}s`,
+              }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <div className="mobileEntryFx" aria-hidden="true">
+          {["+", "-", "x", "/", "=", "\u03A3", "\u221A", "\u03C0", "%", "1", "2", "3"].map((symbol, idx) => (
+            <span key={`${symbol}-${idx}`} style={{ "--i": idx }}>
+              {symbol}
+            </span>
+          ))}
+        </div>
+        <section className="mobileEntryCard smooth">
+          <div className="mobileEntryTitle">Math Royale</div>
+          <div className="mobileEntryLead">Choisis ton accès rapide pour démarrer.</div>
+          <div className="mobileEntryActions">
+            <button className="btn btnPrimary smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("classic-play")}>
+              Jouer
+            </button>
+            <button className="btn smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("settings")}>
+              Réglages
+            </button>
+            <button className="btn smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("profile")}>
+              Stats
+            </button>
+          </div>
+        </section>
       </div>
     );
   }
