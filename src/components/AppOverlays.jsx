@@ -13,6 +13,8 @@ export default function AppOverlays({
   chestPop,
   onCloseChestPop,
   onEquipChestReward,
+  comboFunPop,
+  onCloseComboFunPop,
 }) {
   return (
     <>
@@ -199,6 +201,25 @@ export default function AppOverlays({
                 Super
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {comboFunPop && (
+        <div className="comboFunPop" role="status" aria-live="polite">
+          <div className="comboFunPopInner smooth feedbackPanel feedbackComboFunPanel">
+            <div className="comboFunBadge" aria-hidden="true">
+              {comboFunPop.icon}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className="comboFunTitle">{comboFunPop.title}</div>
+              <div className="comboFunSub">
+                Combo x<b>{comboFunPop.streak}</b> | +<b>{comboFunPop.coins}</b> pièces bonus
+              </div>
+            </div>
+            <button className="btn btnPrimary smooth hover-lift press" onClick={onCloseComboFunPop}>
+              OK
+            </button>
           </div>
         </div>
       )}

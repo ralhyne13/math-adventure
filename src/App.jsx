@@ -401,6 +401,16 @@ const ARENA_BOSSES = [
   { id: "titan", name: "Titan Algebra", emoji: "\uD83D\uDDFF" },
 ];
 
+const COMBO_FUN_MILESTONES = [
+  { streak: 3, coins: 5, icon: "\uD83C\uDF89", title: "Mini combo" },
+  { streak: 7, coins: 12, icon: "\uD83D\uDD25", title: "Super combo" },
+  { streak: 12, coins: 20, icon: "\uD83C\uDF1F", title: "Mega combo" },
+];
+
+function comboMilestoneFor(streakValue) {
+  return COMBO_FUN_MILESTONES.find((item) => item.streak === streakValue) ?? null;
+}
+
 function evolvedOwlForLevel(level) {
   if (level >= 30) return { emoji: "\uD83D\uDC51", name: "Hibou légendaire" };
   if (level >= 20) return { emoji: "\uD83E\uDD47", name: "Hibou doré" };
@@ -619,6 +629,7 @@ export default function App() {
   const [levelPop, setLevelPop] = useState(null);
   const [coachPop, setCoachPop] = useState(null);
   const [chestPop, setChestPop] = useState(null);
+  const [comboFunPop, setComboFunPop] = useState(null);
 
   const [lastLoginDayKey, setLastLoginDayKey] = useState(initial.lastLoginDayKey);
   const [loginStreak, setLoginStreak] = useState(initial.loginStreak);
@@ -2074,6 +2085,18 @@ export default function App() {
       setStreak((st) => {
         const ns = st + 1;
         setBestStreak((bs) => Math.max(bs, ns));
+        const milestone = comboMilestoneFor(ns);
+        if (milestone) {
+          awardCoins(milestone.coins);
+          setComboFunPop({
+            icon: milestone.icon,
+            title: milestone.title,
+            streak: ns,
+            coins: milestone.coins,
+          });
+          playBeep("level", audioOn);
+          vibrate([12, 10, 14]);
+        }
         return ns;
       });
 
@@ -2749,6 +2772,12 @@ export default function App() {
   }, [loginRewardPop]);
 
   useEffect(() => {
+    if (!comboFunPop) return;
+    const t = setTimeout(() => setComboFunPop(null), 2400);
+    return () => clearTimeout(t);
+  }, [comboFunPop]);
+
+  useEffect(() => {
     const onResize = () => setIsMobileViewport(window.innerWidth <= 820);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -3312,6 +3341,8 @@ export default function App() {
         chestPop={chestPop}
         onCloseChestPop={() => setChestPop(null)}
         onEquipChestReward={equipChestReward}
+        comboFunPop={comboFunPop}
+        onCloseComboFunPop={() => setComboFunPop(null)}
       />
 
       {useMobilePages ? (
