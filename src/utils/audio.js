@@ -1,10 +1,19 @@
-export function playBeep(kind = "ok", enabled = true) {
+function resolveVolume(raw) {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return 1;
+  return Math.max(0, Math.min(1, n));
+}
+
+export function playBeep(kind = "ok", enabled = true, volume = null) {
   if (!enabled) return;
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
     const now = ctx.currentTime;
+    const globalVolume =
+      volume == null && typeof window !== "undefined" ? window.__mathFxVolume : volume;
+    const volumeMul = resolveVolume(globalVolume ?? 1);
 
     const pulse = (type, startFreq, midFreq, endFreq, startAt, attack, release, gainPeak) => {
       const o = ctx.createOscillator();
@@ -16,7 +25,7 @@ export function playBeep(kind = "ok", enabled = true) {
       if (midFreq) o.frequency.exponentialRampToValueAtTime(midFreq, startAt + attack);
       o.frequency.exponentialRampToValueAtTime(endFreq, startAt + release);
       g.gain.setValueAtTime(0.001, startAt);
-      g.gain.exponentialRampToValueAtTime(gainPeak, startAt + attack);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.001, gainPeak * volumeMul), startAt + attack);
       g.gain.exponentialRampToValueAtTime(0.001, startAt + release);
       o.start(startAt);
       o.stop(startAt + release + 0.02);
@@ -42,6 +51,10 @@ export function playBeep(kind = "ok", enabled = true) {
       pulse("triangle", 480, 820, 1160, now, 0.05, 0.2, 0.22);
       pulse("triangle", 760, 1180, 1560, now + 0.1, 0.05, 0.28, 0.18);
       pulse("sine", 620, 930, 1240, now + 0.18, 0.04, 0.24, 0.1);
+    } else if (kind === "combo_up") {
+      pulse("triangle", 640, 980, 1360, now, 0.04, 0.16, 0.2);
+      pulse("sine", 860, 1220, 1640, now + 0.06, 0.03, 0.16, 0.12);
+      pulse("square", 420, 560, 760, now + 0.12, 0.02, 0.14, 0.06);
     } else {
       pulse("square", 180, 140, 110, now, 0.03, 0.22, 0.22);
       pulse("sawtooth", 140, 120, 96, now + 0.04, 0.02, 0.18, 0.08);

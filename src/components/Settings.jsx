@@ -6,6 +6,8 @@ export default function Settings({
   presentation = "modal",
   audioOn,
   setAudioOn,
+  fxVolume,
+  setFxVolume,
   vibrateOn,
   setVibrateOn,
   autoNextOn,
@@ -53,6 +55,18 @@ export default function Settings({
               <span>Sons</span>
               <input type="checkbox" checked={audioOn} onChange={(e) => setAudioOn(e.target.checked)} />
             </label>
+            <div className="small" style={{ marginTop: 8 }}>
+              Volume FX: {Math.round((Number(fxVolume) || 0) * 100)}%
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={fxVolume}
+              onChange={(e) => setFxVolume(Number(e.target.value))}
+              style={{ width: "100%", marginTop: 8 }}
+            />
             <label className="settingsRow">
               <span>Vibrations (mobile)</span>
               <input type="checkbox" checked={vibrateOn} onChange={(e) => setVibrateOn(e.target.checked)} />

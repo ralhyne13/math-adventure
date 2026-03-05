@@ -176,6 +176,7 @@ export default function RushScreen({
   setGradeId,
   setDiffId,
   audioOn,
+  fxVolume = 1,
   vibrateOn,
   reduceMotion,
   setCoins,
@@ -348,7 +349,7 @@ export default function RushScreen({
       setBestCombo((b) => Math.max(b, nextCombo));
       setMult(nextMult);
 
-      playBeep("ok", audioOn);
+      playBeep("ok", audioOn, fxVolume);
       vibrate(12);
       setFloatText(`+${pts}`);
 
@@ -362,7 +363,7 @@ export default function RushScreen({
       setCombo(0);
       setMult(1);
 
-      playBeep("bad", audioOn);
+      playBeep("bad", audioOn, fxVolume);
       vibrate(40);
       setFloatText(`-${(subMs / 1000).toFixed(1)}s`);
 
@@ -386,7 +387,7 @@ export default function RushScreen({
         setOwnedAvatars?.((a) => (a.includes(chest.avatarId) ? a : [...a, chest.avatarId]));
       }
 
-      playBeep("ok", audioOn);
+      playBeep("ok", audioOn, fxVolume);
       vibrate(16);
       setChestPhase("opened");
     }, reduceMotion ? 0 : 520);

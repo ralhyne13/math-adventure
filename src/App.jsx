@@ -491,6 +491,7 @@ export default function App() {
         totalWrong: 0,
         totalQuestions: 0,
         audioOn: true,
+        fxVolume: 0.8,
         vibrateOn: true,
         autoNextOn: false,
         autoNextMs: 1800,
@@ -550,6 +551,7 @@ export default function App() {
       totalWrong: saved?.totalWrong ?? 0,
       totalQuestions: saved?.totalQuestions ?? 0,
       audioOn: saved?.audioOn ?? true,
+      fxVolume: saved?.fxVolume ?? 0.8,
       vibrateOn: saved?.vibrateOn ?? true,
       autoNextOn: saved?.autoNextOn ?? false,
       autoNextMs: saved?.autoNextMs ?? 1800,
@@ -615,6 +617,7 @@ export default function App() {
   const [totalQuestions, setTotalQuestions] = useState(initial.totalQuestions);
 
   const [audioOn, setAudioOn] = useState(initial.audioOn);
+  const [fxVolume, setFxVolume] = useState(initial.fxVolume ?? 0.8);
   const [vibrateOn, setVibrateOn] = useState(initial.vibrateOn);
   const [autoNextOn, setAutoNextOn] = useState(initial.autoNextOn);
   const [autoNextMs, setAutoNextMs] = useState(initial.autoNextMs);
@@ -780,6 +783,11 @@ export default function App() {
   }, [xp]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.__mathFxVolume = clamp(Number(fxVolume) || 0, 0, 1);
+  }, [fxVolume]);
+
+  useEffect(() => {
     Object.entries(skin.vars).forEach(([k, v]) => {
       document.documentElement.style.setProperty(k, v);
     });
@@ -830,6 +838,7 @@ export default function App() {
       totalWrong,
       totalQuestions,
       audioOn,
+      fxVolume,
       vibrateOn,
       autoNextOn,
       autoNextMs,
@@ -898,6 +907,7 @@ export default function App() {
     totalWrong,
     totalQuestions,
     audioOn,
+    fxVolume,
     vibrateOn,
     autoNextOn,
     autoNextMs,
@@ -2095,7 +2105,7 @@ export default function App() {
             streak: ns,
             coins: milestone.coins,
           });
-          playBeep("level", audioOn);
+          playBeep("combo_up", audioOn, fxVolume);
           vibrate([12, 10, 14]);
         }
         return ns;
@@ -2538,6 +2548,7 @@ export default function App() {
       totalWrong: 0,
       totalQuestions: 0,
       audioOn: true,
+      fxVolume: 0.8,
       vibrateOn: true,
       autoNextOn: false,
       autoNextMs: 1800,
@@ -3180,6 +3191,7 @@ export default function App() {
           setGradeId={setGradeId}
           setDiffId={setDiffId}
           audioOn={audioOn}
+          fxVolume={fxVolume}
           vibrateOn={vibrateOn}
           reduceMotion={reduceMotion}
           setCoins={setCoins}
@@ -3205,6 +3217,7 @@ export default function App() {
         setGradeId={setGradeId}
         setDiffId={setDiffId}
         audioOn={audioOn}
+        fxVolume={fxVolume}
         vibrateOn={vibrateOn}
         reduceMotion={reduceMotion}
         setCoins={setCoins}
@@ -3323,6 +3336,8 @@ export default function App() {
     unlockEffectWithDust,
     audioOn,
     setAudioOn,
+    fxVolume,
+    setFxVolume,
     vibrateOn,
     setVibrateOn,
     autoNextOn,
@@ -3557,6 +3572,8 @@ export default function App() {
             presentation="modal"
             audioOn={audioOn}
             setAudioOn={setAudioOn}
+            fxVolume={fxVolume}
+            setFxVolume={setFxVolume}
             vibrateOn={vibrateOn}
             setVibrateOn={setVibrateOn}
             autoNextOn={autoNextOn}
