@@ -127,7 +127,7 @@ body.reduce-motion *{
 }
 .mobileDockBtn.isActive{
   color: var(--text);
-  background: rgba(255,255,255,.07);
+  background: color-mix(in srgb, var(--mobile-accent) 52%, rgba(255,255,255,.03));
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
   animation: mobileActiveGlow 2.8s ease-in-out infinite;
 }
@@ -659,6 +659,8 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
 .mobileViewFrame,
 .mobileShellFrame{
   position: relative;
+  --mobile-accent: rgba(92,242,204,.22);
+  --mobile-accent-strong: rgba(92,242,204,.36);
 }
 
 .mobileViewFrame::before,
@@ -697,6 +699,26 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
     radial-gradient(260px 180px at 0% 24%, rgba(91,124,250,.08), transparent 72%);
 }
 
+.mobileViewFrame-home{
+  --mobile-accent: rgba(92,242,204,.22);
+  --mobile-accent-strong: rgba(92,242,204,.36);
+}
+
+.mobileViewFrame-shop{
+  --mobile-accent: rgba(244,178,61,.22);
+  --mobile-accent-strong: rgba(244,178,61,.36);
+}
+
+.mobileViewFrame-profile{
+  --mobile-accent: rgba(91,124,250,.22);
+  --mobile-accent-strong: rgba(91,124,250,.36);
+}
+
+.mobileViewFrame-settings{
+  --mobile-accent: rgba(181,189,255,.22);
+  --mobile-accent-strong: rgba(181,189,255,.34);
+}
+
 .mobileViewFrame-home::before{
   animation-duration: 9.2s;
 }
@@ -705,6 +727,11 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
   background:
     radial-gradient(340px 180px at 100% 0%, rgba(91,124,250,.12), transparent 72%),
     radial-gradient(260px 180px at 0% 30%, rgba(255,255,255,.04), transparent 74%);
+}
+
+.mobileShellFrame-classic-play{
+  --mobile-accent: rgba(91,124,250,.24);
+  --mobile-accent-strong: rgba(91,124,250,.38);
 }
 
 .mobileShellFrame-classic-play::before{
@@ -717,6 +744,11 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
     radial-gradient(220px 160px at 0% 26%, rgba(239,68,68,.08), transparent 74%);
 }
 
+.mobileShellFrame-arena{
+  --mobile-accent: rgba(245,158,11,.24);
+  --mobile-accent-strong: rgba(245,158,11,.4);
+}
+
 .mobileShellFrame-arena::before{
   animation-duration: 7.2s;
 }
@@ -725,6 +757,11 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
   background:
     radial-gradient(340px 180px at 100% 0%, rgba(34,197,94,.14), transparent 72%),
     radial-gradient(220px 160px at 0% 26%, rgba(92,242,204,.08), transparent 74%);
+}
+
+.mobileShellFrame-rush{
+  --mobile-accent: rgba(34,197,94,.24);
+  --mobile-accent-strong: rgba(34,197,94,.4);
 }
 
 .mobileShellFrame-rush::before{
@@ -958,6 +995,7 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
   position: relative;
   overflow: hidden;
   padding: 14px;
+  border-color: color-mix(in srgb, var(--mobile-accent-strong) 45%, rgba(255,255,255,.08));
 }
 
 .mobileModeHeroClassic{
@@ -1045,7 +1083,7 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
 .mobileModeQuestionWrap .questionCardCompact{
   position: relative;
   z-index: 1;
-  border: 1px solid rgba(255,255,255,.1);
+  border: 1px solid color-mix(in srgb, var(--mobile-accent-strong) 55%, rgba(255,255,255,.1));
   box-shadow:
     0 22px 44px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.05);
@@ -1178,9 +1216,9 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
   overflow: hidden;
   margin-bottom: 14px;
   border-radius: 24px;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid color-mix(in srgb, var(--mobile-accent-strong) 45%, rgba(255,255,255,.08));
   background:
-    radial-gradient(220px 120px at 100% 0%, rgba(92,242,204,.1), transparent 72%),
+    radial-gradient(220px 120px at 100% 0%, color-mix(in srgb, var(--mobile-accent) 55%, rgba(255,255,255,.02)), transparent 72%),
     linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
     rgba(8,12,25,.56);
   box-shadow: 0 18px 36px rgba(0,0,0,.18);
