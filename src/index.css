@@ -6807,6 +6807,26 @@ body.reduce-motion .chestMegaSparks.on i{
     max-width: 100%;
   }
 
+  .mobileClassicScreen .questionCardCompact .qStage{
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 16px;
+    padding: 10px 8px;
+    background:
+      radial-gradient(220px 120px at 50% 0%, rgba(56,189,248,.12), transparent 72%),
+      linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+      rgba(8,12,22,.44);
+    box-shadow:
+      0 12px 24px rgba(0,0,0,.2),
+      inset 0 1px 0 rgba(255,255,255,.12);
+  }
+
+  .mobileClassicScreen .questionCardCompact .questionCompactStats{
+    background:
+      linear-gradient(150deg, rgba(147,197,253,.22), rgba(255,255,255,.06)),
+      rgba(9,13,26,.44);
+    border-color: rgba(147,197,253,.34);
+  }
+
   .mobileClassicScreen .questionCardCompact .choiceGridCard{
     padding: 8px;
     border-radius: 16px;
@@ -6869,6 +6889,16 @@ body.reduce-motion .chestMegaSparks.on i{
     0 0 20px rgba(250,204,21,.32);
 }
 
+.mobileDockBtn.route-shop.isActive{
+  border-color: rgba(59,130,246,.34);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.05)),
+    rgba(59,130,246,.16);
+  box-shadow:
+    0 12px 22px rgba(0,0,0,.24),
+    0 0 20px rgba(59,130,246,.26);
+}
+
 .mobileDockBtn.route-chest.gainPulse{
   animation: chestDockGainPulse 820ms ease-out 1;
 }
@@ -6885,31 +6915,15 @@ body.reduce-motion .chestMegaSparks.on i{
   gap: 12px;
 }
 
-.mobileChestGrid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.mobileChestStat{
-  border: 1px solid rgba(255,255,255,.12);
+.mobileChestMystery{
+  border: 1px solid rgba(255,255,255,.14);
   border-radius: 14px;
-  padding: 10px;
+  padding: 10px 12px;
   background:
     linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.03)),
     rgba(10,14,26,.44);
-  display: grid;
-  gap: 4px;
-}
-
-.mobileChestStat strong{
   font-size: 12px;
-  letter-spacing: .2px;
-}
-
-.mobileChestStat span{
-  font-size: 18px;
-  font-weight: 1100;
+  color: rgba(238,244,255,.9);
 }
 
 .mobileChestHint{

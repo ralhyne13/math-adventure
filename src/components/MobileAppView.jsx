@@ -11,11 +11,11 @@ export default function MobileAppView({
   onNavigatePlay,
   onNavigateRush,
   onOpenArena,
+  onOpenShop,
   onOpenChest,
   onOpenChestBatch,
   chestPending = 0,
   chestProgress = 0,
-  chestTypeCounts = {},
   chestGainPulse = false,
   homeProps,
   shopProps,
@@ -49,24 +49,7 @@ export default function MobileAppView({
               <span>Coffres</span>
               <span className="pill">en attente: {chestPending}</span>
             </div>
-            <div className="mobileChestGrid">
-              <div className="mobileChestStat">
-                <strong>Commun</strong>
-                <span>{chestTypeCounts.common ?? 0}</span>
-              </div>
-              <div className="mobileChestStat">
-                <strong>Rare</strong>
-                <span>{chestTypeCounts.rare ?? 0}</span>
-              </div>
-              <div className="mobileChestStat">
-                <strong>Epique</strong>
-                <span>{chestTypeCounts.epic ?? 0}</span>
-              </div>
-              <div className="mobileChestStat">
-                <strong>Legendaire</strong>
-                <span>{chestTypeCounts.legendary ?? 0}</span>
-              </div>
-            </div>
+            <div className="mobileChestMystery">Chaque coffre est une surprise. Ouvre-les pour découvrir tes gains.</div>
             <div className="small mobileChestHint">
               Prochain coffre gagne dans {(() => {
                 const step = (Number(chestProgress) || 0) % 15;
@@ -122,6 +105,12 @@ export default function MobileAppView({
             {"\u26A1"}
           </span>
           <span>Rush</span>
+        </button>
+        <button className={`mobileDockBtn route-shop ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
+          <span className="mobileDockIcon" aria-hidden="true">
+            {"\uD83D\uDED2"}
+          </span>
+          <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn route-chest ${mobileRoute === "chest" ? "isActive" : ""} ${chestGainPulse ? "gainPulse" : ""}`} onClick={onOpenChest}>
           <span className="mobileDockIcon" aria-hidden="true">

@@ -3491,6 +3491,7 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
+        onOpenShop={openShopPanel}
         onOpenChest={openChestPanel}
         chestGainPulse={chestGainPulse}
         chestPending={chestPending}
@@ -3555,6 +3556,7 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
+        onOpenShop={openShopPanel}
         onOpenChest={openChestPanel}
         chestGainPulse={chestGainPulse}
         chestPending={chestPending}
@@ -3581,6 +3583,7 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
+        onOpenShop={openShopPanel}
         onOpenChest={openChestPanel}
         chestGainPulse={chestGainPulse}
         chestPending={chestPending}
@@ -3744,11 +3747,11 @@ export default function App() {
           onNavigatePlay={() => navigateMobile("classic-play")}
           onNavigateRush={() => navigateMobile("rush")}
           onOpenArena={openArenaScreen}
+          onOpenShop={openShopPanel}
           onOpenChest={openChestPanel}
           onOpenChestBatch={openChestBatch}
           chestPending={chestPending}
           chestProgress={chestProgress}
-          chestTypeCounts={chestTypeCounts}
           chestGainPulse={chestGainPulse}
           homeProps={mobileHomeProps}
           shopProps={mobileShopProps}

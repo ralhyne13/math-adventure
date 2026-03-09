@@ -254,12 +254,16 @@ export default function AppOverlays({
                         }
                       >
                         {item.visual.preview?.type === "emoji" ? item.visual.preview?.value : null}
+                        {item.visual.preview?.type === "coin" ? "🪙" : null}
+                        {item.visual.preview?.type === "dust" ? "💎" : null}
+                        {item.visual.preview?.type === "bolt" ? "⚡" : null}
+                        {item.visual.preview?.type === "effect" ? "✨" : null}
+                        {item.visual.preview?.type === "skin" ? "🎨" : null}
                         {item.visual.preview?.type === "gift" ? item.visual.icon : null}
                       </span>
                       <div style={{ flex: 1 }}>
                         <div className="chestRewardText">{item.visual.label}</div>
                         <div className="chestRewardMeta">
-                          <span className={`chestRarity tone-${item.visual.tone}`}>{item.visual.rarity}</span>
                           {(item.reward.kind === "skin" || item.reward.kind === "effect") && (
                             <button className="btn smooth press chestEquipBtn" onClick={() => onEquipChestReward(item)}>
                               Equiper maintenant

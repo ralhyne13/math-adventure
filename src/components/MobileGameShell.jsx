@@ -8,6 +8,7 @@ export default function MobileGameShell({
   onGoPlay,
   onGoRush,
   onGoArena,
+  onOpenShop,
   onOpenChest,
   chestPending = 0,
   chestGainPulse = false,
@@ -70,6 +71,12 @@ export default function MobileGameShell({
             {"\u2694\uFE0F"}
           </span>
           <span>Arena</span>
+        </button>
+        <button className={`mobileDockBtn route-shop ${activeRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
+          <span className="mobileDockIcon" aria-hidden="true">
+            {"\uD83D\uDED2"}
+          </span>
+          <span>Boutique</span>
         </button>
         <button className={`mobileDockBtn route-chest ${chestGainPulse ? "gainPulse" : ""}`} onClick={onOpenChest}>
           <span className="mobileDockIcon" aria-hidden="true">
