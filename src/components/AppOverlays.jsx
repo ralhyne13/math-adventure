@@ -24,7 +24,7 @@ export default function AppOverlays({
     <>
       {worldTransitionFx && (
         <div className="worldTransitionPop" role="status" aria-live="polite">
-          <div className={`worldTransitionPopInner smooth ${worldTransitionFx.intense ? "isIntense" : ""}`}>
+          <div className={`worldTransitionPopInner smooth ${worldTransitionFx.intense ? "isIntense" : ""} theme-${worldTransitionFx.theme || "default"}`}>
             <div className="worldTransitionFlow" aria-hidden="true" />
             {worldTransitionFx.intense && (
               <div className="worldTransitionParticles" aria-hidden="true">

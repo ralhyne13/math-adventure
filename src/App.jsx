@@ -2407,6 +2407,7 @@ export default function App() {
       to: nextWorld,
       gradeId: nextGradeId,
       intense,
+      theme: nextWorld.id,
     });
 
     setSelectedWorldId(nextWorld.id);
@@ -3290,11 +3291,6 @@ export default function App() {
         <section className="mobileEntryCard smooth">
           <div className="mobileEntryTitle">Math Royale</div>
           <div className="mobileEntryLead">Choisis ton accès rapide, puis ton monde pour démarrer.</div>
-          <div className="mobileEntryActions">
-            <button className="btn btnPrimary smooth hover-lift press mobileEntryBtn" onClick={startMobileWorldAdventure}>
-              Jouer maintenant
-            </button>
-          </div>
           <div className="mobileEntryWorldPicker">
             <div className="mobileEntryWorldTitle">Choix du monde</div>
             <div className="mobileEntryWorldGrid">
