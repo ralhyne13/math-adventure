@@ -8,7 +8,7 @@ export default function QuestionCard({
   modeId,
   setModeId,
   selectedWorldId,
-  setSelectedWorldId,
+  onSelectWorld,
   worlds,
   worldLevel,
   worldBossReady,
@@ -165,7 +165,7 @@ export default function QuestionCard({
                 </label>
                 <label className="questionSelectLabel">
                   <span>Monde</span>
-                  <select className="select smooth" value={selectedWorldId} onChange={(e) => setSelectedWorldId(e.target.value)}>
+                  <select className="select smooth" value={selectedWorldId} onChange={(e) => onSelectWorld?.(e.target.value)}>
                     {worlds.map((w) => (
                       <option key={w.id} value={w.id}>
                         {w.icon} {w.name}
@@ -213,7 +213,7 @@ export default function QuestionCard({
           </div>
           <div className="questionCompactWorldPicker">
             <span className="questionCompactWorldLabel">Categorie</span>
-            <select className="select smooth questionCompactWorldSelect" value={selectedWorldId} onChange={(e) => setSelectedWorldId(e.target.value)}>
+            <select className="select smooth questionCompactWorldSelect" value={selectedWorldId} onChange={(e) => onSelectWorld?.(e.target.value)}>
               {worlds.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.icon} {w.gradeId}

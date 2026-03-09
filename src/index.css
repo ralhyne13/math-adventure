@@ -3925,6 +3925,103 @@ body.reduce-motion .levelPopInner{ animation:none !important; }
   font-weight: 1100;
 }
 
+.worldTransitionPop{
+  position: fixed;
+  inset: 0;
+  z-index: 89;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px;
+  pointer-events:none;
+  background: rgba(0,0,0,.42);
+}
+.worldTransitionPopInner{
+  pointer-events:auto;
+  width: min(560px, 100%);
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.24);
+  background:
+    radial-gradient(340px 210px at 50% 0%, rgba(255,255,255,.16), transparent 72%),
+    linear-gradient(180deg, rgba(18,22,44,.96), rgba(10,14,30,.94));
+  box-shadow:
+    0 24px 90px rgba(0,0,0,.58),
+    inset 0 1px 0 rgba(255,255,255,.15);
+  padding: 14px;
+  text-align:center;
+  position: relative;
+  overflow:hidden;
+  animation: worldPortal 640ms var(--ease-out) 1;
+}
+.worldTransitionFlow{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(100deg, rgba(255,255,255,.09) 0 4px, rgba(255,255,255,0) 4px 18px);
+  opacity:.45;
+  animation: worldFlow 800ms linear infinite;
+}
+.worldTransitionBadge{
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  margin: 4px auto 10px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(0,0,0,.2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 24px;
+  position: relative;
+  z-index: 1;
+}
+.worldTransitionTitle{
+  position:relative;
+  z-index: 1;
+  font-weight: 1100;
+  letter-spacing: .32px;
+}
+.worldTransitionNames{
+  position:relative;
+  z-index: 1;
+  margin: 8px auto 4px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  font-size: 15px;
+}
+.worldTransitionNames span{
+  opacity:.8;
+}
+.worldTransitionGrade{
+  position:relative;
+  z-index: 1;
+  margin-top: 4px;
+  color: rgba(222,231,255,.82);
+  font-size: 12.5px;
+}
+.worldTransitionSub{
+  position:relative;
+  z-index: 1;
+  margin-top: 6px;
+  color: rgba(234,240,255,.9);
+  font-size: 12.3px;
+}
+@keyframes worldPortal{
+  0%{ transform: scale(.92) translateY(10px); opacity:0; }
+  55%{ transform: scale(1.02) translateY(-3px); opacity:1; }
+  100%{ transform: scale(1) translateY(0); opacity:1; }
+}
+@keyframes worldFlow{
+  from{ transform: translateX(0); }
+  to{ transform: translateX(18px); }
+}
+body.reduce-motion .worldTransitionPopInner,
+body.reduce-motion .worldTransitionFlow{ animation:none !important; }
+
 .coachPop{
   position: fixed;
   left: 12px;

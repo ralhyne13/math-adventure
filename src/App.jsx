@@ -516,6 +516,8 @@ export default function App() {
   const rushQuestionStartTsRef = useRef(Date.now());
   const study5WasOnRef = useRef(false);
   const study5StartTsRef = useRef(0);
+  const worldTransitionTimerRef = useRef(null);
+  const worldTransitionLockRef = useRef(false);
   const cloudHydrateRef = useRef(false);
   const cloudSaveTimerRef = useRef(null);
 
@@ -743,6 +745,7 @@ export default function App() {
   );
   const [showMobileBootSplash, setShowMobileBootSplash] = useState(() => window.innerWidth <= 820);
   const [showMobileEntryMenu, setShowMobileEntryMenu] = useState(() => window.innerWidth <= 820);
+  const [worldTransitionFx, setWorldTransitionFx] = useState(null);
 
   // Session
   const [screen, setScreen] = useState("classic"); // "classic" | "rush"
@@ -1054,6 +1057,7 @@ export default function App() {
   useEffect(() => {
     return () => {
       if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
+      if (worldTransitionTimerRef.current) clearTimeout(worldTransitionTimerRef.current);
     };
   }, []);
 
@@ -1075,6 +1079,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (worldTransitionLockRef.current) return;
     newQuestion(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeId, gradeId, diffId]);
@@ -1396,18 +1401,20 @@ export default function App() {
     setTimeout(() => setFx("none"), 750);
   }
 
-  function pushHistory(qNew, effectiveDiff = diffId) {
-    const sig = questionSignature(qNew, modeId, gradeId, effectiveDiff);
+  function pushHistory(qNew, effectiveDiff = diffId, forcedGradeId = null) {
+    const gradeForHistory = forcedGradeId ?? gradeId;
+    const sig = questionSignature(qNew, modeId, gradeForHistory, effectiveDiff);
     const arr = qHistoryRef.current ?? [];
     const next = [sig, ...arr];
     qHistoryRef.current = next.slice(0, 25);
   }
 
-  function newQuestion(resetPick = false) {
+  function newQuestion(resetPick = false, forcedGradeId = null) {
     clearAutoTimer();
     const liveDiff = bossActive || worldBossActive ? "difficile" : diffId;
-    const qNew = makeQuestion(modeId, gradeId, liveDiff, qHistoryRef);
-    pushHistory(qNew, liveDiff);
+    const nextGradeId = forcedGradeId ?? gradeId;
+    const qNew = makeQuestion(modeId, nextGradeId, liveDiff, qHistoryRef);
+    pushHistory(qNew, liveDiff, nextGradeId);
     if (rushOn) rushQuestionStartTsRef.current = Date.now();
 
     setQ(qNew);
@@ -2383,6 +2390,54 @@ export default function App() {
     setAvatarId(aid);
   }
 
+  function switchWorld(worldId) {
+    const nextWorld = WORLDS.find((w) => w.id === worldId);
+    if (!nextWorld || nextWorld.id === selectedWorldId) return;
+
+    const nextGradeId = nextWorld.gradeId;
+    const fromWorld = WORLDS.find((w) => w.id === selectedWorldId) ?? currentWorld;
+
+    if (worldTransitionTimerRef.current) clearTimeout(worldTransitionTimerRef.current);
+    worldTransitionLockRef.current = true;
+    setWorldTransitionFx({
+      from: fromWorld,
+      to: nextWorld,
+      gradeId: nextGradeId,
+    });
+
+    setSelectedWorldId(nextWorld.id);
+    setGradeId(nextGradeId);
+
+    setHintLevel(0);
+    setHintMsg("");
+    setShowExplain(false);
+    setExplain("");
+    setShowMethod(false);
+    setPicked(null);
+    setStatus("idle");
+    setRushOn(false);
+    setStudy5On(false);
+    setBossActive(false);
+    setBossRemaining(0);
+    setBossTimeLeft(0);
+    setWorldBossActive(false);
+    setWorldBossRemaining(0);
+    setAdaptiveAction(null);
+    setSessionChallengePop(null);
+    setBossHitFx(false);
+    setBossAttackFx(false);
+
+    playBeep("world", audioOn, fxVolume);
+    vibrate([10, 16, 24]);
+
+    const fxMs = reduceMotion ? 220 : 680;
+    worldTransitionTimerRef.current = setTimeout(() => {
+      setWorldTransitionFx(null);
+      worldTransitionLockRef.current = false;
+      newQuestion(true, nextGradeId);
+    }, fxMs);
+  }
+
   function navigateMobile(route) {
     setShowMobileEntryMenu(false);
     setMobileRoute(route);
@@ -3239,7 +3294,7 @@ export default function App() {
     modeId,
     setModeId,
     selectedWorldId,
-    setSelectedWorldId,
+    onSelectWorld: switchWorld,
     worlds: WORLDS,
     worldLevel,
     worldBossReady,
@@ -3460,7 +3515,7 @@ export default function App() {
     openChest,
     worlds: WORLDS,
     selectedWorldId,
-    setSelectedWorldId,
+    onSelectWorld: switchWorld,
     shopTab,
     setShopTab,
     profileTab,
@@ -3577,6 +3632,8 @@ export default function App() {
         onCloseComboFunPop={() => setComboFunPop(null)}
         sessionChallengePop={sessionChallengePop}
         onCloseSessionChallengePop={() => setSessionChallengePop(null)}
+        worldTransitionFx={worldTransitionFx}
+        onCloseWorldTransition={() => setWorldTransitionFx(null)}
       />
 
       {useMobilePages ? (

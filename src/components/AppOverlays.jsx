@@ -17,9 +17,30 @@ export default function AppOverlays({
   onCloseComboFunPop,
   sessionChallengePop,
   onCloseSessionChallengePop,
+  worldTransitionFx,
+  onCloseWorldTransition,
 }) {
   return (
     <>
+      {worldTransitionFx && (
+        <div className="worldTransitionPop" role="status" aria-live="polite">
+          <div className="worldTransitionPopInner smooth" onMouseDown={onCloseWorldTransition}>
+            <div className="worldTransitionFlow" aria-hidden="true" />
+            <div className="worldTransitionBadge">
+              <span>{worldTransitionFx.from?.icon || "🌟"}</span>
+            </div>
+            <div className="worldTransitionTitle">Passage de monde</div>
+            <div className="worldTransitionNames">
+              <div>{worldTransitionFx.from?.name ?? "..."}</div>
+              <span aria-hidden="true">➜</span>
+              <div>{worldTransitionFx.to?.name ?? "..."}</div>
+            </div>
+            <div className="worldTransitionGrade">Niveau cible: {worldTransitionFx.to?.gradeId || worldTransitionFx.gradeId}</div>
+            <div className="worldTransitionSub">Nouvelle catégorie mathématique chargée</div>
+          </div>
+        </div>
+      )}
+
       {loginRewardPop && (
         <div className="levelPop levelPopLogin" role="status" aria-live="polite">
           <div className="levelPopInner smooth feedbackPanel feedbackLoginPanel">

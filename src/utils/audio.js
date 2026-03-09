@@ -56,6 +56,11 @@ export function playBeep(kind = "ok", enabled = true, volume = null) {
       pulse("triangle", 420, 760, 1120, now, 0.04, 0.22, 0.24);
       pulse("triangle", 620, 1040, 1460, now + 0.1, 0.04, 0.24, 0.2);
       pulse("sine", 840, 1280, 1720, now + 0.19, 0.03, 0.24, 0.14);
+    } else if (kind === "world") {
+      pulse("sine", 280, 640, 1120, now, 0.025, 0.15, 0.22);
+      pulse("triangle", 340, 760, 980, now + 0.04, 0.02, 0.13, 0.18);
+      pulse("triangle", 640, 980, 1240, now + 0.09, 0.02, 0.16, 0.16);
+      pulse("sine", 420, 860, 1400, now + 0.14, 0.02, 0.2, 0.1);
     } else if (kind === "combo_up") {
       pulse("triangle", 700, 1020, 1480, now, 0.03, 0.14, 0.22);
       pulse("sine", 920, 1320, 1760, now + 0.045, 0.02, 0.13, 0.16);

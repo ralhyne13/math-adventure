@@ -1,7 +1,7 @@
 export default function MobileHomeScreen({
   worlds = [],
   selectedWorldId,
-  setSelectedWorldId,
+  onSelectWorld,
   chestPending,
   chestProgress,
   dailyChallenge,
@@ -33,7 +33,7 @@ export default function MobileHomeScreen({
                 <button
                   key={w.id}
                   className={`btn smooth hover-lift press mobileWorldChip ${isCurrent ? "isActive" : ""}`}
-                  onClick={() => setSelectedWorldId?.(w.id)}
+                  onClick={() => onSelectWorld?.(w.id)}
                   aria-pressed={isCurrent}
                 >
                   <span>{w.icon}</span>
