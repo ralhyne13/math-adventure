@@ -3934,7 +3934,9 @@ body.reduce-motion .levelPopInner{ animation:none !important; }
   justify-content:center;
   padding: 12px;
   pointer-events:none;
-  background: rgba(0,0,0,.42);
+  background:
+    radial-gradient(480px 280px at 50% 50%, rgba(91,124,250,.22), rgba(0,0,0,.58) 72%),
+    rgba(0,0,0,.58);
 }
 .worldTransitionPopInner{
   pointer-events:auto;
@@ -3951,7 +3953,7 @@ body.reduce-motion .levelPopInner{ animation:none !important; }
   text-align:center;
   position: relative;
   overflow:hidden;
-  animation: worldPortal 640ms var(--ease-out) 1;
+  animation: worldPortal 980ms var(--ease-out) 1;
 }
 .worldTransitionPopInner.isIntense{
   border-color: rgba(255,255,255,.36);
@@ -3963,7 +3965,7 @@ body.reduce-motion .levelPopInner{ animation:none !important; }
     0 30px 110px rgba(0,0,0,.62),
     0 0 54px color-mix(in srgb, var(--accent) 34%, transparent),
     inset 0 1px 0 rgba(255,255,255,.2);
-  animation-duration: 980ms;
+  animation-duration: 1480ms;
 }
 .worldTransitionPopInner.theme-cp{
   background:
@@ -4006,8 +4008,47 @@ body.reduce-motion .levelPopInner{ animation:none !important; }
   pointer-events:none;
   background:
     repeating-linear-gradient(100deg, rgba(255,255,255,.09) 0 4px, rgba(255,255,255,0) 4px 18px);
-  opacity:.45;
-  animation: worldFlow 800ms linear infinite;
+  opacity:.62;
+  animation: worldFlow 560ms linear infinite;
+}
+.worldTransitionRings{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.worldTransitionRings span{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,.34);
+  transform: translate(-50%, -50%) scale(.2);
+  opacity: 0;
+  animation: worldRingPulse 1.05s ease-out infinite;
+}
+.worldTransitionRings span:nth-child(2){ animation-delay: .22s; }
+.worldTransitionRings span:nth-child(3){ animation-delay: .44s; }
+.worldTransitionStreaks{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.worldTransitionStreaks i{
+  position: absolute;
+  left: calc(-16% + (var(--i) * 8%));
+  top: calc(8% + (var(--i) % 7) * 12%);
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.75), rgba(255,255,255,0));
+  opacity: .0;
+  transform: rotate(14deg);
+  animation: worldStreakFly calc(0.7s + (var(--i) % 4) * .16s) ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.08s);
 }
 .worldTransitionParticles{
   position: absolute;
@@ -4027,8 +4068,8 @@ body.reduce-motion .levelPopInner{ animation:none !important; }
   background: color-mix(in srgb, var(--accent2) 56%, white);
   box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 46%, transparent);
   opacity: .76;
-  animation: worldParticlesRise calc(0.9s + (var(--i) % 5) * 0.18s) ease-out infinite;
-  animation-delay: calc(var(--i) * -0.08s);
+  animation: worldParticlesRise calc(0.76s + (var(--i) % 5) * 0.14s) ease-out infinite;
+  animation-delay: calc(var(--i) * -0.05s);
 }
 .worldTransitionPopInner.theme-cp .worldTransitionFlow{
   background: repeating-linear-gradient(100deg, rgba(134,239,172,.2) 0 5px, rgba(0,0,0,0) 5px 18px);
@@ -4129,16 +4170,28 @@ body.reduce-motion .levelPopInner{ animation:none !important; }
 }
 @keyframes worldFlow{
   from{ transform: translateX(0); }
-  to{ transform: translateX(18px); }
+  to{ transform: translateX(32px); }
+}
+@keyframes worldRingPulse{
+  0%{ transform: translate(-50%, -50%) scale(.2); opacity: 0; }
+  20%{ opacity: .6; }
+  100%{ transform: translate(-50%, -50%) scale(8.8); opacity: 0; }
+}
+@keyframes worldStreakFly{
+  0%{ transform: translateX(-80px) rotate(14deg); opacity: 0; }
+  25%{ opacity: .8; }
+  100%{ transform: translateX(780px) rotate(14deg); opacity: 0; }
 }
 @keyframes worldParticlesRise{
-  0%{ transform: translateY(0) scale(.9); opacity: 0; }
-  16%{ opacity: .82; }
-  100%{ transform: translateY(-140px) scale(1.15); opacity: 0; }
+  0%{ transform: translateY(0) scale(.7); opacity: 0; }
+  14%{ opacity: .92; }
+  100%{ transform: translateY(-190px) scale(1.2); opacity: 0; }
 }
 body.reduce-motion .worldTransitionPopInner,
 body.reduce-motion .worldTransitionFlow,
-body.reduce-motion .worldTransitionParticles span{ animation:none !important; }
+body.reduce-motion .worldTransitionParticles span,
+body.reduce-motion .worldTransitionRings span,
+body.reduce-motion .worldTransitionStreaks i{ animation:none !important; }
 
 .coachPop{
   position: fixed;

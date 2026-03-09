@@ -26,9 +26,19 @@ export default function AppOverlays({
         <div className="worldTransitionPop" role="status" aria-live="polite">
           <div className={`worldTransitionPopInner smooth ${worldTransitionFx.intense ? "isIntense" : ""} theme-${worldTransitionFx.theme || "default"}`}>
             <div className="worldTransitionFlow" aria-hidden="true" />
+            <div className="worldTransitionRings" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="worldTransitionStreaks" aria-hidden="true">
+              {Array.from({ length: 14 }).map((_, idx) => (
+                <i key={idx} style={{ "--i": idx }} />
+              ))}
+            </div>
             {worldTransitionFx.intense && (
               <div className="worldTransitionParticles" aria-hidden="true">
-                {Array.from({ length: 16 }).map((_, idx) => (
+                {Array.from({ length: 30 }).map((_, idx) => (
                   <span key={idx} style={{ "--i": idx }} />
                 ))}
               </div>

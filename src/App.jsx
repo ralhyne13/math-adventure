@@ -2394,7 +2394,7 @@ export default function App() {
   function switchWorld(worldId, opts = null) {
     const nextWorld = WORLDS.find((w) => w.id === worldId);
     if (!nextWorld || nextWorld.id === selectedWorldId) return;
-    const intense = !!opts?.intense;
+    const intense = opts?.intense ?? true;
     const afterRoute = opts?.afterRoute || null;
 
     const nextGradeId = nextWorld.gradeId;
@@ -2408,6 +2408,7 @@ export default function App() {
       gradeId: nextGradeId,
       intense,
       theme: nextWorld.id,
+      boosted: true,
     });
 
     setSelectedWorldId(nextWorld.id);
@@ -2433,9 +2434,10 @@ export default function App() {
     setBossAttackFx(false);
 
     playBeep(intense ? "portal" : "world", audioOn, fxVolume);
-    vibrate(intense ? [16, 30, 40, 24, 56] : [10, 16, 24]);
+    setTimeout(() => playBeep("world", audioOn, fxVolume), 90);
+    vibrate(intense ? [24, 26, 46, 22, 68] : [14, 20, 30]);
 
-    const fxMs = reduceMotion ? 240 : intense ? 980 : 680;
+    const fxMs = reduceMotion ? 280 : intense ? 1480 : 980;
     worldTransitionTimerRef.current = setTimeout(() => {
       setWorldTransitionFx(null);
       worldTransitionLockRef.current = false;
