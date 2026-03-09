@@ -6743,3 +6743,29 @@ body.reduce-motion .chestCineFlash{
     font-size: clamp(21px, 7.2vw, 30px);
   }
 }
+
+.answerEntry{
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.answerInputField{
+  min-height: 56px;
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 1100;
+  text-align: center;
+  letter-spacing: .2px;
+}
+
+@media (max-width: 560px){
+  .answerEntry{
+    grid-template-columns: 1fr;
+  }
+
+  .answerEntry .btn{
+    width: 100%;
+  }
+}

@@ -60,6 +60,8 @@ export default function QuestionCard({
   bossCalloutText,
   errorShakeFx,
   answerEffectId,
+  answerInput,
+  setAnswerInput,
   worldProgressCurrent = 0,
   worldStepTarget = 3,
   chestProgress = 0,
@@ -393,15 +395,21 @@ export default function QuestionCard({
           )}
 
           <div className={`controls controlsRefresh choiceGridCard ${compact ? "controlsCompact controlsCompactRefresh" : ""}`}>
-            {q.choices.map((c) => {
-              const isPressed = picked === c;
-              const stateCls = showExplain && isPressed ? (c === q.correct ? "isRight" : "isWrong") : "";
-              return (
-                <button key={String(c)} className={`choice choiceCard smooth press ${stateCls}`} onClick={() => submit(c)} aria-pressed={isPressed} disabled={disableChoices}>
-                  <span className="choiceValue">{String(c)}</span>
-                </button>
-              );
-            })}
+            <div className="answerEntry">
+              <input
+                className="input smooth answerInputField"
+                placeholder="Ta réponse..."
+                value={answerInput}
+                onChange={(e) => setAnswerInput?.(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !disableChoices) submit(answerInput);
+                }}
+                disabled={disableChoices}
+              />
+              <button className="btn btnPrimary smooth hover-lift press" onClick={() => submit(answerInput)} disabled={disableChoices || !String(answerInput || "").trim()}>
+                Valider
+              </button>
+            </div>
 
             {showExplain && (
               <button className="btn btnPrimary smooth hover-lift press" onClick={goNext}>

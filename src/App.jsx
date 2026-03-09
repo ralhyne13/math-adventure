@@ -351,6 +351,42 @@ function speedBonus(rtMs) {
   return 0;
 }
 
+function normalizeAnswerValue(raw) {
+  return String(raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/−/g, "-")
+    .replace(/,/g, ".")
+    .replace(/\s+/g, "");
+}
+
+function parseFractionValue(raw) {
+  const s = normalizeAnswerValue(raw);
+  const m = s.match(/^(-?\d+)\/(-?\d+)$/);
+  if (!m) return null;
+  const n = Number(m[1]);
+  const d = Number(m[2]);
+  if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return null;
+  return { n, d };
+}
+
+function answersMatch(inputRaw, correctRaw) {
+  const input = normalizeAnswerValue(inputRaw);
+  const correct = normalizeAnswerValue(correctRaw);
+  if (!input || !correct) return false;
+  if (input === correct) return true;
+
+  const f1 = parseFractionValue(input);
+  const f2 = parseFractionValue(correct);
+  if (f1 && f2) return f1.n * f2.d === f2.n * f1.d;
+
+  const n1 = Number(input);
+  const n2 = Number(correct);
+  if (Number.isFinite(n1) && Number.isFinite(n2)) return Math.abs(n1 - n2) < 1e-9;
+
+  return false;
+}
+
 function rewardVisualMeta(reward, chestType) {
   if (reward.kind === "dust") {
     return { icon: "\uD83D\uDC8E", label: `${reward.dust} diamants cosmétiques`, tone: "rare", rarity: "Conversion", preview: { type: "dust" } };
@@ -755,6 +791,7 @@ export default function App() {
   const [questionIndex, setQuestionIndex] = useState(1);
 
   const [q, setQ] = useState(() => makeQuestion(modeId, gradeId, diffId, qHistoryRef));
+  const [answerInput, setAnswerInput] = useState("");
   const [picked, setPicked] = useState(null);
   const [status, setStatus] = useState("idle");
   const [explain, setExplain] = useState("");
@@ -1419,6 +1456,7 @@ export default function App() {
     if (rushOn) rushQuestionStartTsRef.current = Date.now();
 
     setQ(qNew);
+    setAnswerInput("");
     setStatus("idle");
     setExplain("");
     setShowExplain(false);
@@ -1994,7 +2032,7 @@ export default function App() {
     clearAutoTimer();
 
     setPicked(choice);
-    const isCorrect = choice === q.correct;
+    const isCorrect = answersMatch(choice, q.correct);
     const isRushNow = rushOn && rushTimeLeft > 0;
     const isArenaNow = arenaOn && !isRushNow && !study5On;
     const isBossNow = bossActive;
@@ -2267,7 +2305,7 @@ export default function App() {
       awardXp((10 + Math.min(8, streak)) * (isBossNow || isWorldBossNow ? 3 : 1) * rewardBoost);
 
       if (!fastMode) {
-        setExplain(q.explain(choice));
+        setExplain(q.explain(isCorrect ? q.correct : choice));
         setShowExplain(true);
         setShowMethod(false);
       } else {
@@ -2292,7 +2330,7 @@ export default function App() {
       awardXp(4 * (isBossNow ? 3 : 1));
 
       if (!fastMode) {
-        setExplain(q.explain(choice));
+        setExplain(q.explain(isCorrect ? q.correct : choice));
         setShowExplain(true);
         setShowMethod(false);
       } else {
@@ -3386,6 +3424,8 @@ export default function App() {
     errorShakeFx,
     answerEffectId,
     chestProgress,
+    answerInput,
+    setAnswerInput,
   };
 
   const mobileGameTopBarProps = {
