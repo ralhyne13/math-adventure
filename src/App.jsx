@@ -554,6 +554,7 @@ export default function App() {
   const study5StartTsRef = useRef(0);
   const worldTransitionTimerRef = useRef(null);
   const worldTransitionLockRef = useRef(false);
+  const prevChestPendingRef = useRef(0);
   const cloudHydrateRef = useRef(false);
   const cloudSaveTimerRef = useRef(null);
 
@@ -783,6 +784,7 @@ export default function App() {
   const [showMobileEntryMenu, setShowMobileEntryMenu] = useState(() => window.innerWidth <= 820);
   const [mobileEntryWorldId, setMobileEntryWorldId] = useState(initial.selectedWorldId);
   const [worldTransitionFx, setWorldTransitionFx] = useState(null);
+  const [chestGainPulse, setChestGainPulse] = useState(false);
 
   // Session
   const [screen, setScreen] = useState("classic"); // "classic" | "rush"
@@ -2560,6 +2562,14 @@ export default function App() {
     setShowSettings(false);
   }
 
+  function openChestPanel() {
+    if (isMobileViewport) {
+      navigateMobile("chest");
+      return;
+    }
+    openChest();
+  }
+
   const bestScore = getBestScoreFor(modeId, gradeId, diffId);
   const study5Accuracy = study5Answered ? Math.round((study5Right / study5Answered) * 100) : 0;
 
@@ -3083,6 +3093,19 @@ export default function App() {
     setMobileEntryWorldId(selectedWorldId);
   }, [showMobileEntryMenu, selectedWorldId]);
 
+  useEffect(() => {
+    const prev = Number(prevChestPendingRef.current || 0);
+    const next = Number(chestPending || 0);
+    if (next > prev) {
+      setChestGainPulse(true);
+      const t = setTimeout(() => setChestGainPulse(false), 1100);
+      prevChestPendingRef.current = next;
+      return () => clearTimeout(t);
+    }
+    prevChestPendingRef.current = next;
+    return undefined;
+  }, [chestPending]);
+
   /* ------------------------ Not logged in screen ------------------------ */
   if (!isLoggedIn) {
     return (
@@ -3468,7 +3491,8 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
-        onOpenChest={openChest}
+        onOpenChest={openChestPanel}
+        chestGainPulse={chestGainPulse}
         chestPending={chestPending}
       >
         <RushScreen
@@ -3531,7 +3555,8 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
-        onOpenChest={openChest}
+        onOpenChest={openChestPanel}
+        chestGainPulse={chestGainPulse}
         chestPending={chestPending}
       >
         <ClassicPlayScreen
@@ -3556,7 +3581,8 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
-        onOpenChest={openChest}
+        onOpenChest={openChestPanel}
+        chestGainPulse={chestGainPulse}
         chestPending={chestPending}
       >
         <ArenaScreen
@@ -3586,7 +3612,7 @@ export default function App() {
     isInstalledPwa,
     installPwaApp,
     startStudy5,
-    openChest,
+    openChest: openChestPanel,
     worlds: WORLDS,
     selectedWorldId,
     onSelectWorld: switchWorld,
@@ -3718,8 +3744,12 @@ export default function App() {
           onNavigatePlay={() => navigateMobile("classic-play")}
           onNavigateRush={() => navigateMobile("rush")}
           onOpenArena={openArenaScreen}
-          onOpenChest={openChest}
+          onOpenChest={openChestPanel}
+          onOpenChestBatch={openChestBatch}
           chestPending={chestPending}
+          chestProgress={chestProgress}
+          chestTypeCounts={chestTypeCounts}
+          chestGainPulse={chestGainPulse}
           homeProps={mobileHomeProps}
           shopProps={mobileShopProps}
           profileProps={mobileProfileProps}

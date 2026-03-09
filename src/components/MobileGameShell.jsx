@@ -10,6 +10,7 @@ export default function MobileGameShell({
   onGoArena,
   onOpenChest,
   chestPending = 0,
+  chestGainPulse = false,
   children,
 }) {
   const arcadeSymbols = ["+", "-", "x", "/", "=", "\u03A3", "\u221A", "\u03C0", "%", "4", "5", "6"];
@@ -70,7 +71,7 @@ export default function MobileGameShell({
           </span>
           <span>Arena</span>
         </button>
-        <button className="mobileDockBtn route-chest" onClick={onOpenChest}>
+        <button className={`mobileDockBtn route-chest ${chestGainPulse ? "gainPulse" : ""}`} onClick={onOpenChest}>
           <span className="mobileDockIcon" aria-hidden="true">
             {"\uD83C\uDF81"}
           </span>

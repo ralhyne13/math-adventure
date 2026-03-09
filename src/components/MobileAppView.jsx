@@ -12,7 +12,11 @@ export default function MobileAppView({
   onNavigateRush,
   onOpenArena,
   onOpenChest,
+  onOpenChestBatch,
   chestPending = 0,
+  chestProgress = 0,
+  chestTypeCounts = {},
+  chestGainPulse = false,
   homeProps,
   shopProps,
   profileProps,
@@ -35,6 +39,58 @@ export default function MobileAppView({
       {mobileRoute === "home" && (
         <div className="appFrame mobileRouteScreen mobileRouteScreen-home">
           <MobileHomeScreen {...homeProps} />
+        </div>
+      )}
+
+      {mobileRoute === "chest" && (
+        <div className="appFrame mobileRouteScreen mobileRouteScreen-chest">
+          <section className="card smooth mobileChestPage">
+            <div className="cardTitle">
+              <span>Coffres</span>
+              <span className="pill">en attente: {chestPending}</span>
+            </div>
+            <div className="mobileChestGrid">
+              <div className="mobileChestStat">
+                <strong>Commun</strong>
+                <span>{chestTypeCounts.common ?? 0}</span>
+              </div>
+              <div className="mobileChestStat">
+                <strong>Rare</strong>
+                <span>{chestTypeCounts.rare ?? 0}</span>
+              </div>
+              <div className="mobileChestStat">
+                <strong>Epique</strong>
+                <span>{chestTypeCounts.epic ?? 0}</span>
+              </div>
+              <div className="mobileChestStat">
+                <strong>Legendaire</strong>
+                <span>{chestTypeCounts.legendary ?? 0}</span>
+              </div>
+            </div>
+            <div className="small mobileChestHint">
+              Prochain coffre gagne dans {(() => {
+                const step = (Number(chestProgress) || 0) % 15;
+                return step === 0 ? 15 : 15 - step;
+              })()} bonnes reponses.
+            </div>
+            <div className="mobileChestActions">
+              <button className="btn btnPrimary smooth hover-lift press" onClick={() => onOpenChestBatch?.(1)} disabled={chestPending <= 0}>
+                Ouvrir x1
+              </button>
+              <button className="btn smooth hover-lift press" onClick={() => onOpenChestBatch?.(3)} disabled={chestPending <= 0}>
+                Ouvrir x3
+              </button>
+              <button className="btn smooth hover-lift press" onClick={() => onOpenChestBatch?.(Math.max(1, chestPending))} disabled={chestPending <= 0}>
+                Tout ouvrir
+              </button>
+            </div>
+            <div className="mobileChestShowcase" aria-hidden="true">
+              <span>🎁</span>
+              <span>🌟</span>
+              <span>✨</span>
+              <span>👑</span>
+            </div>
+          </section>
         </div>
       )}
 
@@ -67,7 +123,7 @@ export default function MobileAppView({
           </span>
           <span>Rush</span>
         </button>
-        <button className="mobileDockBtn route-chest" onClick={onOpenChest}>
+        <button className={`mobileDockBtn route-chest ${mobileRoute === "chest" ? "isActive" : ""} ${chestGainPulse ? "gainPulse" : ""}`} onClick={onOpenChest}>
           <span className="mobileDockIcon" aria-hidden="true">
             {"\uD83C\uDF81"}
           </span>

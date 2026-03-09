@@ -6859,6 +6859,111 @@ body.reduce-motion .chestMegaSparks.on i{
   box-shadow: 0 6px 14px rgba(0,0,0,.28);
 }
 
+.mobileDockBtn.route-chest.isActive{
+  border-color: rgba(250,204,21,.34);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.05)),
+    rgba(250,204,21,.18);
+  box-shadow:
+    0 12px 22px rgba(0,0,0,.24),
+    0 0 20px rgba(250,204,21,.32);
+}
+
+.mobileDockBtn.route-chest.gainPulse{
+  animation: chestDockGainPulse 820ms ease-out 1;
+}
+
+@keyframes chestDockGainPulse{
+  0%{ transform: scale(1); }
+  35%{ transform: scale(1.08); }
+  100%{ transform: scale(1); }
+}
+
+.mobileChestPage{
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.mobileChestGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobileChestStat{
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 10px;
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.03)),
+    rgba(10,14,26,.44);
+  display: grid;
+  gap: 4px;
+}
+
+.mobileChestStat strong{
+  font-size: 12px;
+  letter-spacing: .2px;
+}
+
+.mobileChestStat span{
+  font-size: 18px;
+  font-weight: 1100;
+}
+
+.mobileChestHint{
+  opacity: .9;
+}
+
+.mobileChestActions{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobileChestShowcase{
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.mobileChestShowcase span{
+  font-size: 24px;
+  animation: chestShowcaseBob 1.8s ease-in-out infinite;
+}
+
+.mobileChestShowcase span:nth-child(2){ animation-delay: .14s; }
+.mobileChestShowcase span:nth-child(3){ animation-delay: .28s; }
+.mobileChestShowcase span:nth-child(4){ animation-delay: .42s; }
+
+@keyframes chestShowcaseBob{
+  0%, 100%{ transform: translateY(0); }
+  50%{ transform: translateY(-4px); }
+}
+
+.chestPopRefresh .chestPopInner.phase-rolling .chestIconBig.chestRolling{
+  animation-duration: 1320ms;
+}
+
+.chestPopRefresh .chestPopInner.phase-impact{
+  box-shadow:
+    0 28px 70px rgba(0,0,0,.45),
+    0 0 34px rgba(255,255,255,.24),
+    inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+.chestPopRefresh .chestPopInner.phase-impact .chestPopTitle{
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.chestPopRefresh .chestPopInner.phase-reveal .chestRewardsList .chestRewardRow{
+  animation-duration: 520ms;
+}
+
 .answerEntry{
   grid-column: 1 / -1;
   display: grid;
