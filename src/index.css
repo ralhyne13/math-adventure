@@ -6501,3 +6501,117 @@ body.reduce-motion .chestCineFlash{
     background: rgba(0,0,0,.02) !important;
   }
 }
+
+.questionCompactKpis{
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.questionCompactKpi{
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  font-size: 11.5px;
+  font-weight: 900;
+  color: rgba(238,244,255,.9);
+}
+
+.compactFocusStrip{
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+    rgba(10,14,28,.42);
+  font-size: 11.5px;
+  font-weight: 900;
+  color: rgba(237,243,255,.92);
+}
+
+@media (max-width: 820px){
+  .mobileClassicScreen .mobileModeHero{
+    padding: 12px 12px 10px;
+    border-color: rgba(255,255,255,.1);
+    background:
+      linear-gradient(180deg, rgba(16,22,44,.72), rgba(10,14,30,.48)) !important;
+    box-shadow: 0 14px 26px rgba(0,0,0,.18);
+  }
+
+  .mobileClassicScreen .mobileModeTitleWrap .small{
+    font-size: 12px;
+    opacity: .86;
+  }
+
+  .mobileClassicScreen .mobileModeActionGrid{
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .mobileClassicScreen .questionCardCompact .questionHeaderCompactRefresh{
+    display: none;
+  }
+
+  .mobileClassicScreen .questionCardCompact{
+    border-color: rgba(255,255,255,.11) !important;
+    background:
+      radial-gradient(260px 140px at 50% 0%, rgba(57,246,255,.08), transparent 72%),
+      linear-gradient(180deg, rgba(14,20,40,.9), rgba(8,12,25,.82)) !important;
+    box-shadow: 0 20px 34px rgba(0,0,0,.24);
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .mobileClassicScreen .questionCardCompact .questionCompactStats{
+    padding: 9px 10px;
+    border-radius: 14px;
+  }
+
+  .mobileClassicScreen .questionCardCompact .progressPanelCompact{
+    padding: 6px 8px;
+    border-radius: 12px;
+    opacity: .94;
+  }
+
+  .mobileClassicScreen .questionCardCompact .heroQuestionCompact{
+    border-radius: 18px;
+    padding: 10px;
+  }
+
+  .mobileClassicScreen .questionCardCompact .qPrompt{
+    font-size: 16px;
+    line-height: 1.35;
+    max-width: 100%;
+  }
+
+  .mobileClassicScreen .questionCardCompact .choiceGridCard{
+    padding: 8px;
+    border-radius: 16px;
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+      rgba(9,13,26,.42);
+  }
+
+  .mobileClassicScreen .questionCardCompact .choiceCard{
+    min-height: 74px;
+    border-radius: 16px;
+    border-color: rgba(255,255,255,.14);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.03)),
+      rgba(13,19,38,.72);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.12),
+      0 10px 18px rgba(0,0,0,.18);
+  }
+
+  .mobileClassicScreen .questionCardCompact .choiceCard .choiceValue{
+    font-size: clamp(21px, 7.2vw, 30px);
+  }
+}

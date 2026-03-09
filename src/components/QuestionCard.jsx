@@ -140,7 +140,7 @@ export default function QuestionCard({
       <div className={`arcadeShockRing ${fx === "ok" ? "on" : ""}`} aria-hidden="true" />
 
       <div className={`cardTitle questionHeader questionHeaderRefresh ${compact ? "cardTitleCompact questionHeaderCompactRefresh" : ""}`}>
-        <span>{compact ? "Session mobile" : "Session active"}</span>
+        <span>{compact ? "Session" : "Session active"}</span>
         {compact ? <span className="pill">Question</span> : <span className="pill">reponse rapide</span>}
       </div>
 
@@ -206,20 +206,10 @@ export default function QuestionCard({
             <span className="pill">{diffLabel}</span>
             <span className="pill">{modeLabel}</span>
           </div>
-          <div className="questionCompactMetaRow">
-            <span>Precision {accuracy}%</span>
-            <span>Combo {streak}</span>
-            {rushOn ? <span>Rush {Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</span> : null}
-          </div>
-          <div className="questionCompactWorldPicker">
-            <span className="questionCompactWorldLabel">Categorie</span>
-            <select className="select smooth questionCompactWorldSelect" value={selectedWorldId} onChange={(e) => onSelectWorld?.(e.target.value)}>
-              {worlds.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.icon} {w.gradeId}
-                </option>
-              ))}
-            </select>
+          <div className="questionCompactMetaRow questionCompactKpis">
+            <span className="questionCompactKpi">Precision {accuracy}%</span>
+            <span className="questionCompactKpi">Combo {streak}</span>
+            {rushOn ? <span className="questionCompactKpi">Rush {Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</span> : null}
           </div>
         </div>
       )}
@@ -230,12 +220,13 @@ export default function QuestionCard({
         </div>
       </div>
 
-      <div className={`missionPanel ${compact ? "missionPanelCompact" : ""}`}>
-        <div className="missionHead">
-          <span className="small missionTitle">Mission actuelle</span>
-          <span className="pill missionModePill">Mode {rushOn ? "Rush" : arenaOn ? "Arena" : "Classique"}</span>
-        </div>
-        <div className="small missionText">{missionLabel}</div>
+      {!compact ? (
+        <div className={`missionPanel ${compact ? "missionPanelCompact" : ""}`}>
+          <div className="missionHead">
+            <span className="small missionTitle">Mission actuelle</span>
+            <span className="pill missionModePill">Mode {rushOn ? "Rush" : arenaOn ? "Arena" : "Classique"}</span>
+          </div>
+          <div className="small missionText">{missionLabel}</div>
           <div className="barWrap missionBarWrap" aria-label="progression mission">
             <div className="bar" style={{ width: `${sessionChallenge ? missionProgressPercent : bossActive ? Math.max(0, Math.min(100, bossRemaining)) : worldQuestPercent}%` }} />
           </div>
@@ -244,7 +235,14 @@ export default function QuestionCard({
             <span>Coffre : {chestCycleProgress}/15 (plus {chestRemaining} bonnes)</span>
           </div>
         </div>
+      ) : (
+        <div className="compactFocusStrip" role="status" aria-live="polite">
+          <span>{missionLabel}</span>
+          <span>Coffre {chestCycleProgress}/15</span>
+        </div>
+      )}
 
+      {!compact && (
       <div className={`historyPanel ${compact ? "historyPanelCompact" : ""}`}>
         <div className={`miniHistoryWrap ${compact ? "miniHistoryCompact" : ""}`} aria-label="historique des 10 dernières réponses">
           <div className="miniHistoryLabel">
@@ -259,6 +257,7 @@ export default function QuestionCard({
           </div>
         </div>
       </div>
+      )}
 
       <div className={`heroQuestion questionHeroRefresh ${compact ? "heroQuestionCompact" : ""} ${modeThemeClass} ${rushDanger ? "rushDanger" : ""}`} data-status={status}>
         <div className="heroTop heroTopRefresh">

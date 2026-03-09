@@ -7,12 +7,11 @@ export default function ClassicPlayScreen({ onBack, onOpenRush, onOpenArena, que
       <MobileModeHeader
         heroClassName="mobileModeHeroClassic"
         onBack={onBack}
-        pills={["Classique", "Progression"]}
-        eyebrow="Session libre"
+        pills={["Classique", "Sans chrono"]}
+        eyebrow="Jeu libre"
         title="Mode Classique"
-        description="Travaille ton rythme, tes explications et ta progression sans chrono."
+        description="Une question a la fois, un rythme calme, et des effets ludiques."
         actions={[
-          { label: "Aller en Arena", onClick: onOpenArena },
           { label: "Passer en Rush", onClick: onOpenRush, primary: true },
         ]}
       />
