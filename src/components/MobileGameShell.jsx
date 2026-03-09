@@ -43,32 +43,6 @@ export default function MobileGameShell({
 
       {children}
 
-      <div className="mobileDock" aria-label="Navigation mobile">
-        <button className={`mobileDockBtn route-home ${activeRoute === "home" ? "isActive" : ""}`} onClick={onGoHome}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\uD83C\uDFE0"}
-          </span>
-          <span>Accueil</span>
-        </button>
-        <button className={`mobileDockBtn route-play ${activeRoute === "classic-play" ? "isActive" : ""}`} onClick={onGoPlay}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\uD83C\uDFAF"}
-          </span>
-          <span>Jouer</span>
-        </button>
-        <button className={`mobileDockBtn route-rush ${activeRoute === "rush" ? "isActive" : ""}`} onClick={onGoRush}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\u26A1"}
-          </span>
-          <span>Rush</span>
-        </button>
-        <button className={`mobileDockBtn route-arena ${activeRoute === "arena" ? "isActive" : ""}`} onClick={onGoArena}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\u2694\uFE0F"}
-          </span>
-          <span>Arena</span>
-        </button>
-      </div>
     </div>
   );
 }
