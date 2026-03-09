@@ -745,6 +745,7 @@ export default function App() {
   );
   const [showMobileBootSplash, setShowMobileBootSplash] = useState(() => window.innerWidth <= 820);
   const [showMobileEntryMenu, setShowMobileEntryMenu] = useState(() => window.innerWidth <= 820);
+  const [mobileEntryWorldId, setMobileEntryWorldId] = useState(initial.selectedWorldId);
   const [worldTransitionFx, setWorldTransitionFx] = useState(null);
 
   // Session
@@ -2390,9 +2391,11 @@ export default function App() {
     setAvatarId(aid);
   }
 
-  function switchWorld(worldId) {
+  function switchWorld(worldId, opts = null) {
     const nextWorld = WORLDS.find((w) => w.id === worldId);
     if (!nextWorld || nextWorld.id === selectedWorldId) return;
+    const intense = !!opts?.intense;
+    const afterRoute = opts?.afterRoute || null;
 
     const nextGradeId = nextWorld.gradeId;
     const fromWorld = WORLDS.find((w) => w.id === selectedWorldId) ?? currentWorld;
@@ -2403,6 +2406,7 @@ export default function App() {
       from: fromWorld,
       to: nextWorld,
       gradeId: nextGradeId,
+      intense,
     });
 
     setSelectedWorldId(nextWorld.id);
@@ -2427,15 +2431,26 @@ export default function App() {
     setBossHitFx(false);
     setBossAttackFx(false);
 
-    playBeep("world", audioOn, fxVolume);
-    vibrate([10, 16, 24]);
+    playBeep(intense ? "portal" : "world", audioOn, fxVolume);
+    vibrate(intense ? [16, 30, 40, 24, 56] : [10, 16, 24]);
 
-    const fxMs = reduceMotion ? 220 : 680;
+    const fxMs = reduceMotion ? 240 : intense ? 980 : 680;
     worldTransitionTimerRef.current = setTimeout(() => {
       setWorldTransitionFx(null);
       worldTransitionLockRef.current = false;
       newQuestion(true, nextGradeId);
+      if (afterRoute) navigateMobile(afterRoute);
     }, fxMs);
+  }
+
+  function startMobileWorldAdventure() {
+    const target = WORLDS.find((w) => w.id === mobileEntryWorldId)?.id ?? selectedWorldId;
+    if (!target) return;
+    if (target === selectedWorldId) {
+      navigateMobile("classic-play");
+      return;
+    }
+    switchWorld(target, { intense: true, afterRoute: "classic-play" });
   }
 
   function navigateMobile(route) {
@@ -3022,6 +3037,11 @@ export default function App() {
     return () => clearTimeout(t);
   }, [isLoggedIn, isMobileViewport, reduceMotion]);
 
+  useEffect(() => {
+    if (!showMobileEntryMenu) return;
+    setMobileEntryWorldId(selectedWorldId);
+  }, [showMobileEntryMenu, selectedWorldId]);
+
   /* ------------------------ Not logged in screen ------------------------ */
   if (!isLoggedIn) {
     return (
@@ -3269,16 +3289,38 @@ export default function App() {
         </div>
         <section className="mobileEntryCard smooth">
           <div className="mobileEntryTitle">Math Royale</div>
-          <div className="mobileEntryLead">Choisis ton accès rapide pour démarrer.</div>
+          <div className="mobileEntryLead">Choisis ton accès rapide, puis ton monde pour démarrer.</div>
           <div className="mobileEntryActions">
-            <button className="btn btnPrimary smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("classic-play")}>
-              Jouer
+            <button className="btn btnPrimary smooth hover-lift press mobileEntryBtn" onClick={startMobileWorldAdventure}>
+              Jouer maintenant
             </button>
             <button className="btn smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("settings")}>
               Réglages
             </button>
             <button className="btn smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("profile")}>
               Stats
+            </button>
+          </div>
+          <div className="mobileEntryWorldPicker">
+            <div className="mobileEntryWorldTitle">Choix du monde</div>
+            <div className="mobileEntryWorldGrid">
+              {WORLDS.map((w) => {
+                const active = mobileEntryWorldId === w.id;
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    className={`mobileEntryWorldChip smooth press ${active ? "isActive" : ""}`}
+                    onClick={() => setMobileEntryWorldId(w.id)}
+                  >
+                    <span className="mobileEntryWorldChipIcon">{w.icon}</span>
+                    <span className="mobileEntryWorldChipLabel">{w.gradeId}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <button className="btn btnPrimary smooth hover-lift press mobileEntryStartBtn" onClick={startMobileWorldAdventure}>
+              Démarrer l'aventure
             </button>
           </div>
         </section>

@@ -24,19 +24,33 @@ export default function AppOverlays({
     <>
       {worldTransitionFx && (
         <div className="worldTransitionPop" role="status" aria-live="polite">
-          <div className="worldTransitionPopInner smooth" onMouseDown={onCloseWorldTransition}>
+          <div className={`worldTransitionPopInner smooth ${worldTransitionFx.intense ? "isIntense" : ""}`}>
             <div className="worldTransitionFlow" aria-hidden="true" />
+            {worldTransitionFx.intense && (
+              <div className="worldTransitionParticles" aria-hidden="true">
+                {Array.from({ length: 16 }).map((_, idx) => (
+                  <span key={idx} style={{ "--i": idx }} />
+                ))}
+              </div>
+            )}
             <div className="worldTransitionBadge">
               <span>{worldTransitionFx.from?.icon || "🌟"}</span>
             </div>
-            <div className="worldTransitionTitle">Passage de monde</div>
+            <div className="worldTransitionTitle">{worldTransitionFx.intense ? "Lancement de l'aventure" : "Passage de monde"}</div>
             <div className="worldTransitionNames">
               <div>{worldTransitionFx.from?.name ?? "..."}</div>
               <span aria-hidden="true">➜</span>
               <div>{worldTransitionFx.to?.name ?? "..."}</div>
             </div>
             <div className="worldTransitionGrade">Niveau cible: {worldTransitionFx.to?.gradeId || worldTransitionFx.gradeId}</div>
-            <div className="worldTransitionSub">Nouvelle catégorie mathématique chargée</div>
+            <div className="worldTransitionSub">
+              {worldTransitionFx.intense ? "Préparation des défis, effets et ambiance arcade..." : "Nouvelle catégorie mathématique chargée"}
+            </div>
+            {!worldTransitionFx.intense && (
+              <button className="btn smooth press worldTransitionSkipBtn" onClick={onCloseWorldTransition}>
+                Fermer
+              </button>
+            )}
           </div>
         </div>
       )}
