@@ -202,6 +202,16 @@ export default function AppOverlays({
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="chestBurst" aria-hidden="true" />
+            <div className={`chestMegaRings ${chestPop.phase === "impact" ? "on" : ""}`} aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className={`chestMegaSparks ${chestPop.phase === "impact" ? "on" : ""}`} aria-hidden="true">
+              {Array.from({ length: 22 }).map((_, idx) => (
+                <i key={idx} style={{ "--i": idx }} />
+              ))}
+            </div>
             {chestPop.phase === "impact" && <div className={`chestCineFlash tone-${chestPop.chestType ?? "common"}`} aria-hidden="true" />}
             {chestPop.phase === "rolling" ? (
               <>

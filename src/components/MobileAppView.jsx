@@ -11,6 +11,8 @@ export default function MobileAppView({
   onNavigatePlay,
   onNavigateRush,
   onOpenArena,
+  onOpenChest,
+  chestPending = 0,
   homeProps,
   shopProps,
   profileProps,
@@ -64,6 +66,13 @@ export default function MobileAppView({
             {"\u26A1"}
           </span>
           <span>Rush</span>
+        </button>
+        <button className="mobileDockBtn route-chest" onClick={onOpenChest}>
+          <span className="mobileDockIcon" aria-hidden="true">
+            {"\uD83C\uDF81"}
+          </span>
+          <span>Coffre</span>
+          {chestPending > 0 ? <span className="mobileDockBadge">{Math.min(99, chestPending)}</span> : null}
         </button>
       </div>
 

@@ -1820,8 +1820,8 @@ export default function App() {
         leadRewardKind: opened[0]?.reward?.kind ?? "coins",
         rewards: opened,
       });
-      }, reduceMotion ? 0 : 340);
-    }, reduceMotion ? 0 : 880);
+      }, reduceMotion ? 0 : 620);
+    }, reduceMotion ? 0 : 1220);
 
     if (cloudEnabled) {
       cloudLogEvent({
@@ -3468,6 +3468,8 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
+        onOpenChest={openChest}
+        chestPending={chestPending}
       >
         <RushScreen
           onExit={() => {
@@ -3529,6 +3531,8 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
+        onOpenChest={openChest}
+        chestPending={chestPending}
       >
         <ClassicPlayScreen
           onBack={() => {
@@ -3552,6 +3556,8 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
+        onOpenChest={openChest}
+        chestPending={chestPending}
       >
         <ArenaScreen
           onBack={() => {
@@ -3712,6 +3718,8 @@ export default function App() {
           onNavigatePlay={() => navigateMobile("classic-play")}
           onNavigateRush={() => navigateMobile("rush")}
           onOpenArena={openArenaScreen}
+          onOpenChest={openChest}
+          chestPending={chestPending}
           homeProps={mobileHomeProps}
           shopProps={mobileShopProps}
           profileProps={mobileProfileProps}

@@ -8,6 +8,8 @@ export default function MobileGameShell({
   onGoPlay,
   onGoRush,
   onGoArena,
+  onOpenChest,
+  chestPending = 0,
   children,
 }) {
   const arcadeSymbols = ["+", "-", "x", "/", "=", "\u03A3", "\u221A", "\u03C0", "%", "4", "5", "6"];
@@ -67,6 +69,13 @@ export default function MobileGameShell({
             {"\u2694\uFE0F"}
           </span>
           <span>Arena</span>
+        </button>
+        <button className="mobileDockBtn route-chest" onClick={onOpenChest}>
+          <span className="mobileDockIcon" aria-hidden="true">
+            {"\uD83C\uDF81"}
+          </span>
+          <span>Coffre</span>
+          {chestPending > 0 ? <span className="mobileDockBadge">{Math.min(99, chestPending)}</span> : null}
         </button>
       </div>
 
