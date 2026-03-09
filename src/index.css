@@ -5820,16 +5820,11 @@ body.reduce-motion .mobileDockBtn.isActive .mobileDockIcon{
     position: relative;
     z-index: 1;
     width: min(440px, 100%);
-    border-radius: 30px;
-    border: 1px solid rgba(255,255,255,.18);
-    background:
-      radial-gradient(280px 160px at 100% 0%, rgba(255,79,216,.18), transparent 72%),
-      radial-gradient(260px 160px at 0% 0%, rgba(57,246,255,.16), transparent 74%),
-      linear-gradient(180deg, rgba(14,22,46,.95), rgba(8,13,30,.93));
-    box-shadow:
-      0 28px 62px rgba(0,0,0,.44),
-      inset 0 1px 0 rgba(255,255,255,.2);
-    padding: 18px 16px;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
     display: grid;
     gap: 12px;
     animation: entryCardIn 540ms var(--ease-out) 1;
@@ -5856,14 +5851,11 @@ body.reduce-motion .mobileDockBtn.isActive .mobileDockIcon{
   }
 
   .mobileEntryWorldPicker{
-    border: 1px solid rgba(255,255,255,.18);
-    border-radius: 20px;
-    padding: 12px;
-    background:
-      radial-gradient(240px 120px at 0% 0%, rgba(57,246,255,.12), transparent 72%),
-      radial-gradient(240px 120px at 100% 100%, rgba(255,79,216,.12), transparent 72%),
-      rgba(8,12,24,.48);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .mobileEntryWorldTitle{

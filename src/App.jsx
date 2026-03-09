@@ -3294,12 +3294,6 @@ export default function App() {
             <button className="btn btnPrimary smooth hover-lift press mobileEntryBtn" onClick={startMobileWorldAdventure}>
               Jouer maintenant
             </button>
-            <button className="btn smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("settings")}>
-              Réglages
-            </button>
-            <button className="btn smooth hover-lift press mobileEntryBtn" onClick={() => navigateMobile("profile")}>
-              Stats
-            </button>
           </div>
           <div className="mobileEntryWorldPicker">
             <div className="mobileEntryWorldTitle">Choix du monde</div>
@@ -3436,8 +3430,6 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
-        onOpenShop={openShopPanel}
-        onOpenProfile={openProfilePanel}
       >
         <RushScreen
           onExit={() => {
@@ -3499,8 +3491,6 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
-        onOpenShop={openShopPanel}
-        onOpenProfile={openProfilePanel}
       >
         <ClassicPlayScreen
           onBack={() => {
@@ -3524,8 +3514,6 @@ export default function App() {
         onGoPlay={() => navigateMobile("classic-play")}
         onGoRush={() => navigateMobile("rush")}
         onGoArena={openArenaScreen}
-        onOpenShop={openShopPanel}
-        onOpenProfile={openProfilePanel}
       >
         <ArenaScreen
           onBack={() => {
@@ -3686,9 +3674,6 @@ export default function App() {
           onNavigatePlay={() => navigateMobile("classic-play")}
           onNavigateRush={() => navigateMobile("rush")}
           onOpenArena={openArenaScreen}
-          onOpenShop={openShopPanel}
-          onOpenProfile={openProfilePanel}
-          onOpenSettings={openSettingsPanel}
           homeProps={mobileHomeProps}
           shopProps={mobileShopProps}
           profileProps={mobileProfileProps}

@@ -8,8 +8,6 @@ export default function MobileGameShell({
   onGoPlay,
   onGoRush,
   onGoArena,
-  onOpenShop,
-  onOpenProfile,
   children,
 }) {
   const arcadeSymbols = ["+", "-", "x", "/", "=", "\u03A3", "\u221A", "\u03C0", "%", "4", "5", "6"];
@@ -69,18 +67,6 @@ export default function MobileGameShell({
             {"\u2694\uFE0F"}
           </span>
           <span>Arena</span>
-        </button>
-        <button className={`mobileDockBtn route-shop ${activeRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\uD83D\uDED2"}
-          </span>
-          <span>Boutique</span>
-        </button>
-        <button className={`mobileDockBtn route-profile ${activeRoute === "profile" ? "isActive" : ""}`} onClick={onOpenProfile}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\uD83D\uDC64"}
-          </span>
-          <span>Profil</span>
         </button>
       </div>
     </div>

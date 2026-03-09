@@ -11,9 +11,6 @@ export default function MobileAppView({
   onNavigatePlay,
   onNavigateRush,
   onOpenArena,
-  onOpenShop,
-  onOpenProfile,
-  onOpenSettings,
   homeProps,
   shopProps,
   profileProps,
@@ -67,24 +64,6 @@ export default function MobileAppView({
             {"\u26A1"}
           </span>
           <span>Rush</span>
-        </button>
-        <button className={`mobileDockBtn route-shop ${mobileRoute === "shop" ? "isActive" : ""}`} onClick={onOpenShop}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\uD83D\uDED2"}
-          </span>
-          <span>Boutique</span>
-        </button>
-        <button className={`mobileDockBtn route-profile ${mobileRoute === "profile" ? "isActive" : ""}`} onClick={onOpenProfile}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\uD83D\uDC64"}
-          </span>
-          <span>Profil</span>
-        </button>
-        <button className={`mobileDockBtn route-settings ${mobileRoute === "settings" ? "isActive" : ""}`} onClick={onOpenSettings}>
-          <span className="mobileDockIcon" aria-hidden="true">
-            {"\u2699\uFE0F"}
-          </span>
-          <span>Reglages</span>
         </button>
       </div>
     </div>
