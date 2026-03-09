@@ -24,27 +24,10 @@ export default function Shop({
 
   const isMobilePage = presentation === "page";
   const modalTitle = isMobilePage ? "Boutique" : "Boutique - Skins & Avatars";
-  const ownedCount = shopTab === "skins" ? ownedSkins.length : ownedAvatars.length;
-  const totalCount = shopTab === "skins" ? SKINS.length : AVATARS.length;
 
   return (
     <Modal title={modalTitle} onClose={onClose} presentation={presentation}>
       <div className={`panelSectionStack ${isMobilePage ? "mobilePanelStack" : ""}`}>
-        {isMobilePage && (
-          <section className="panelCard mobilePageHeroCard">
-            <div className="mobileSectionEyebrow">Collection</div>
-            <div className="mobileSectionTitle">Debloque, equipe, personnalise</div>
-            <div className="small" style={{ marginTop: 8 }}>
-              Choisis ton rendu visuel, gere tes achats et equipe directement depuis ton hub mobile.
-            </div>
-            <div className="mobilePageHeroStats">
-              <div className="mobilePageHeroChip">Pieces {coins}</div>
-              <div className="mobilePageHeroChip">Possedes {ownedCount}/{totalCount}</div>
-              <div className="mobilePageHeroChip">{isPremium ? "Premium actif" : "Version gratuite"}</div>
-            </div>
-          </section>
-        )}
-
         <div className={`panelTabs panelTabsRefresh ${isMobilePage ? "mobilePageTabs" : ""}`}>
           <button className={`btn smooth hover-lift press ${shopTab === "skins" ? "btnPrimary" : ""}`} onClick={() => setShopTab("skins")}>
             Skins

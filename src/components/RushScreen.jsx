@@ -4,7 +4,6 @@ import { playBeep } from "../utils/audio";
 import { DIFFS, GRADES, MODES, questionSignature } from "../questions";
 import { AVATARS, SKINS } from "../config/gameData";
 import Fraction from "./Fraction";
-import MobileModeHeader from "./MobileModeHeader";
 
 function getRushMultiplier(combo) {
   if (combo >= 15) return 5;
@@ -397,18 +396,6 @@ export default function RushScreen({
 
   const body = (
     <>
-      {embedded && (
-        <MobileModeHeader
-          heroClassName="rushEmbeddedActions mobileModeHeroRush"
-          onBack={onExit}
-          pills={["Rush", "Arcade"]}
-          eyebrow="Arcade mobile"
-          title="Rush 60s"
-          description="Score max, combo, multiplicateur et decisions instantanees."
-          actions={[{ label: "Reinitialiser", onClick: resetRush }]}
-        />
-      )}
-
       {!embedded && (
         <div className="topbar topbarRefresh rushTopbar">
           <div className="brand brandRefresh">

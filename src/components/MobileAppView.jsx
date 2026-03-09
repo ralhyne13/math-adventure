@@ -44,7 +44,7 @@ export default function MobileAppView({
 
       {mobileRoute === "chest" && (
         <div className="appFrame mobileRouteScreen mobileRouteScreen-chest">
-          <section className="card smooth mobileChestPage">
+          <section className="mobileChestPage">
             <div className="cardTitle">
               <span>Coffres</span>
               <span className="pill">en attente: {chestPending}</span>
