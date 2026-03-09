@@ -60,6 +60,12 @@ export default function QuestionCard({
   bossCalloutText,
   errorShakeFx,
   answerEffectId,
+  worldProgressCurrent = 0,
+  worldStepTarget = 3,
+  chestProgress = 0,
+  sessionChallenge = null,
+  sessionChallengeProgress = 0,
+  sessionChallengeDone = false,
 }) {
   const bossPhaseClass = bossRemaining <= 30 ? "phase-final" : bossRemaining <= 60 ? "phase-mid" : "phase-open";
   const historySlots = compact ? 5 : 10;
@@ -68,6 +74,41 @@ export default function QuestionCard({
   const diffLabel = DIFFS.find((d) => d.id === diffId)?.label ?? diffId;
   const modeThemeClass = rushOn ? "theme-rush" : arenaOn ? "theme-arena" : "theme-classic";
   const comboTierClass = streak >= 10 ? "combo-fever" : streak >= 5 ? "combo-hot" : "";
+  const worldQuestTarget = Math.max(1, Number(worldStepTarget) || 3);
+  const worldQuestProgress = Math.max(0, Math.min(worldQuestTarget, Number(worldProgressCurrent) || 0));
+  const worldQuestPercent = Math.round((worldQuestProgress / worldQuestTarget) * 100);
+  const chestCycleBase = Math.max(0, Number(chestProgress) || 0);
+  const chestCycleProgress = chestCycleBase % 15;
+  const chestRemaining = chestCycleProgress === 0 ? 15 : 15 - chestCycleProgress;
+  const challengeTarget = Math.max(0, Number(sessionChallenge?.target) || 0);
+  const challengeProgress = Math.max(0, Math.min(challengeTarget, Number(sessionChallengeProgress) || 0));
+  const challengePercent = challengeTarget ? Math.round((challengeProgress / challengeTarget) * 100) : 0;
+  const missionLabel = sessionChallenge
+    ? `${sessionChallenge.title}: ${challengeDoneText(sessionChallenge, challengeProgress, challengeTarget, sessionChallengeDone)}`
+    : bossActive
+    ? "Défie le boss d'arène"
+    : worldBossReady
+    ? "Boss final prêt à lancer"
+    : `Progression monde : étape ${worldLevel}`;
+  const missionProgressPercent = sessionChallenge ? challengePercent : worldQuestPercent;
+  const missionProgressText = sessionChallenge
+    ? `${challengeProgress}/${challengeTarget}`
+    : bossActive
+    ? `${Math.max(0, bossRemaining)}%`
+    : `${worldQuestProgress}/${worldQuestTarget}`;
+
+  function challengeDoneText(challenge, current, target, done) {
+    if (!challenge) return "";
+    if (done) return "Mission validée !";
+    if (target <= 0) return challenge.description ?? "";
+    if (challenge.kind === "hard") {
+      return `Objectif: ${current}/${target} bonnes en difficile`;
+    }
+    if (challenge.kind === "streak") {
+      return `Objectif: ${current}/${target} réponses consécutives`;
+    }
+    return `Objectif: ${current}/${target} bonnes`;
+  }
 
   return (
     <div
@@ -188,6 +229,21 @@ export default function QuestionCard({
           <div className="bar" style={{ width: `${xpPct}%` }} />
         </div>
       </div>
+
+      <div className={`missionPanel ${compact ? "missionPanelCompact" : ""}`}>
+        <div className="missionHead">
+          <span className="small missionTitle">Mission actuelle</span>
+          <span className="pill missionModePill">Mode {rushOn ? "Rush" : arenaOn ? "Arena" : "Classique"}</span>
+        </div>
+        <div className="small missionText">{missionLabel}</div>
+          <div className="barWrap missionBarWrap" aria-label="progression mission">
+            <div className="bar" style={{ width: `${sessionChallenge ? missionProgressPercent : bossActive ? Math.max(0, Math.min(100, bossRemaining)) : worldQuestPercent}%` }} />
+          </div>
+          <div className="miniQuestMeta">
+            {sessionChallenge ? <span>Mission : {missionProgressText}</span> : bossActive ? <span>Boss : {Math.max(0, bossRemaining)}%</span> : <span>Monde : {worldQuestProgress}/{worldQuestTarget}</span>}
+            <span>Coffre : {chestCycleProgress}/15 (plus {chestRemaining} bonnes)</span>
+          </div>
+        </div>
 
       <div className={`historyPanel ${compact ? "historyPanelCompact" : ""}`}>
         <div className={`miniHistoryWrap ${compact ? "miniHistoryCompact" : ""}`} aria-label="historique des 10 dernières réponses">

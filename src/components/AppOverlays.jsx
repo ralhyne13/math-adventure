@@ -15,6 +15,8 @@ export default function AppOverlays({
   onEquipChestReward,
   comboFunPop,
   onCloseComboFunPop,
+  sessionChallengePop,
+  onCloseSessionChallengePop,
 }) {
   return (
     <>
@@ -239,6 +241,28 @@ export default function AppOverlays({
               </div>
             </div>
             <button className="btn btnPrimary smooth hover-lift press" onClick={onCloseComboFunPop}>
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {sessionChallengePop && (
+        <div className="sessionChallengePop" role="status" aria-live="polite">
+          <div className="sessionChallengePopInner smooth feedbackPanel feedbackSessionChallengePanel">
+            <div className="sessionChallengeBadge" aria-hidden="true">
+              {sessionChallengePop.icon}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className="sessionChallengeTitle">{sessionChallengePop.title}</div>
+              <div className="sessionChallengeSub">
+                {sessionChallengePop.sub}
+                <div className="sessionChallengeReward">
+                  Récompense: +{sessionChallengePop.reward} pièces, +{sessionChallengePop.xpReward} XP
+                </div>
+              </div>
+            </div>
+            <button className="btn btnPrimary smooth hover-lift press" onClick={onCloseSessionChallengePop}>
               OK
             </button>
           </div>

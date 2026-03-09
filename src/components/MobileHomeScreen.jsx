@@ -1,4 +1,7 @@
 export default function MobileHomeScreen({
+  worlds = [],
+  selectedWorldId,
+  setSelectedWorldId,
   chestPending,
   chestProgress,
   dailyChallenge,
@@ -14,6 +17,34 @@ export default function MobileHomeScreen({
 
   return (
     <div className="mobileStack mobileHomeRefresh mobileHomeTotalRefresh">
+      {worlds.length > 0 && (
+        <section className="card smooth mobileSurfaceCard mobileFeaturePanel mobileWorldSelectPanel">
+          <div className="mobileSectionHead">
+            <div>
+              <div className="mobileSectionEyebrow">Aventure</div>
+              <div className="mobileSectionTitle">Choisis ton monde</div>
+            </div>
+          </div>
+
+          <div className="mobileWorldGrid">
+            {worlds.map((w) => {
+              const isCurrent = w.id === selectedWorldId;
+              return (
+                <button
+                  key={w.id}
+                  className={`btn smooth hover-lift press mobileWorldChip ${isCurrent ? "isActive" : ""}`}
+                  onClick={() => setSelectedWorldId?.(w.id)}
+                  aria-pressed={isCurrent}
+                >
+                  <span>{w.icon}</span>
+                  <span>{w.gradeId}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {canInstallApp && (
         <section className="card smooth mobileInstallBanner mobileSurfaceCard mobileAnnouncementCard">
           <div>

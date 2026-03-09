@@ -414,8 +414,78 @@ const COMBO_FUN_MILESTONES = [
   { streak: 12, coins: 20, icon: "\uD83C\uDF1F", title: "Mega combo" },
 ];
 
+const SESSION_CHALLENGE_LIBRARY = [
+  {
+    id: "streak4",
+    kind: "streak",
+    icon: "\u26A1",
+    title: "Combo magique",
+    description: "Fais 4 bonnes réponses d'affilée.",
+    target: 4,
+    rewardCoins: 10,
+    rewardXp: 15,
+  },
+  {
+    id: "correct6",
+    kind: "correct",
+    icon: "\u2705",
+    title: "Marathon",
+    description: "Donne 6 bonnes réponses dans la session",
+    target: 6,
+    rewardCoins: 12,
+    rewardXp: 18,
+  },
+  {
+    id: "hard3",
+    kind: "hard",
+    icon: "\uD83E\uDDE0",
+    title: "Mission difficile",
+    description: "Réussis 3 bonnes réponses en difficile",
+    target: 3,
+    rewardCoins: 14,
+    rewardXp: 22,
+  },
+];
+
 function comboMilestoneFor(streakValue) {
   return COMBO_FUN_MILESTONES.find((item) => item.streak === streakValue) ?? null;
+}
+
+function buildSessionChallenge() {
+  const i = randInt(0, SESSION_CHALLENGE_LIBRARY.length - 1);
+  return { ...SESSION_CHALLENGE_LIBRARY[i] };
+}
+
+function sessionChallengeNextProgress({
+  challenge,
+  isCorrect,
+  nextStreak,
+  nextSessionCorrect = 0,
+  isHardMode = false,
+  currentProgress = 0,
+}) {
+  if (!challenge) return { progress: 0, done: false, nextHardCount: 0 };
+
+  if (challenge.kind === "streak") {
+    const progress = isCorrect ? Math.max(0, nextStreak) : 0;
+    return { progress, done: progress >= challenge.target, nextHardCount: 0 };
+  }
+
+  if (challenge.kind === "correct") {
+    const progress = isCorrect ? Math.min(challenge.target, nextSessionCorrect) : nextSessionCorrect;
+    return { progress, done: progress >= challenge.target, nextHardCount: 0 };
+  }
+
+  if (challenge.kind === "hard") {
+    const nextHardCount = currentProgress + (isCorrect && isHardMode ? 1 : 0);
+    return {
+      progress: Math.min(challenge.target, nextHardCount),
+      done: nextHardCount >= challenge.target,
+      nextHardCount,
+    };
+  }
+
+  return { progress: 0, done: false, nextHardCount: 0 };
 }
 
 function evolvedOwlForLevel(level) {
@@ -640,6 +710,10 @@ export default function App() {
   const [coachPop, setCoachPop] = useState(null);
   const [chestPop, setChestPop] = useState(null);
   const [comboFunPop, setComboFunPop] = useState(null);
+  const [sessionChallenge, setSessionChallenge] = useState(() => buildSessionChallenge());
+  const [sessionChallengeProgress, setSessionChallengeProgress] = useState(0);
+  const [sessionChallengeDone, setSessionChallengeDone] = useState(false);
+  const [sessionChallengePop, setSessionChallengePop] = useState(null);
 
   const [lastLoginDayKey, setLastLoginDayKey] = useState(initial.lastLoginDayKey);
   const [loginStreak, setLoginStreak] = useState(initial.loginStreak);
@@ -729,6 +803,7 @@ export default function App() {
   // historique réponses
   const [lastAnswers, setLastAnswers] = useState([]);
   const [sessionAnswered, setSessionAnswered] = useState(0);
+  const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionPerf, setSessionPerf] = useState(() => {
     const o = {};
     for (const m of MODES) o[m.id] = { right: 0, total: 0 };
@@ -741,6 +816,7 @@ export default function App() {
   const currentWorld = WORLDS.find((w) => w.id === selectedWorldId) ?? WORLDS[1];
   const currentWorldState = worldProgress?.[currentWorld.id] ?? { level: 1, progress: 0, bossDone: false, badgeWon: false };
   const worldLevel = clamp(currentWorldState.level ?? 1, 1, WORLD_LEVEL_MAX);
+  const worldProgressCurrent = clamp(currentWorldState.progress ?? 0, 0, WORLD_STEP_CORRECT);
   const worldBossDone = !!currentWorldState.bossDone;
   const worldBossReady = worldLevel >= WORLD_LEVEL_MAX && !worldBossDone && !worldBossActive;
   const cloudEnabled = isCloudEnabled();
@@ -1349,6 +1425,13 @@ export default function App() {
     if (resetPick) setPicked(null);
   }
 
+  function seedSessionChallenge() {
+    setSessionChallenge(buildSessionChallenge());
+    setSessionChallengeProgress(0);
+    setSessionChallengeDone(false);
+    setSessionCorrect(0);
+  }
+
   function resetSession() {
     clearAutoTimer();
     setScreen("classic");
@@ -1365,6 +1448,7 @@ export default function App() {
     setRushBestCombo(0);
     setRushFeedback(null);
     setAdBoostNext(false);
+    setSessionChallengePop(null);
     setBossActive(false);
     setBossRemaining(0);
     setBossTimeLeft(0);
@@ -1374,19 +1458,19 @@ export default function App() {
     setWorldBossRemaining(0);
     setScore(0);
     setStreak(0);
-    setQuestionIndex(1);
-    newQuestion(true);
-
-    setLastAnswers([]);
     setSessionAnswered(0);
+    setLastAnswers([]);
     adaptiveRollRef.current = [];
     setAdaptiveAction(null);
+    seedSessionChallenge();
     setSessionPerf(() => {
       const o = {};
       for (const m of MODES) o[m.id] = { right: 0, total: 0 };
       return o;
     });
     setCoachPop(null);
+    setQuestionIndex(1);
+    newQuestion(true);
   }
 
   function startWorldBoss() {
@@ -1419,6 +1503,10 @@ export default function App() {
     setStudy5Right(0);
     setStudy5Wrong(0);
     setStudy5BestStreak(0);
+    setSessionAnswered(0);
+    setLastAnswers([]);
+    setSessionChallengePop(null);
+    seedSessionChallenge();
     setScore(0);
     setStreak(0);
     setQuestionIndex(1);
@@ -1513,6 +1601,10 @@ export default function App() {
     }
     if (!isPremium) setRushTodayCount((n) => n + 1);
     setScreen("rush");
+    setSessionAnswered(0);
+    setLastAnswers([]);
+    setSessionChallengePop(null);
+    seedSessionChallenge();
     setRushOn(true);
     setRushTimeLeft(60000);
     setRushScore(0);
@@ -1913,6 +2005,18 @@ export default function App() {
 
     const nextTotalAnswers = nextTotalRight + nextTotalWrong;
     const nextAccuracy = nextTotalAnswers ? Math.round((nextTotalRight / nextTotalAnswers) * 100) : 0;
+    const nextSessionCorrect = sessionCorrect + (isCorrect ? 1 : 0);
+    const isHardMode = diffId === "difficile";
+    const challengeProgressData = sessionChallenge
+      ? sessionChallengeNextProgress({
+          challenge: sessionChallenge,
+          isCorrect,
+          nextStreak,
+          nextSessionCorrect,
+          isHardMode,
+          currentProgress: sessionChallengeProgress,
+        })
+      : null;
 
     if (study5On) {
       setStudy5Answered((n) => n + 1);
@@ -1957,6 +2061,27 @@ export default function App() {
     setLastAnswers((prev) => [{ ok: isCorrect }, ...(prev ?? [])].slice(0, 10));
 
     setSessionPerf(nextSessionPerf);
+    if (challengeProgressData && !sessionChallengeDone) {
+      setSessionChallengeProgress(
+        sessionChallenge.kind === "hard" ? challengeProgressData.nextHardCount : challengeProgressData.progress
+      );
+
+      if (challengeProgressData.done) {
+        setSessionChallengeDone(true);
+        awardCoins(sessionChallenge.rewardCoins);
+        awardXp(sessionChallenge.rewardXp);
+        setSessionChallengePop({
+          icon: sessionChallenge.icon,
+          title: "Défi session validé",
+          sub: sessionChallenge.title,
+          reward: sessionChallenge.rewardCoins,
+          xpReward: sessionChallenge.rewardXp,
+        });
+        playBeep("chest_open", audioOn, fxVolume);
+        vibrate([14, 12, 18, 16]);
+      }
+    }
+    setSessionCorrect((n) => (isCorrect ? n + 1 : n));
 
     setSessionAnswered((n) => {
       const nextCount = n + 1;
@@ -2816,6 +2941,12 @@ export default function App() {
   }, [comboFunPop]);
 
   useEffect(() => {
+    if (!sessionChallengePop) return;
+    const t = setTimeout(() => setSessionChallengePop(null), 3800);
+    return () => clearTimeout(t);
+  }, [sessionChallengePop]);
+
+  useEffect(() => {
     const onResize = () => setIsMobileViewport(window.innerWidth <= 820);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -3120,7 +3251,12 @@ export default function App() {
     resetSession,
     adaptiveOn,
     xpPct,
+    worldProgressCurrent,
+    worldStepTarget: WORLD_STEP_CORRECT,
     sessionAnswered,
+    sessionChallenge,
+    sessionChallengeProgress,
+    sessionChallengeDone,
     lastAnswers,
     q,
     streak,
@@ -3160,6 +3296,7 @@ export default function App() {
     bossCalloutText,
     errorShakeFx,
     answerEffectId,
+    chestProgress,
   };
 
   const mobileGameTopBarProps = {
@@ -3321,6 +3458,9 @@ export default function App() {
     installPwaApp,
     startStudy5,
     openChest,
+    worlds: WORLDS,
+    selectedWorldId,
+    setSelectedWorldId,
     shopTab,
     setShopTab,
     profileTab,
@@ -3435,6 +3575,8 @@ export default function App() {
         onEquipChestReward={equipChestReward}
         comboFunPop={comboFunPop}
         onCloseComboFunPop={() => setComboFunPop(null)}
+        sessionChallengePop={sessionChallengePop}
+        onCloseSessionChallengePop={() => setSessionChallengePop(null)}
       />
 
       {useMobilePages ? (
