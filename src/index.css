@@ -6087,6 +6087,16 @@ body.reduce-motion .mobileDockBtn.isActive .mobileDockIcon{
     gap: 8px;
   }
 
+  .mobileEntryDiffTitle{
+    margin-top: 12px;
+  }
+
+  .mobileEntryDiffGrid{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
   .mobileEntryWorldChip{
     min-height: 56px;
     border-radius: 14px;
@@ -6120,6 +6130,29 @@ body.reduce-motion .mobileDockBtn.isActive .mobileDockIcon{
     font-weight: 1100;
     letter-spacing: .2px;
     color: rgba(245,250,255,.95);
+  }
+
+  .mobileEntryDiffChip{
+    min-height: 42px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.02)),
+      rgba(0,0,0,.24);
+    font-size: 12px;
+    font-weight: 1000;
+    letter-spacing: .2px;
+    color: rgba(241,247,255,.95);
+  }
+
+  .mobileEntryDiffChip.isActive{
+    border-color: color-mix(in srgb, var(--arcade-pink) 70%, white);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.04)),
+      color-mix(in srgb, var(--arcade-pink) 22%, rgba(11,17,36,.86));
+    box-shadow:
+      0 10px 24px rgba(0,0,0,.34),
+      0 0 16px color-mix(in srgb, var(--arcade-pink) 36%, transparent);
   }
 
   .mobileEntryStartBtn{

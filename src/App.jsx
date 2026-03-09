@@ -783,6 +783,7 @@ export default function App() {
   const [showMobileBootSplash, setShowMobileBootSplash] = useState(() => window.innerWidth <= 820);
   const [showMobileEntryMenu, setShowMobileEntryMenu] = useState(() => window.innerWidth <= 820);
   const [mobileEntryWorldId, setMobileEntryWorldId] = useState(initial.selectedWorldId);
+  const [mobileEntryDiffId, setMobileEntryDiffId] = useState(initial.diffId);
   const [worldTransitionFx, setWorldTransitionFx] = useState(null);
   const [chestGainPulse, setChestGainPulse] = useState(false);
 
@@ -2489,6 +2490,7 @@ export default function App() {
   function startMobileWorldAdventure() {
     const target = WORLDS.find((w) => w.id === mobileEntryWorldId)?.id ?? selectedWorldId;
     if (!target) return;
+    if (mobileEntryDiffId && mobileEntryDiffId !== diffId) setDiffId(mobileEntryDiffId);
     if (target === selectedWorldId) {
       navigateMobile("classic-play");
       return;
@@ -3091,7 +3093,8 @@ export default function App() {
   useEffect(() => {
     if (!showMobileEntryMenu) return;
     setMobileEntryWorldId(selectedWorldId);
-  }, [showMobileEntryMenu, selectedWorldId]);
+    setMobileEntryDiffId(diffId);
+  }, [showMobileEntryMenu, selectedWorldId, diffId]);
 
   useEffect(() => {
     const prev = Number(prevChestPendingRef.current || 0);
@@ -3368,6 +3371,23 @@ export default function App() {
                   >
                     <span className="mobileEntryWorldChipIcon">{w.icon}</span>
                     <span className="mobileEntryWorldChipLabel">{w.gradeId}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mobileEntryWorldTitle mobileEntryDiffTitle">Difficulté</div>
+            <div className="mobileEntryDiffGrid">
+              {DIFFS.map((d) => {
+                const active = mobileEntryDiffId === d.id;
+                return (
+                  <button
+                    key={d.id}
+                    type="button"
+                    className={`mobileEntryDiffChip smooth press ${active ? "isActive" : ""}`}
+                    onClick={() => setMobileEntryDiffId(d.id)}
+                    aria-pressed={active}
+                  >
+                    {d.label}
                   </button>
                 );
               })}
