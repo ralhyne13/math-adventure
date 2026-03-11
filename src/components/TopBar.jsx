@@ -27,7 +27,6 @@ export default function TopBar({
             <div className="topbarCompactLeft">
               <div className="mobileAvatar topbarCompactAvatar">{avatar.emoji}</div>
               <div className="topbarCompactIdentity">
-                <div className="topbarCompactEyebrow">Mobile</div>
                 <div className="topbarCompactTitle">Math Royale</div>
                 <div className="small">
                   <span className="topbarInlineIcon" aria-hidden="true">
