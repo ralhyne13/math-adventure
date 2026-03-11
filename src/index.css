@@ -1274,9 +1274,7 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
 }
 
 .topbarCompactHead{
-  position: relative;
   display: block;
-  min-height: 46px;
 }
 
 .topbarCompactIdentity{
@@ -1317,18 +1315,15 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
   gap: 8px;
 }
 
+.topbarCompactProfileRow{
+  display: flex;
+  justify-content: flex-end;
+}
+
 .topbarCompactProfileBtn{
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 2;
   white-space: nowrap;
   min-height: 42px;
   padding: 0 12px;
-}
-
-.topbarCompactHead .topbarCompactLeft{
-  padding-right: 124px;
 }
 
 .topbarCompactWideBtn{
@@ -1434,8 +1429,6 @@ body.reduce-motion .questionCardCompact.theme-rush .heroQuestionCompact.rushDang
   .topbarCompactProfileBtn{
     width: auto;
     min-width: 108px;
-    top: 0;
-    right: 0;
   }
 
   .mobileDock{

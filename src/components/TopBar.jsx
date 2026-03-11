@@ -37,9 +37,6 @@ export default function TopBar({
                 </div>
               </div>
             </div>
-            <button className="btn smooth hover-lift press topbarCompactBtn topbarCompactProfileBtn" onClick={onOpenProfile}>
-              {"\uD83D\uDC64"} Profil
-            </button>
           </div>
 
           <div className="topbarCompactStats">
@@ -57,6 +54,12 @@ export default function TopBar({
               XP {xp}
             </div>
             <div className="topbarCompactChip">Login {loginStreak}/7</div>
+          </div>
+
+          <div className="topbarCompactProfileRow">
+            <button className="btn smooth hover-lift press topbarCompactBtn topbarCompactProfileBtn" onClick={onOpenProfile}>
+              {"\uD83D\uDC64"} Profil
+            </button>
           </div>
 
           <div className="topbarCompactActions">
