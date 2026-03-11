@@ -6749,6 +6749,12 @@ body.reduce-motion .chestMegaSparks.on i{
   .overlay{
     background: rgba(0,0,0,.02) !important;
   }
+
+  .topbarCompact,
+  .topbarCompactRefresh{
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 
 .questionCompactKpis{
