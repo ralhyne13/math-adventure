@@ -19,6 +19,7 @@ export default function AppOverlays({
   onCloseSessionChallengePop,
   worldTransitionFx,
   onCloseWorldTransition,
+  mascotGuide,
   victoryPop,
   onCloseVictoryPop,
 }) {
@@ -64,6 +65,15 @@ export default function AppOverlays({
               </button>
             )}
           </div>
+        </div>
+      )}
+
+      {mascotGuide && (
+        <div className={`mascotGuidePop mood-${mascotGuide.mood || "coach"}`} role="status" aria-live="polite">
+          <div className="mascotGuidePopAvatar" aria-hidden="true">
+            🦉
+          </div>
+          <div className="mascotGuidePopBubble">{mascotGuide.text}</div>
         </div>
       )}
 

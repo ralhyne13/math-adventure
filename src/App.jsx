@@ -1339,7 +1339,7 @@ export default function App() {
 
   useEffect(() => {
     if (!mascotGuide) return undefined;
-    const t = setTimeout(() => setMascotGuide(null), 1800);
+    const t = setTimeout(() => setMascotGuide(null), 4200);
     return () => clearTimeout(t);
   }, [mascotGuide]);
 
@@ -3556,7 +3556,6 @@ export default function App() {
     chestProgress,
     answerInput,
     setAnswerInput,
-    mascotGuide,
   };
 
   const mobileGameTopBarProps = {
@@ -3847,6 +3846,7 @@ export default function App() {
         onCloseSessionChallengePop={() => setSessionChallengePop(null)}
         worldTransitionFx={worldTransitionFx}
         onCloseWorldTransition={() => setWorldTransitionFx(null)}
+        mascotGuide={mascotGuide}
         victoryPop={victoryPop}
         onCloseVictoryPop={() => setVictoryPop(null)}
       />
