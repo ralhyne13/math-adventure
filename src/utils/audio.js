@@ -71,6 +71,9 @@ export function playBeep(kind = "ok", enabled = true, volume = null) {
       pulse("triangle", 700, 1020, 1480, now, 0.03, 0.14, 0.22);
       pulse("sine", 920, 1320, 1760, now + 0.045, 0.02, 0.13, 0.16);
       pulse("square", 520, 700, 920, now + 0.075, 0.015, 0.12, 0.07);
+    } else if (kind === "snap") {
+      pulse("triangle", 820, 980, 1120, now, 0.008, 0.055, 0.12);
+      pulse("sine", 620, 760, 900, now + 0.012, 0.008, 0.05, 0.07);
     } else if (kind === "owl_happy_mini") {
       pulse("triangle", 620, 980, 1460, now, 0.018, 0.12, 0.18);
       pulse("sine", 820, 1260, 1680, now + 0.04, 0.016, 0.1, 0.12);

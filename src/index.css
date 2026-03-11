@@ -188,6 +188,48 @@
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(56, 189, 248, 0.34), rgba(244, 114, 182, 0.34));
 }
+.mobileLevelTrack {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.mobileLevelNode {
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03)), rgba(10, 16, 32, 0.44);
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  padding: 4px 2px;
+}
+.mobileLevelNode.isCleared {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: linear-gradient(180deg, rgba(74, 222, 128, 0.26), rgba(56, 189, 248, 0.2)), rgba(8, 16, 30, 0.46);
+}
+.mobileLevelNode.isCurrent {
+  border-color: rgba(250, 204, 21, 0.78);
+  background: linear-gradient(180deg, rgba(250, 204, 21, 0.3), rgba(244, 114, 182, 0.24)), rgba(8, 16, 30, 0.5);
+  box-shadow: 0 8px 18px rgba(250, 204, 21, 0.26);
+}
+.mobileLevelNode.isLocked {
+  opacity: 0.5;
+  filter: saturate(0.65);
+}
+.mobileLevelBadge {
+  font-size: 12px;
+  font-weight: 1000;
+  color: #f8fbff;
+  line-height: 1;
+}
+.mobileLevelStars {
+  min-height: 12px;
+  font-size: 10px;
+  color: #fde047;
+  line-height: 1;
+  letter-spacing: 0.5px;
+}
 
 .kidCountBoard {
   width: 100%;
@@ -206,6 +248,13 @@
 .kidCountBasket {
   border-color: rgba(34, 197, 94, 0.42);
   background: rgba(34, 197, 94, 0.08);
+}
+.kidCountDropZone.isDragOver {
+  border-color: rgba(250, 204, 21, 0.7);
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25), 0 8px 20px rgba(250, 204, 21, 0.18);
+}
+.kidCountBasket.snapFx {
+  animation: kidBasketSnap 220ms ease-out;
 }
 .kidCountZoneTitle {
   margin-bottom: 8px;
@@ -232,8 +281,47 @@
   background: linear-gradient(145deg, rgba(34, 197, 94, 0.45), rgba(16, 185, 129, 0.34));
   transform: translateY(-1px) scale(1.03);
 }
+.kidCountItem.dropFx {
+  animation: kidItemDropPop 260ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
 .kidCountHint {
   margin-top: 8px;
+}
+.kidDragGhost {
+  position: fixed;
+  transform: translate(-50%, -50%) scale(1.16);
+  font-size: clamp(28px, 6vw, 40px);
+  pointer-events: none;
+  z-index: 120;
+  filter: drop-shadow(0 8px 14px rgba(2, 6, 23, 0.35));
+}
+@keyframes kidBasketSnap {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3);
+  }
+  45% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+@keyframes kidItemDropPop {
+  0% {
+    transform: translateY(-6px) scale(0.9);
+    opacity: 0.85;
+  }
+  55% {
+    transform: translateY(0) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-1px) scale(1.03);
+    opacity: 1;
+  }
 }
 @keyframes victoryPopIn {
   from {

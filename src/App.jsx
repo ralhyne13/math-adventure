@@ -314,8 +314,18 @@ function defaultWorldProgress() {
   return out;
 }
 
+function defaultWorldLevelStars() {
+  const out = {};
+  for (const w of WORLDS) out[w.id] = {};
+  return out;
+}
+
 function normalizeWorldProgress(saved) {
   return { ...defaultWorldProgress(), ...(saved ?? {}) };
+}
+
+function normalizeWorldLevelStars(saved) {
+  return { ...defaultWorldLevelStars(), ...(saved ?? {}) };
 }
 
 function worldIdFromGrade(gradeId) {
@@ -625,6 +635,7 @@ export default function App() {
         skinId: "ocean-kids",
         selectedWorldId: "ce1",
         worldProgress: defaultWorldProgress(),
+        worldLevelStars: defaultWorldLevelStars(),
         gradeId: "CE1",
         diffId: "moyen",
         modeId: "add",
@@ -694,6 +705,7 @@ export default function App() {
       skinId: skinIdSafe,
       selectedWorldId,
       worldProgress: normalizeWorldProgress(saved?.worldProgress),
+      worldLevelStars: normalizeWorldLevelStars(saved?.worldLevelStars),
       gradeId: saved?.gradeId ?? "CE1",
       diffId: saved?.diffId ?? "moyen",
       modeId: saved?.modeId ?? "add",
@@ -760,6 +772,7 @@ export default function App() {
   const [skinId, setSkinId] = useState(initial.skinId);
   const [selectedWorldId, setSelectedWorldId] = useState(initial.selectedWorldId);
   const [worldProgress, setWorldProgress] = useState(initial.worldProgress);
+  const [worldLevelStars, setWorldLevelStars] = useState(initial.worldLevelStars);
   const [gradeId, setGradeId] = useState(initial.gradeId);
   const [diffId, setDiffId] = useState(initial.diffId);
   const [modeId, setModeId] = useState(initial.modeId);
@@ -1036,6 +1049,7 @@ export default function App() {
       skinId,
       selectedWorldId,
       worldProgress,
+      worldLevelStars,
       gradeId,
       diffId,
       modeId,
@@ -1109,6 +1123,7 @@ export default function App() {
     skinId,
     selectedWorldId,
     worldProgress,
+    worldLevelStars,
     gradeId,
     diffId,
     modeId,
@@ -1393,6 +1408,11 @@ export default function App() {
       const pattern = Array.isArray(ms) ? ms : [ms];
       navigator.vibrate?.(pattern);
     } catch {}
+  }
+
+  function playKidDropFx() {
+    playBeep("snap", audioOn, fxVolume);
+    if (vibrateOn) vibrate(8);
   }
 
   function clearAutoTimer() {
@@ -2314,6 +2334,12 @@ export default function App() {
               base[currentWorld.id] = { ...base[currentWorld.id], bossDone: true, badgeWon: true };
               return base;
             });
+            setWorldLevelStars((prev) => {
+              const base = normalizeWorldLevelStars(prev);
+              const worldStars = { ...(base[currentWorld.id] ?? {}) };
+              worldStars[WORLD_LEVEL_MAX] = Math.max(worldStars[WORLD_LEVEL_MAX] ?? 0, 3);
+              return { ...base, [currentWorld.id]: worldStars };
+            });
             awardCoins(180);
             awardXp(220);
             showBadgePopup({
@@ -2342,6 +2368,14 @@ export default function App() {
         let nextLevel = cur.level;
         let nextProgress = (cur.progress ?? 0) + 1;
         if (nextProgress >= WORLD_STEP_CORRECT) {
+          const clearedLevel = nextLevel;
+          const starsEarned = nextStreak >= 10 ? 3 : nextStreak >= 5 ? 2 : 1;
+          setWorldLevelStars((prevStars) => {
+            const starsBase = normalizeWorldLevelStars(prevStars);
+            const worldStars = { ...(starsBase[currentWorld.id] ?? {}) };
+            worldStars[clearedLevel] = Math.max(worldStars[clearedLevel] ?? 0, starsEarned);
+            return { ...starsBase, [currentWorld.id]: worldStars };
+          });
           nextLevel = Math.min(WORLD_LEVEL_MAX, nextLevel + 1);
           nextProgress = 0;
           showCoachPopup({
@@ -3000,6 +3034,7 @@ export default function App() {
       skinId: "ocean-kids",
       selectedWorldId: "ce1",
       worldProgress: defaultWorldProgress(),
+      worldLevelStars: defaultWorldLevelStars(),
       gradeId: "CE1",
       diffId: "moyen",
       modeId: "add",
@@ -3684,6 +3719,7 @@ export default function App() {
     chestProgress,
     answerInput,
     setAnswerInput,
+    onKidDropFx: playKidDropFx,
   };
 
   const mobileGameTopBarProps = {
@@ -3933,6 +3969,7 @@ export default function App() {
     currentWorld,
     worldLevel,
     worldProgress,
+    worldLevelStars,
     worldBossReady,
     worldBossDone,
     chestPending,

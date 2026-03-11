@@ -8,6 +8,7 @@ export default function MobileHomeScreen({
   kidModeOn,
   readAloudOn,
   worldProgress = {},
+  worldLevelStars = {},
   chestPending,
   chestProgress,
   dailyChallenge,
@@ -21,6 +22,20 @@ export default function MobileHomeScreen({
   const dailyPct = Math.round(((dailyProgress || 0) / dailyTarget) * 100);
   const chestPct = Math.round(((chestProgress || 0) / 15) * 100);
   const activeAge = ageProfiles.find((p) => p.id === ageBand);
+
+  const selectedWorld = worlds.find((w) => w.id === selectedWorldId) ?? worlds[0] ?? null;
+  const selectedWorldState = worldProgress?.[selectedWorld?.id] ?? { level: 1, badgeWon: false };
+  const selectedWorldLevel = Math.max(1, Math.min(30, Number(selectedWorldState?.level) || 1));
+  const selectedWorldStars = worldLevelStars?.[selectedWorld?.id] ?? {};
+
+  const levelNodes = Array.from({ length: 30 }, (_, i) => {
+    const level = i + 1;
+    const isLocked = level > selectedWorldLevel;
+    const isCurrent = level === selectedWorldLevel;
+    const isCleared = level < selectedWorldLevel;
+    const stars = Math.max(0, Math.min(3, Number(selectedWorldStars?.[level]) || 0));
+    return { level, isLocked, isCurrent, isCleared, stars };
+  });
 
   return (
     <div className="mobileStack mobileHomeRefresh mobileHomeTotalRefresh">
@@ -55,7 +70,7 @@ export default function MobileHomeScreen({
               <div className="mobileSectionHead" style={{ marginTop: 12 }}>
                 <div>
                   <div className="mobileSectionEyebrow">Parcours</div>
-                  <div className="mobileSectionTitle">Tranche d'age</div>
+                  <div className="mobileSectionTitle">Tranche d age</div>
                 </div>
                 <span className="pill">{activeAge?.label ?? "6-8 ans"}</span>
               </div>
@@ -83,33 +98,36 @@ export default function MobileHomeScreen({
         </section>
       )}
 
-      {worlds.length > 0 && (
+      {selectedWorld && (
         <section className="card smooth mobileSurfaceCard mobileFeaturePanel">
           <div className="mobileSectionHead">
             <div>
               <div className="mobileSectionEyebrow">Carte</div>
-              <div className="mobileSectionTitle">Chemin des mondes</div>
+              <div className="mobileSectionTitle">Parcours {selectedWorld.gradeId}</div>
             </div>
+            <span className="pill">
+              {selectedWorld.icon} Niv {selectedWorldLevel}/30
+            </span>
           </div>
-          <div className="mobileWorldPath">
-            {worlds.map((w, idx) => {
-              const st = worldProgress?.[w.id] ?? { level: 1, badgeWon: false };
-              const stars = st.badgeWon ? 3 : st.level >= 20 ? 2 : st.level >= 10 ? 1 : 0;
-              const active = w.id === selectedWorldId;
-              return (
-                <div key={w.id} className={`mobileWorldNode ${active ? "isActive" : ""}`}>
-                  <button type="button" className="mobileWorldNodeBtn" onClick={() => onSelectWorld?.(w.id)}>
-                    <span className="mobileWorldNodeIcon">{w.icon}</span>
-                    <span className="mobileWorldNodeLabel">{w.gradeId}</span>
-                  </button>
-                  <div className="mobileWorldNodeMeta">
-                    <span>Niv {Math.max(1, st.level || 1)}/30</span>
-                    <span>{"⭐".repeat(stars) || "☆"}</span>
-                  </div>
-                  {idx < worlds.length - 1 ? <span className="mobileWorldLink" aria-hidden="true" /> : null}
-                </div>
-              );
-            })}
+
+          <div className="mobileLevelTrack" aria-label={`Progression ${selectedWorld.gradeId}`}>
+            {levelNodes.map((node) => (
+              <div
+                key={`${selectedWorld.id}-level-${node.level}`}
+                className={`mobileLevelNode ${node.isLocked ? "isLocked" : ""} ${node.isCurrent ? "isCurrent" : ""} ${
+                  node.isCleared ? "isCleared" : ""
+                }`}
+              >
+                <span className="mobileLevelBadge">{node.level}</span>
+                <span className="mobileLevelStars" aria-hidden="true">
+                  {"★".repeat(node.stars)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="small" style={{ marginTop: 10 }}>
+            Termine un niveau pour avancer. Les etoiles augmentent avec tes meilleurs combos.
           </div>
         </section>
       )}
@@ -120,8 +138,7 @@ export default function MobileHomeScreen({
             <div className="mobileSectionEyebrow">PWA</div>
             <div className="mobileSectionTitle">Installer la version mobile</div>
             <div className="small" style={{ marginTop: 8 }}>
-              Ajoute l'app a l'ecran d'accueil pour un demarrage plus rapide, une interface plus propre et une sensation
-              plus native.
+              Ajoute l app a l ecran d accueil pour un demarrage plus rapide, une interface plus propre et une sensation plus native.
             </div>
           </div>
           <button className="btn btnPrimary smooth hover-lift press mobileInstallBtn" onClick={onInstallApp}>
@@ -144,7 +161,9 @@ export default function MobileHomeScreen({
           <div className="bar" style={{ width: `${Math.min(100, dailyPct)}%` }} />
         </div>
         <div className="mobileSplitMeta">
-          <span>{Math.min(dailyProgress || 0, dailyTarget)} / {dailyTarget}</span>
+          <span>
+            {Math.min(dailyProgress || 0, dailyTarget)} / {dailyTarget}
+          </span>
           <span>{dailyPct}%</span>
         </div>
       </section>
