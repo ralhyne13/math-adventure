@@ -19,6 +19,8 @@ export default function AppOverlays({
   onCloseSessionChallengePop,
   worldTransitionFx,
   onCloseWorldTransition,
+  victoryPop,
+  onCloseVictoryPop,
 }) {
   return (
     <>
@@ -79,6 +81,48 @@ export default function AppOverlays({
             </div>
             <button className="btn btnPrimary smooth hover-lift press" onClick={onCloseLoginReward}>
               OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {victoryPop && (
+        <div className="victoryPop" role="dialog" aria-modal="true" aria-live="polite">
+          <div className={`victoryPopInner smooth grade-${String(victoryPop.grade || "bronze").toLowerCase()}`}>
+            <div className="victoryStarRain" aria-hidden="true">
+              {Array.from({ length: 28 }).map((_, idx) => (
+                <i key={idx} style={{ "--i": idx }} />
+              ))}
+            </div>
+            <div className="victoryConfetti" aria-hidden="true">
+              {Array.from({ length: 20 }).map((_, idx) => (
+                <span key={idx} style={{ "--i": idx }} />
+              ))}
+            </div>
+            <div className="victoryCrown" aria-hidden="true">
+              {victoryPop.emoji ?? "🏆"}
+            </div>
+            <div className="victoryTitle">{victoryPop.title ?? "Victoire"}</div>
+            <div className="victoryStars" aria-label={`${victoryPop.stars ?? 1} étoiles`}>
+              {Array.from({ length: 3 }).map((_, idx) => (
+                <span key={idx} className={idx < (victoryPop.stars ?? 1) ? "on" : ""}>
+                  ⭐
+                </span>
+              ))}
+            </div>
+            <div className="victoryGrade">
+              Grade: <b>{victoryPop.grade ?? "Bronze"}</b>
+            </div>
+            {!!victoryPop.score && <div className="victoryScore">Score: {victoryPop.score}</div>}
+            {Array.isArray(victoryPop.lines) && victoryPop.lines.length > 0 && (
+              <div className="victoryLines">
+                {victoryPop.lines.map((line, idx) => (
+                  <div key={idx}>{line}</div>
+                ))}
+              </div>
+            )}
+            <button className="btn btnPrimary smooth hover-lift press" onClick={onCloseVictoryPop}>
+              Super
             </button>
           </div>
         </div>

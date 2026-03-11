@@ -71,6 +71,43 @@ export function playBeep(kind = "ok", enabled = true, volume = null) {
       pulse("triangle", 700, 1020, 1480, now, 0.03, 0.14, 0.22);
       pulse("sine", 920, 1320, 1760, now + 0.045, 0.02, 0.13, 0.16);
       pulse("square", 520, 700, 920, now + 0.075, 0.015, 0.12, 0.07);
+    } else if (kind === "owl_happy_mini") {
+      pulse("triangle", 620, 980, 1460, now, 0.018, 0.12, 0.18);
+      pulse("sine", 820, 1260, 1680, now + 0.04, 0.016, 0.1, 0.12);
+      pulse("triangle", 520, 760, 980, now + 0.075, 0.014, 0.09, 0.07);
+    } else if (kind === "owl_happy_mid") {
+      pulse("triangle", 560, 900, 1340, now, 0.02, 0.125, 0.2);
+      pulse("sine", 780, 1180, 1540, now + 0.043, 0.017, 0.11, 0.13);
+      pulse("triangle", 480, 700, 920, now + 0.078, 0.014, 0.095, 0.075);
+    } else if (kind === "owl_happy_teen" || kind === "owl_happy") {
+      pulse("triangle", 540, 880, 1320, now, 0.02, 0.13, 0.2);
+      pulse("sine", 760, 1160, 1520, now + 0.045, 0.018, 0.12, 0.14);
+      pulse("triangle", 460, 620, 860, now + 0.08, 0.015, 0.1, 0.08);
+    } else if (kind === "owl_coach_mini") {
+      pulse("sine", 460, 390, 330, now, 0.02, 0.15, 0.14);
+      pulse("triangle", 360, 320, 280, now + 0.038, 0.02, 0.15, 0.1);
+      pulse("sine", 560, 650, 740, now + 0.12, 0.02, 0.12, 0.07);
+    } else if (kind === "owl_coach_mid") {
+      pulse("sine", 440, 370, 310, now, 0.02, 0.155, 0.15);
+      pulse("triangle", 350, 310, 270, now + 0.04, 0.02, 0.155, 0.11);
+      pulse("sine", 540, 630, 720, now + 0.125, 0.02, 0.125, 0.075);
+    } else if (kind === "owl_coach_teen" || kind === "owl_coach") {
+      pulse("sine", 420, 360, 300, now, 0.02, 0.16, 0.16);
+      pulse("triangle", 340, 300, 260, now + 0.04, 0.02, 0.16, 0.12);
+      pulse("sine", 520, 620, 700, now + 0.13, 0.02, 0.13, 0.08);
+    } else if (kind === "victory_mini") {
+      pulse("triangle", 500, 860, 1240, now, 0.03, 0.16, 0.2);
+      pulse("triangle", 680, 1080, 1500, now + 0.08, 0.03, 0.16, 0.18);
+      pulse("sine", 920, 1460, 1880, now + 0.18, 0.03, 0.18, 0.12);
+    } else if (kind === "victory_mid") {
+      pulse("triangle", 460, 780, 1140, now, 0.03, 0.165, 0.22);
+      pulse("triangle", 620, 1000, 1440, now + 0.085, 0.03, 0.165, 0.2);
+      pulse("sine", 860, 1380, 1840, now + 0.19, 0.03, 0.19, 0.13);
+    } else if (kind === "victory_teen" || kind === "victory") {
+      pulse("triangle", 420, 720, 1080, now, 0.03, 0.17, 0.24);
+      pulse("triangle", 560, 960, 1380, now + 0.09, 0.03, 0.17, 0.22);
+      pulse("triangle", 740, 1220, 1700, now + 0.18, 0.03, 0.19, 0.2);
+      pulse("sine", 980, 1560, 2100, now + 0.27, 0.03, 0.2, 0.14);
     } else {
       pulse("square", 180, 136, 104, now, 0.03, 0.22, 0.24);
       pulse("sawtooth", 132, 108, 86, now + 0.045, 0.02, 0.19, 0.1);

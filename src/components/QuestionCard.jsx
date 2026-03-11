@@ -1,5 +1,7 @@
 ﻿import Fraction from "./Fraction";
 
+import { useEffect, useState } from "react";
+
 export default function QuestionCard({
   status,
   fx,
@@ -67,6 +69,7 @@ export default function QuestionCard({
   sessionChallenge = null,
   sessionChallengeProgress = 0,
   sessionChallengeDone = false,
+  mascotGuide = null,
 }) {
   const bossPhaseClass = bossRemaining <= 30 ? "phase-final" : bossRemaining <= 60 ? "phase-mid" : "phase-open";
   const historySlots = compact ? 5 : 10;
@@ -101,6 +104,23 @@ export default function QuestionCard({
     accuracy >= 95 ? "Génie des maths" : accuracy >= 85 ? "Super calculateur" : accuracy >= 70 ? "Explorateur malin" : "Petit champion";
   const comboMood = streak >= 10 ? "Feu d'artifice" : streak >= 5 ? "Combo turbo" : "Échauffement";
   const chestStarCount = chestRemaining <= 3 ? 3 : chestRemaining <= 7 ? 2 : 1;
+  const [mascotTypedText, setMascotTypedText] = useState("");
+
+  useEffect(() => {
+    const full = String(mascotGuide?.text || "");
+    if (!full) {
+      setMascotTypedText("");
+      return undefined;
+    }
+    let i = 0;
+    setMascotTypedText("");
+    const id = setInterval(() => {
+      i += 1;
+      setMascotTypedText(full.slice(0, i));
+      if (i >= full.length) clearInterval(id);
+    }, 18);
+    return () => clearInterval(id);
+  }, [mascotGuide?.text]);
 
   function challengeDoneText(challenge, current, target, done) {
     if (!challenge) return "";
@@ -267,6 +287,20 @@ export default function QuestionCard({
           </div>
         </div>
       </div>
+      )}
+
+      {mascotGuide && (
+        <div className={`owlGuide ${mascotGuide.mood || "coach"}`} role="status" aria-live="polite">
+          <div className="owlGuideAvatar" aria-hidden="true">
+            🦉
+          </div>
+          <div className="owlGuideBubble">
+            {mascotTypedText}
+            <span className="owlGuideCursor" aria-hidden="true">
+              |
+            </span>
+          </div>
+        </div>
       )}
 
       <div className={`heroQuestion questionHeroRefresh ${compact ? "heroQuestionCompact" : ""} ${modeThemeClass} ${rushDanger ? "rushDanger" : ""}`} data-status={status}>

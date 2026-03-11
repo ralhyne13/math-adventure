@@ -322,6 +322,51 @@ function formatClock(totalSeconds) {
   return `${mm}:${ss}`;
 }
 
+function buildVictoryGrade({ mode, score = 0, accuracy = 0, answered = 0, bestStreak = 0 }) {
+  if (mode === "rush") {
+    if (score >= 900) return { grade: "Or", stars: 3, emoji: "🥇" };
+    if (score >= 450) return { grade: "Argent", stars: 2, emoji: "🥈" };
+    return { grade: "Bronze", stars: 1, emoji: "🥉" };
+  }
+  const perf = (Number(accuracy) || 0) + Math.min(40, Number(answered) || 0) + (Number(bestStreak) || 0) * 2;
+  if (perf >= 130) return { grade: "Or", stars: 3, emoji: "🥇" };
+  if (perf >= 90) return { grade: "Argent", stars: 2, emoji: "🥈" };
+  return { grade: "Bronze", stars: 1, emoji: "🥉" };
+}
+
+function audioTierFromGrade(gradeId) {
+  const g = String(gradeId || "").toUpperCase();
+  if (["CP", "CE1", "CE2"].includes(g)) return "mini";
+  if (["CM1", "CM2", "6E", "5E"].includes(g)) return "mid";
+  return "teen";
+}
+
+function mascotLineForAnswer({ isCorrect, nextStreak, modeId, isBossNow, gradeId }) {
+  const tier = audioTierFromGrade(gradeId);
+  const goodMini = ["Bravo champion !", "Yes, c'est juste !", "Top ! Continue comme ça !"];
+  const goodMid = ["Bien joué, calcul propre.", "Très bon réflexe math.", "Nickel, tu enchaînes."];
+  const goodTeen = ["Bonne réponse, propre.", "Solide. Continue le rythme.", "Parfait, on garde ce tempo."];
+  const badMini = ["Ce n'est pas grave, on réessaie.", "Essaye encore, tu peux le faire.", "On reprend doucement."];
+  const badMid = ["Erreur normale, on corrige.", "Presque. Relis bien l'énoncé.", "On ajuste et on repart."];
+  const badTeen = ["Erreur utile, on apprend.", "Reprends calmement le calcul.", "On corrige et on avance."];
+
+  const pick = (arr) => arr[randInt(0, arr.length - 1)];
+  if (isCorrect) {
+    if (nextStreak >= 12) return "Mode légende activé !";
+    if (nextStreak >= 6) return "Super série, garde la concentration.";
+    if (isBossNow) return "Impact confirmé sur le boss.";
+    if (modeId === "frac") return "Fraction maîtrisée, bien vu.";
+    if (tier === "mini") return pick(goodMini);
+    if (tier === "mid") return pick(goodMid);
+    return pick(goodTeen);
+  }
+  if (modeId === "frac") return "Astuce: pense au dénominateur.";
+  if (modeId === "mul") return "Astuce: découpe la table en étapes.";
+  if (tier === "mini") return pick(badMini);
+  if (tier === "mid") return pick(badMid);
+  return pick(badTeen);
+}
+
 function arenaComboMultiplier(combo) {
   const c = Math.max(0, Number(combo) || 0);
   if (c >= 15) return 4;
@@ -791,6 +836,8 @@ export default function App() {
   const [mobileEntryDiffId, setMobileEntryDiffId] = useState(initial.diffId);
   const [worldTransitionFx, setWorldTransitionFx] = useState(null);
   const [chestGainPulse, setChestGainPulse] = useState(false);
+  const [mascotGuide, setMascotGuide] = useState(null);
+  const [victoryPop, setVictoryPop] = useState(null);
 
   // Session
   const [screen, setScreen] = useState("classic"); // "classic" | "rush"
@@ -1290,6 +1337,18 @@ export default function App() {
     return () => clearTimeout(t);
   }, [rushFeedback]);
 
+  useEffect(() => {
+    if (!mascotGuide) return undefined;
+    const t = setTimeout(() => setMascotGuide(null), 1800);
+    return () => clearTimeout(t);
+  }, [mascotGuide]);
+
+  useEffect(() => {
+    if (!victoryPop) return undefined;
+    const t = setTimeout(() => setVictoryPop(null), 5600);
+    return () => clearTimeout(t);
+  }, [victoryPop]);
+
   function vibrate(ms) {
     if (!vibrateOn) return;
     try {
@@ -1485,6 +1544,8 @@ export default function App() {
     setRushFeedback(null);
     setAdBoostNext(false);
     setSessionChallengePop(null);
+    setMascotGuide(null);
+    setVictoryPop(null);
     setBossActive(false);
     setBossRemaining(0);
     setBossHitFx(false);
@@ -1541,6 +1602,8 @@ export default function App() {
     setSessionAnswered(0);
     setLastAnswers([]);
     setSessionChallengePop(null);
+    setMascotGuide(null);
+    setVictoryPop(null);
     seedSessionChallenge();
     setScore(0);
     setStreak(0);
@@ -1578,6 +1641,24 @@ export default function App() {
       score,
     };
     setStudy5LastSummary(summary);
+    const gradeInfo = buildVictoryGrade({
+      mode: "study5",
+      score: summary.score,
+      accuracy: summary.accuracy,
+      answered: summary.answered,
+      bestStreak: summary.bestStreak,
+    });
+    setVictoryPop({
+      mode: "study5",
+      title: "Défi 5 minutes terminé",
+      grade: gradeInfo.grade,
+      stars: gradeInfo.stars,
+      emoji: gradeInfo.emoji,
+      score: summary.score,
+      lines: [`Questions: ${summary.answered}`, `Précision: ${summary.accuracy}%`, `Meilleur combo: ${summary.bestStreak}`],
+    });
+    playBeep(`victory_${audioTierFromGrade(gradeId)}`, audioOn, fxVolume);
+    vibrate([18, 14, 28, 14, 42]);
     showCoachPopup({
       title: "Défi 5 minutes terminé",
       lines: [`Questions: ${summary.answered}`, `Réussite: ${summary.accuracy}%`, `Meilleur combo: ${summary.bestStreak}`],
@@ -1638,6 +1719,8 @@ export default function App() {
     setSessionAnswered(0);
     setLastAnswers([]);
     setSessionChallengePop(null);
+    setMascotGuide(null);
+    setVictoryPop(null);
     seedSessionChallenge();
     setRushOn(true);
     setRushTimeLeft(60000);
@@ -1670,6 +1753,18 @@ export default function App() {
       date: new Date().toISOString(),
     };
     setRushLeaderboard((prev) => buildRushLeaderboard(prev, entry));
+    const gradeInfo = buildVictoryGrade({ mode: "rush", score: rushScore });
+    setVictoryPop({
+      mode: "rush",
+      title: "Rush terminé",
+      grade: gradeInfo.grade,
+      stars: gradeInfo.stars,
+      emoji: gradeInfo.emoji,
+      score: rushScore,
+      lines: [`Score final: ${rushScore}`, `Meilleur score: ${Math.max(rushBestScore, rushScore)}`],
+    });
+    playBeep(`victory_${audioTierFromGrade(gradeId)}`, audioOn, fxVolume);
+    vibrate([20, 16, 34, 16, 46]);
     if (cloudEnabled) {
       cloudPushLeaderboard({
         pseudoKey: authUser?.pseudoKey,
@@ -2058,6 +2153,11 @@ export default function App() {
         })
       : null;
 
+    setMascotGuide({
+      mood: isCorrect ? "happy" : "coach",
+      text: mascotLineForAnswer({ isCorrect, nextStreak, modeId, isBossNow, gradeId }),
+    });
+
     if (study5On) {
       setStudy5Answered((n) => n + 1);
       if (isCorrect) {
@@ -2265,7 +2365,7 @@ export default function App() {
 
     if (isCorrect) {
       setStatus("ok");
-      playBeep("ok", audioOn);
+      playBeep(`owl_happy_${audioTierFromGrade(gradeId)}`, audioOn, fxVolume);
       vibrate([14, 18]);
       triggerFx("ok");
 
@@ -2308,7 +2408,7 @@ export default function App() {
       updateRecordIfNeeded(score + effectiveScoreAdd);
     } else {
       setStatus("bad");
-      playBeep("bad", audioOn);
+      playBeep(`owl_coach_${audioTierFromGrade(gradeId)}`, audioOn, fxVolume);
       vibrate([70, 36, 90]);
       triggerFx("bad");
       setErrorShakeFx(true);
@@ -3456,6 +3556,7 @@ export default function App() {
     chestProgress,
     answerInput,
     setAnswerInput,
+    mascotGuide,
   };
 
   const mobileGameTopBarProps = {
@@ -3746,6 +3847,8 @@ export default function App() {
         onCloseSessionChallengePop={() => setSessionChallengePop(null)}
         worldTransitionFx={worldTransitionFx}
         onCloseWorldTransition={() => setWorldTransitionFx(null)}
+        victoryPop={victoryPop}
+        onCloseVictoryPop={() => setVictoryPop(null)}
       />
 
       {useMobilePages ? (
