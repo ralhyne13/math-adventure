@@ -7067,3 +7067,167 @@ body.reduce-motion .chestMegaSparks.on i{
     width: 100%;
   }
 }
+
+/* -------------------------------------------
+   Mobile Kid Arcade Theme (3-12 ans)
+-------------------------------------------- */
+@keyframes kidFloatBob{
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes kidPulseGlow{
+  0%, 100% { box-shadow: 0 10px 24px rgba(0,0,0,.2), 0 0 0 rgba(255,255,255,0); }
+  50% { box-shadow: 0 12px 28px rgba(0,0,0,.24), 0 0 18px rgba(255,255,255,.3); }
+}
+
+@media (max-width: 820px){
+  :root{
+    --kid-blue: #32d7ff;
+    --kid-green: #8dfd61;
+    --kid-yellow: #ffd84b;
+    --kid-pink: #ff58ce;
+    --kid-ink: #101a36;
+  }
+
+  .mobileShellFrame,
+  .mobileViewFrame{
+    font-family: "Trebuchet MS", "Comic Sans MS", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(40% 34% at 14% 8%, rgba(50,215,255,.22), transparent 72%),
+      radial-gradient(46% 36% at 86% 14%, rgba(255,88,206,.2), transparent 74%),
+      radial-gradient(42% 32% at 50% 100%, rgba(141,253,97,.15), transparent 76%),
+      linear-gradient(180deg, #1b1f57, #111d42 52%, #0e1734);
+  }
+
+  .mathBg span,
+  .mobileMathWindowFx span{
+    color: rgba(255,255,255,.74);
+    text-shadow:
+      0 0 16px rgba(50,215,255,.36),
+      0 0 28px rgba(255,88,206,.26);
+  }
+
+  .topbarCompact{
+    margin-bottom: 8px;
+    padding: 8px 0 2px;
+  }
+
+  .topbarCompactTitle{
+    color: #ffffff;
+    text-shadow: 0 2px 0 rgba(0,0,0,.18);
+    font-size: clamp(20px, 5.2vw, 24px);
+  }
+
+  .topbarCompactChip{
+    border-radius: 999px;
+    border: 2px solid rgba(255,255,255,.2) !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.08)),
+      rgba(16,26,54,.56) !important;
+    color: rgba(255,255,255,.98);
+    animation: kidFloatBob 2.6s ease-in-out infinite;
+  }
+
+  .topbarCompactStats .topbarCompactChip:nth-child(2n){
+    animation-delay: .25s;
+  }
+
+  .topbarCompactProfileBtn{
+    border-radius: 999px;
+    border: 2px solid rgba(255,255,255,.24);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.06)),
+      linear-gradient(135deg, var(--kid-blue), var(--kid-pink));
+    color: #ffffff;
+    font-weight: 1100;
+    animation: kidPulseGlow 2.2s ease-in-out infinite;
+  }
+
+  .questionCardCompact{
+    border-radius: 24px;
+    border: 2px solid color-mix(in srgb, var(--kid-blue) 44%, rgba(255,255,255,.25));
+    background:
+      radial-gradient(200px 120px at 100% 0%, rgba(255,216,75,.14), transparent 72%),
+      linear-gradient(175deg, rgba(255,255,255,.12), rgba(255,255,255,.03)),
+      rgba(12,22,52,.56) !important;
+  }
+
+  .heroQuestion{
+    border-radius: 22px;
+    border: 2px solid rgba(255,255,255,.2);
+    background:
+      radial-gradient(240px 120px at 0% 0%, rgba(50,215,255,.2), transparent 72%),
+      radial-gradient(220px 120px at 100% 100%, rgba(255,88,206,.14), transparent 72%),
+      rgba(14,24,52,.54);
+  }
+
+  .qPrompt{
+    font-size: clamp(18px, 4.6vw, 24px);
+    line-height: 1.28;
+    color: #f8fbff;
+  }
+
+  .answerInputField{
+    border-radius: 16px;
+    border: 2px solid color-mix(in srgb, var(--kid-yellow) 58%, rgba(255,255,255,.25));
+    background: rgba(255,255,255,.94);
+    color: #1a2244;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.7);
+  }
+
+  .answerEntry .btn{
+    border-radius: 16px;
+    border: 2px solid rgba(255,255,255,.2);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.32), rgba(255,255,255,.08)),
+      linear-gradient(135deg, var(--kid-green), var(--kid-blue));
+    color: #0f1b3a;
+    font-weight: 1100;
+  }
+
+  .mobileDock{
+    border-radius: 22px;
+    border: 2px solid rgba(255,255,255,.18);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04)),
+      rgba(13,21,47,.7);
+    box-shadow:
+      0 14px 36px rgba(0,0,0,.28),
+      0 0 24px rgba(50,215,255,.2);
+  }
+
+  .mobileDockBtn{
+    border-radius: 14px;
+    font-weight: 1000;
+    letter-spacing: .1px;
+  }
+
+  .mobileDockBtn.isActive{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.36), rgba(255,255,255,.08)),
+      linear-gradient(135deg, var(--kid-yellow), var(--kid-pink));
+    color: #14224a;
+    box-shadow: 0 8px 18px rgba(0,0,0,.24);
+  }
+
+  .mobileWorldChip,
+  .mobileEntryWorldChip,
+  .mobileEntryDiffChip{
+    border-radius: 16px;
+    border: 2px solid rgba(255,255,255,.2);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.07)),
+      rgba(10,20,45,.58);
+  }
+
+  .mobileWorldChip.isActive,
+  .mobileEntryWorldChip.isActive,
+  .mobileEntryDiffChip.isActive{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.1)),
+      linear-gradient(135deg, var(--kid-blue), var(--kid-green));
+    color: #102144;
+    box-shadow: 0 10px 24px rgba(0,0,0,.24);
+  }
+}
