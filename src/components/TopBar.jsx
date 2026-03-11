@@ -23,28 +23,43 @@ export default function TopBar({
     return (
       <section className="topbar topbarCompact">
         <div className="topbarCompactShell">
-          <div className="topbarCompactLeft">
-            <div className="mobileAvatar topbarCompactAvatar">{avatar.emoji}</div>
-            <div className="topbarCompactIdentity">
-              <div className="topbarCompactEyebrow">Mobile</div>
-              <div className="topbarCompactTitle">Math Royale</div>
-              <div className="small">
-                <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
+          <div className="topbarCompactHead">
+            <div className="topbarCompactLeft">
+              <div className="mobileAvatar topbarCompactAvatar">{avatar.emoji}</div>
+              <div className="topbarCompactIdentity">
+                <div className="topbarCompactEyebrow">Mobile</div>
+                <div className="topbarCompactTitle">Math Royale</div>
+                <div className="small">
+                  <span className="topbarInlineIcon" aria-hidden="true">
+                    {"\uD83D\uDC64"}
+                  </span>{" "}
+                  <b>{authUser.pseudoDisplay}</b> | {profileRank.icon} {profileRank.label}
+                </div>
               </div>
             </div>
+            <button className="btn smooth hover-lift press topbarCompactBtn topbarCompactProfileBtn" onClick={onOpenProfile}>
+              {"\uD83D\uDC64"} Profil
+            </button>
           </div>
 
           <div className="topbarCompactStats">
-            <div className="topbarCompactChip">Pieces {coins}</div>
+            <div className="topbarCompactChip">
+              <span className="topbarInlineIcon" aria-hidden="true">
+                {"\uD83E\uDE99"}
+              </span>
+              Pieces {coins}
+            </div>
             <div className="topbarCompactChip">Niv. {level}</div>
-            <div className="topbarCompactChip">XP {xp}</div>
+            <div className="topbarCompactChip">
+              <span className="topbarInlineIcon" aria-hidden="true">
+                {"\u2728"}
+              </span>
+              XP {xp}
+            </div>
             <div className="topbarCompactChip">Login {loginStreak}/7</div>
           </div>
 
           <div className="topbarCompactActions">
-            <button className="btn smooth hover-lift press topbarCompactBtn topbarCompactWideBtn" onClick={onOpenProfile}>
-              Profil
-            </button>
             {canInstallApp && (
               <button className="btn btnPrimary smooth hover-lift press topbarCompactBtn" onClick={onInstallApp} aria-label="Installer l'app">
                 App
