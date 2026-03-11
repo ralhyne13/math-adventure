@@ -6697,8 +6697,6 @@ body.reduce-motion .chestMegaSparks.on i{
   .pageSheet,
   .pageSheetMobile,
   .questionCardCompact,
-  .topbarCompact,
-  .topbarCompactRefresh,
   .mobileHomePanel,
   .mobileProfileRecordCard,
   .mobileCollectionCard,
@@ -6752,6 +6750,9 @@ body.reduce-motion .chestMegaSparks.on i{
 
   .topbarCompact,
   .topbarCompactRefresh{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }

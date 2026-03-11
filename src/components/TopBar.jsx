@@ -42,9 +42,6 @@ export default function TopBar({
           </div>
 
           <div className="topbarCompactActions">
-            <button className="btn smooth hover-lift press topbarCompactBtn topbarCompactWideBtn" onClick={onOpenShop}>
-              Boutique
-            </button>
             <button className="btn smooth hover-lift press topbarCompactBtn topbarCompactWideBtn" onClick={onOpenProfile}>
               Profil
             </button>
@@ -53,9 +50,6 @@ export default function TopBar({
                 App
               </button>
             )}
-            <button className="btn smooth hover-lift press topbarCompactBtn" onClick={onOpenSettings} aria-label="Reglages">
-              Regl.
-            </button>
           </div>
         </div>
       </section>
