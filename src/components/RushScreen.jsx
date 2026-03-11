@@ -2,7 +2,6 @@
 import { clamp } from "../utils/math";
 import { playBeep } from "../utils/audio";
 import { DIFFS, GRADES, MODES, questionSignature } from "../questions";
-import { AVATARS, SKINS } from "../config/gameData";
 import Fraction from "./Fraction";
 
 function getRushMultiplier(combo) {
@@ -32,73 +31,19 @@ const LEAGUES = [
   { id: "diamond", name: "Diamant", icon: "\uD83D\uDC8E", min: 4200 },
 ];
 
+const CHEST_VISUAL = {
+  common: { id: "common", icon: "\uD83C\uDF81", label: "Coffre commun" },
+  rare: { id: "rare", icon: "\uD83C\uDF1F", label: "Coffre rare" },
+  epic: { id: "epic", icon: "\u2728", label: "Coffre épique" },
+  legendary: { id: "legendary", icon: "\uD83D\uDC51", label: "Coffre légendaire" },
+};
+
 function leagueFromScore(score) {
   let cur = LEAGUES[0];
   for (const league of LEAGUES) {
     if (score >= league.min) cur = league;
   }
   return cur;
-}
-
-function rollChestRarity(score) {
-  const base = clamp((Number(score) || 0) / 5000, 0, 1);
-  const r = Math.random();
-  const epicChance = 0.06 + base * 0.06;
-  const rareChance = 0.22 + base * 0.1;
-  if (r < epicChance) return "epic";
-  if (r < epicChance + rareChance) return "rare";
-  return "common";
-}
-
-function coinsForChest(rarity) {
-  if (rarity === "epic") return 140 + Math.floor(Math.random() * 81);
-  if (rarity === "rare") return 70 + Math.floor(Math.random() * 51);
-  return 25 + Math.floor(Math.random() * 31);
-}
-
-function pickSkinReward(rarity, ownedSkins) {
-  const pool =
-    rarity === "epic"
-      ? SKINS.filter((s) => s.price >= 180)
-      : rarity === "rare"
-        ? SKINS.filter((s) => s.price >= 120)
-        : SKINS.filter((s) => s.price >= 0);
-
-  const notOwned = pool.filter((s) => !ownedSkins.includes(s.id));
-  if (!notOwned.length) return null;
-  return notOwned[Math.floor(Math.random() * notOwned.length)];
-}
-
-function pickAvatarReward(rarity, ownedAvatars) {
-  const pool =
-    rarity === "epic"
-      ? AVATARS.filter((a) => a.rarity === "Épique" || a.rarity === "Exclusif")
-      : rarity === "rare"
-        ? AVATARS.filter((a) => a.rarity === "Rare" || a.rarity === "Épique")
-        : AVATARS.filter((a) => a.rarity === "Commun" || a.rarity === "Rare");
-
-  const notOwned = pool.filter((a) => !ownedAvatars.includes(a.id));
-  if (!notOwned.length) return null;
-  return notOwned[Math.floor(Math.random() * notOwned.length)];
-}
-
-function rollChestReward({ score, ownedSkins, ownedAvatars }) {
-  const rarity = rollChestRarity(score);
-  const skinChance = rarity === "epic" ? 0.4 : rarity === "rare" ? 0.26 : 0.12;
-  const avatarChance = rarity === "epic" ? 0.45 : rarity === "rare" ? 0.28 : 0.14;
-
-  const r = Math.random();
-  if (r < skinChance) {
-    const skin = pickSkinReward(rarity, ownedSkins);
-    if (skin) return { rarity, kind: "skin", skinId: skin.id, label: `Skin : ${skin.name}` };
-  }
-  if (r < skinChance + avatarChance) {
-    const avatar = pickAvatarReward(rarity, ownedAvatars);
-    if (avatar) return { rarity, kind: "avatar", avatarId: avatar.id, label: `Avatar : ${avatar.emoji} ${avatar.name}` };
-  }
-
-  const coins = coinsForChest(rarity);
-  return { rarity, kind: "coins", coins, label: `+${coins} pièces` };
 }
 
 function pushQuestionHistory(historyRef, q, modeId, gradeId, diffId) {
@@ -183,6 +128,7 @@ export default function RushScreen({
   setOwnedAvatars,
   ownedSkins,
   ownedAvatars,
+  onAwardGlobalChest,
   makeQuestionFn,
   embedded = false,
 }) {
@@ -206,8 +152,7 @@ export default function RushScreen({
   const [qStartedAt, setQStartedAt] = useState(() => performance.now());
   const [floatText, setFloatText] = useState(null);
   const [dangerTime, setDangerTime] = useState(false);
-  const [chest, setChest] = useState(null);
-  const [chestPhase, setChestPhase] = useState("closed");
+  const [endChestAward, setEndChestAward] = useState(null);
   const [newBest, setNewBest] = useState(false);
   const [leagueUp, setLeagueUp] = useState(null);
   const [rushBest, setRushBest] = useState(0);
@@ -248,8 +193,7 @@ export default function RushScreen({
     setLock(false);
     setDangerTime(false);
     setFloatText(null);
-    setChest(null);
-    setChestPhase("closed");
+    setEndChestAward(null);
     setNewBest(false);
     setLeagueUp(null);
     newRushQuestion();
@@ -268,8 +212,7 @@ export default function RushScreen({
     setLock(false);
     setDangerTime(false);
     setFloatText(null);
-    setChest(null);
-    setChestPhase("closed");
+    setEndChestAward(null);
     setNewBest(false);
     setLeagueUp(null);
     newRushQuestion();
@@ -319,13 +262,8 @@ export default function RushScreen({
       setRushLeague(next);
     }
 
-    const reward = rollChestReward({
-      score: rushScore,
-      ownedSkins: ownedSkins ?? [],
-      ownedAvatars: ownedAvatars ?? [],
-    });
-    setChest(reward);
-    setChestPhase("closed");
+    const awardedType = typeof onAwardGlobalChest === "function" ? onAwardGlobalChest(rushScore) : "common";
+    setEndChestAward(CHEST_VISUAL[awardedType] ?? CHEST_VISUAL.common);
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function submitRush(choice) {
@@ -371,25 +309,6 @@ export default function RushScreen({
         newRushQuestion();
       }, reduceMotion ? 0 : 180);
     }
-  }
-
-  function openChest() {
-    if (!chest || chestPhase !== "closed") return;
-    setChestPhase("opening");
-
-    setTimeout(() => {
-      if (chest.kind === "coins") {
-        setCoins?.((c) => c + chest.coins);
-      } else if (chest.kind === "skin") {
-        setOwnedSkins?.((s) => (s.includes(chest.skinId) ? s : [...s, chest.skinId]));
-      } else if (chest.kind === "avatar") {
-        setOwnedAvatars?.((a) => (a.includes(chest.avatarId) ? a : [...a, chest.avatarId]));
-      }
-
-      playBeep("ok", audioOn, fxVolume);
-      vibrate(16);
-      setChestPhase("opened");
-    }, reduceMotion ? 0 : 520);
   }
 
   const timePct = Math.round((timeLeft / 60000) * 100);
@@ -634,33 +553,20 @@ export default function RushScreen({
             <span className="pill">Saison locale</span>
           </div>
 
-          {chest && (
-            <div className={`chestCard smooth rushChestCard chest-${chest.rarity} phase-${chestPhase}`} style={{ marginTop: 12 }}>
-              <div className="chestTop">
+          {endChestAward && (
+            <div className="toast rushResultCard rushChestAwardCard" style={{ marginTop: 12 }}>
+              <div className="rushChestAwardBody">
+                <span className="rushChestAwardIcon" aria-hidden="true">
+                  {endChestAward.icon}
+                </span>
                 <div>
-                  <div style={{ fontWeight: 1100 }}>
-                    Coffre {chest.rarity === "epic" ? "Épique" : chest.rarity === "rare" ? "Rare" : "Commun"}
-                  </div>
-                  <div className="small" style={{ marginTop: 6 }}>
-                    Ouvre pour récupérer ta récompense.
+                  <strong>{endChestAward.label} obtenu</strong>
+                  <div className="sub" style={{ marginTop: 6 }}>
+                    Ajouté au coffre global. Ouvre-le depuis l'onglet <b>Coffre</b>.
                   </div>
                 </div>
-                <span className="pill">{chest.rarity === "epic" ? "\u2728" : chest.rarity === "rare" ? "\uD83C\uDF1F" : "\uD83C\uDF81"}</span>
               </div>
-
-              <div className={`chestBox rushChestBox ${chestPhase}`} aria-live="polite">
-                <div className="chestEmoji">\uD83E\uDDF0</div>
-                {chestPhase === "opened" ? (
-                  <div className="chestReward">
-                    <div style={{ fontWeight: 1200 }}>{chest.label}</div>
-                    <div className="small" style={{ marginTop: 6 }}>Récompense ajoutée \u2705</div>
-                  </div>
-                ) : (
-                  <button className="btn btnPrimary smooth hover-lift press" onClick={openChest} disabled={chestPhase !== "closed"}>
-                    {chestPhase === "opening" ? "Ouverture..." : "Ouvrir"}
-                  </button>
-                )}
-              </div>
+              <span className="pill">Rush</span>
             </div>
           )}
 

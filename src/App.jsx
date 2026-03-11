@@ -1831,6 +1831,13 @@ export default function App() {
     openChestBatch(1);
   }
 
+  function awardRushGlobalChest(finalRushScore = 0) {
+    const chestType = chestTypeFromRoll(finalRushScore);
+    setChestPending((v) => v + 1);
+    setChestQueue((prev) => [...(prev ?? []), chestType]);
+    return chestType;
+  }
+
   function watchAdDoubleReward() {
     startOptionalAd(
       "double_reward",
@@ -3515,6 +3522,7 @@ export default function App() {
           setOwnedAvatars={setOwnedAvatars}
           ownedSkins={ownedSkins}
           ownedAvatars={ownedAvatars}
+          onAwardGlobalChest={awardRushGlobalChest}
           makeQuestionFn={(m, g, d, h) => makeQuestion(m, g, d, h)}
           embedded
         />
@@ -3541,6 +3549,7 @@ export default function App() {
         setOwnedAvatars={setOwnedAvatars}
         ownedSkins={ownedSkins}
         ownedAvatars={ownedAvatars}
+        onAwardGlobalChest={awardRushGlobalChest}
         makeQuestionFn={(m, g, d, h) => makeQuestion(m, g, d, h)}
       />
     );
