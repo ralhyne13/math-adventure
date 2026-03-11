@@ -588,7 +588,7 @@ export default function App() {
   const initial = useMemo(() => {
     if (!isLoggedIn) {
       return {
-        skinId: "neon-night",
+        skinId: "ocean-kids",
         selectedWorldId: "ce1",
         worldProgress: defaultWorldProgress(),
         gradeId: "CE1",
@@ -596,7 +596,7 @@ export default function App() {
         modeId: "add",
         coins: 120,
         avatarId: "owl",
-        ownedSkins: ["neon-night"],
+        ownedSkins: ["ocean-kids"],
         ownedAvatars: ["owl"],
         cosmeticDust: 0,
         level: 1,
@@ -647,8 +647,13 @@ export default function App() {
 
     const saved = safeLSGet(userKey(authUser.pseudoKey), null);
     const selectedWorldId = saved?.selectedWorldId ?? worldIdFromGrade(saved?.gradeId ?? "CE1");
+    const validSkinIds = new Set(SKINS.map((s) => s.id));
+    const fallbackSkinId = "ocean-kids";
+    const migratedOwnedSkins = (saved?.ownedSkins ?? []).filter((sid) => validSkinIds.has(sid));
+    const ownedSkinsSafe = migratedOwnedSkins.length ? migratedOwnedSkins : [fallbackSkinId];
+    const skinIdSafe = validSkinIds.has(saved?.skinId) ? saved.skinId : ownedSkinsSafe[0] ?? fallbackSkinId;
     return {
-      skinId: saved?.skinId ?? "neon-night",
+      skinId: skinIdSafe,
       selectedWorldId,
       worldProgress: normalizeWorldProgress(saved?.worldProgress),
       gradeId: saved?.gradeId ?? "CE1",
@@ -656,7 +661,7 @@ export default function App() {
       modeId: saved?.modeId ?? "add",
       coins: saved?.coins ?? 120,
       avatarId: saved?.avatarId ?? "owl",
-      ownedSkins: saved?.ownedSkins ?? ["neon-night"],
+      ownedSkins: ownedSkinsSafe,
       ownedAvatars: saved?.ownedAvatars ?? ["owl"],
       cosmeticDust: saved?.cosmeticDust ?? 0,
       level: saved?.level ?? 1,
@@ -2778,7 +2783,7 @@ export default function App() {
     if (pseudoKey.length < 3) return setAuthMsg("Pseudo trop court (min 3).");
     if (pass.length < 4) return setAuthMsg("Mot de passe trop court (min 4).");
     const starterSave = {
-      skinId: "neon-night",
+      skinId: "ocean-kids",
       selectedWorldId: "ce1",
       worldProgress: defaultWorldProgress(),
       gradeId: "CE1",
@@ -2786,7 +2791,7 @@ export default function App() {
       modeId: "add",
       coins: 120,
       avatarId: "owl",
-      ownedSkins: ["neon-night"],
+      ownedSkins: ["ocean-kids"],
       ownedAvatars: ["owl"],
       cosmeticDust: 0,
       level: 1,

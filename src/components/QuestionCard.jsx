@@ -97,6 +97,10 @@ export default function QuestionCard({
     : bossActive
     ? `${Math.max(0, bossRemaining)}%`
     : `${worldQuestProgress}/${worldQuestTarget}`;
+  const kidRank =
+    accuracy >= 95 ? "Génie des maths" : accuracy >= 85 ? "Super calculateur" : accuracy >= 70 ? "Explorateur malin" : "Petit champion";
+  const comboMood = streak >= 10 ? "Feu d'artifice" : streak >= 5 ? "Combo turbo" : "Échauffement";
+  const chestStarCount = chestRemaining <= 3 ? 3 : chestRemaining <= 7 ? 2 : 1;
 
   function challengeDoneText(challenge, current, target, done) {
     if (!challenge) return "";
@@ -211,6 +215,11 @@ export default function QuestionCard({
             <span className="questionCompactKpi">Precision {accuracy}%</span>
             <span className="questionCompactKpi">Combo {streak}</span>
             {rushOn ? <span className="questionCompactKpi">Rush {Math.max(0, Math.ceil(rushTimeLeft / 1000))}s</span> : null}
+          </div>
+          <div className="kidBadgeRow" aria-live="polite">
+            <span className="kidBadgeChip">🏅 {kidRank}</span>
+            <span className="kidBadgeChip">⚡ {comboMood}</span>
+            <span className="kidBadgeChip">🎁 {"⭐".repeat(chestStarCount)}</span>
           </div>
         </div>
       )}
