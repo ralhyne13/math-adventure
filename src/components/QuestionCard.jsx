@@ -49,7 +49,6 @@ export default function QuestionCard({
   arenaOn,
   arenaMultNow,
   bossActive,
-  bossTimeLeft,
   bossRemaining,
   bossHpPct,
   bossProfile,
@@ -294,7 +293,7 @@ export default function QuestionCard({
             )}
             {bossActive && (
               <span className="metaPill">
-                <span className="metaIcon">Boss</span> <b>{bossRemaining}%</b> <b>{bossTimeLeft}s</b>
+                <span className="metaIcon">Boss</span> <b>{bossRemaining}%</b>
               </span>
             )}
           </div>

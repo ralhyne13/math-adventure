@@ -21,7 +21,7 @@ export default function TopBar({
 }) {
   if (compact) {
     return (
-      <section className="topbar topbarCompact topbarCompactRefresh">
+      <section className="topbar topbarCompact">
         <div className="topbarCompactShell">
           <div className="topbarCompactLeft">
             <div className="mobileAvatar topbarCompactAvatar">{avatar.emoji}</div>

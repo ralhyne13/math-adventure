@@ -818,7 +818,6 @@ export default function App() {
   const [adBoostNext, setAdBoostNext] = useState(false);
   const [bossActive, setBossActive] = useState(false);
   const [bossRemaining, setBossRemaining] = useState(0);
-  const [bossTimeLeft, setBossTimeLeft] = useState(0);
   const [bossProfile, setBossProfile] = useState(ARENA_BOSSES[0]);
   const [bossHitFx, setBossHitFx] = useState(false);
   const [bossAttackFx, setBossAttackFx] = useState(false);
@@ -1232,27 +1231,10 @@ export default function App() {
   }, [study5On]);
 
   useEffect(() => {
-    if (!bossActive || showExplain) return undefined;
-    const id = setInterval(() => {
-      setBossTimeLeft((t) => {
-        if (t <= 1) {
-          clearInterval(id);
-          submit("__TIME__");
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bossActive, showExplain, q]);
-
-  useEffect(() => {
     if (bossActive && bossRemaining <= 0) {
       playBeep("boss_win", audioOn);
       vibrate([24, 18, 34, 18, 52]);
       setBossActive(false);
-      setBossTimeLeft(0);
       showCoachPopup({
         title: "Boss terminé",
         lines: ["Boss KO.", "Bonus XP x3 appliqué pendant le boss."],
@@ -1500,7 +1482,6 @@ export default function App() {
     setSessionChallengePop(null);
     setBossActive(false);
     setBossRemaining(0);
-    setBossTimeLeft(0);
     setBossHitFx(false);
     setBossAttackFx(false);
     setWorldBossActive(false);
@@ -1561,7 +1542,6 @@ export default function App() {
     setQuestionIndex(1);
     setBossActive(false);
     setBossRemaining(0);
-    setBossTimeLeft(0);
     setBossHitFx(false);
     setBossAttackFx(false);
     setWorldBossActive(false);
@@ -1666,7 +1646,6 @@ export default function App() {
     setQuestionIndex(1);
     setBossActive(false);
     setBossRemaining(0);
-    setBossTimeLeft(0);
     setWorldBossActive(false);
     setWorldBossRemaining(0);
     setShowExplain(false);
@@ -2097,7 +2076,6 @@ export default function App() {
       setBossAttackFx(false);
       setBossActive(true);
       setBossRemaining(100);
-      setBossTimeLeft(12);
       playBeep("level", audioOn);
       vibrate([22, 16, 30]);
       showCoachPopup({
@@ -2355,7 +2333,6 @@ export default function App() {
         setBossAttackFlashFx(true);
         setBossCalloutText("BOSS ATTAQUE");
       }
-      setBossTimeLeft(10);
     }
 
     checkAchievements({
@@ -2466,7 +2443,6 @@ export default function App() {
     setStudy5On(false);
     setBossActive(false);
     setBossRemaining(0);
-    setBossTimeLeft(0);
     setWorldBossActive(false);
     setWorldBossRemaining(0);
     setAdaptiveAction(null);
@@ -3455,7 +3431,6 @@ export default function App() {
     arenaOn,
     arenaMultNow,
     bossActive,
-    bossTimeLeft,
     bossRemaining,
     bossHpPct,
     bossProfile,
