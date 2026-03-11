@@ -1,6 +1,8 @@
 ﻿import Fraction from "./Fraction";
 
 
+import { useEffect, useState } from "react";
+
 export default function QuestionCard({
   status,
   fx,
@@ -102,6 +104,77 @@ export default function QuestionCard({
     accuracy >= 95 ? "Génie des maths" : accuracy >= 85 ? "Super calculateur" : accuracy >= 70 ? "Explorateur malin" : "Petit champion";
   const comboMood = streak >= 10 ? "Feu d'artifice" : streak >= 5 ? "Combo turbo" : "Échauffement";
   const chestStarCount = chestRemaining <= 3 ? 3 : chestRemaining <= 7 ? 2 : 1;
+  const [countPlaced, setCountPlaced] = useState([]);
+  const [draggingKidIndex, setDraggingKidIndex] = useState(null);
+
+  useEffect(() => {
+    if (q?.row?.kind !== "countKids") {
+      setCountPlaced([]);
+      setDraggingKidIndex(null);
+      return;
+    }
+    const fresh = Array.from({ length: q.row.items?.length ?? 0 }, () => false);
+    setCountPlaced(fresh);
+    setDraggingKidIndex(null);
+    setAnswerInput?.("0");
+  }, [q]);
+
+  function syncPlacedCount(next) {
+    const count = next.filter(Boolean).length;
+    setAnswerInput?.(String(count));
+  }
+
+  function placeKidItem(idx) {
+    if (q?.row?.kind !== "countKids") return;
+    setCountPlaced((prev) => {
+      const next = Array.isArray(prev) ? [...prev] : [];
+      next[idx] = true;
+      syncPlacedCount(next);
+      return next;
+    });
+  }
+
+  function unplaceKidItem(idx) {
+    if (q?.row?.kind !== "countKids") return;
+    setCountPlaced((prev) => {
+      const next = Array.isArray(prev) ? [...prev] : [];
+      next[idx] = false;
+      syncPlacedCount(next);
+      return next;
+    });
+  }
+
+  function onKidDragStart(idx, e) {
+    setDraggingKidIndex(idx);
+    try {
+      e.dataTransfer?.setData("text/plain", String(idx));
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+    } catch {}
+  }
+
+  function getDragIndex(e) {
+    const dt = e?.dataTransfer?.getData("text/plain");
+    const parsed = Number(dt);
+    if (Number.isInteger(parsed)) return parsed;
+    if (Number.isInteger(draggingKidIndex)) return draggingKidIndex;
+    return null;
+  }
+
+  function onKidDropToBasket(e) {
+    e.preventDefault();
+    const idx = getDragIndex(e);
+    if (idx == null) return;
+    placeKidItem(idx);
+    setDraggingKidIndex(null);
+  }
+
+  function onKidDropToSource(e) {
+    e.preventDefault();
+    const idx = getDragIndex(e);
+    if (idx == null) return;
+    unplaceKidItem(idx);
+    setDraggingKidIndex(null);
+  }
 
   function challengeDoneText(challenge, current, target, done) {
     if (!challenge) return "";
@@ -378,6 +451,67 @@ export default function QuestionCard({
               <div className="bigOp opSep">{q.row.op}</div>
               <div className="bigOp">{q.row.b}</div>
             </>
+          )}
+          {q.row.kind === "countKids" && (
+            <div className="kidCountBoard">
+              <div
+                className="kidCountDropZone kidCountSource"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={onKidDropToSource}
+              >
+                <div className="small kidCountZoneTitle">Objets à déplacer</div>
+                <div className="kidCountGrid">
+                  {(q.row.items ?? []).map((item, idx) => {
+                    if (countPlaced[idx]) return null;
+                    return (
+                      <button
+                        key={`${item}-${idx}`}
+                        type="button"
+                        draggable={!disableChoices}
+                        className="kidCountItem"
+                        onDragStart={(e) => onKidDragStart(idx, e)}
+                        onDragEnd={() => setDraggingKidIndex(null)}
+                        onClick={() => placeKidItem(idx)}
+                        disabled={disableChoices}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div
+                className="kidCountDropZone kidCountBasket"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={onKidDropToBasket}
+              >
+                <div className="small kidCountZoneTitle">Panier de comptage</div>
+                <div className="kidCountGrid">
+                  {(q.row.items ?? []).map((item, idx) => {
+                    if (!countPlaced[idx]) return null;
+                    return (
+                      <button
+                        key={`placed-${item}-${idx}`}
+                        type="button"
+                        draggable={!disableChoices}
+                        className="kidCountItem isPlaced"
+                        onDragStart={(e) => onKidDragStart(idx, e)}
+                        onDragEnd={() => setDraggingKidIndex(null)}
+                        onClick={() => unplaceKidItem(idx)}
+                        disabled={disableChoices}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="small kidCountHint">
+                Glisse vers le panier (ou touche): <b>{countPlaced.filter(Boolean).length}</b>
+              </div>
+            </div>
           )}
           </div>
         </div>

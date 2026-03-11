@@ -2,6 +2,12 @@ export default function MobileHomeScreen({
   worlds = [],
   selectedWorldId,
   onSelectWorld,
+  ageBand,
+  ageProfiles = [],
+  onSelectAgeBand,
+  kidModeOn,
+  readAloudOn,
+  worldProgress = {},
   chestPending,
   chestProgress,
   dailyChallenge,
@@ -14,6 +20,7 @@ export default function MobileHomeScreen({
   const dailyTarget = Math.max(1, dailyChallenge?.target ?? 1);
   const dailyPct = Math.round(((dailyProgress || 0) / dailyTarget) * 100);
   const chestPct = Math.round(((chestProgress || 0) / 15) * 100);
+  const activeAge = ageProfiles.find((p) => p.id === ageBand);
 
   return (
     <div className="mobileStack mobileHomeRefresh mobileHomeTotalRefresh">
@@ -39,6 +46,68 @@ export default function MobileHomeScreen({
                   <span>{w.icon}</span>
                   <span>{w.gradeId}</span>
                 </button>
+              );
+            })}
+          </div>
+
+          {ageProfiles.length > 0 && (
+            <>
+              <div className="mobileSectionHead" style={{ marginTop: 12 }}>
+                <div>
+                  <div className="mobileSectionEyebrow">Parcours</div>
+                  <div className="mobileSectionTitle">Tranche d'age</div>
+                </div>
+                <span className="pill">{activeAge?.label ?? "6-8 ans"}</span>
+              </div>
+              <div className="mobileWorldGrid">
+                {ageProfiles.map((p) => {
+                  const active = p.id === ageBand;
+                  return (
+                    <button
+                      key={p.id}
+                      className={`btn smooth hover-lift press mobileWorldChip ${active ? "isActive" : ""}`}
+                      onClick={() => onSelectAgeBand?.(p.id, { forceWorld: true })}
+                      aria-pressed={active}
+                    >
+                      <span>🎯</span>
+                      <span>{p.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="small" style={{ marginTop: 8 }}>
+                Mode enfant: <b>{kidModeOn ? "actif" : "off"}</b> | Lecture audio: <b>{readAloudOn ? "active" : "off"}</b>
+              </div>
+            </>
+          )}
+        </section>
+      )}
+
+      {worlds.length > 0 && (
+        <section className="card smooth mobileSurfaceCard mobileFeaturePanel">
+          <div className="mobileSectionHead">
+            <div>
+              <div className="mobileSectionEyebrow">Carte</div>
+              <div className="mobileSectionTitle">Chemin des mondes</div>
+            </div>
+          </div>
+          <div className="mobileWorldPath">
+            {worlds.map((w, idx) => {
+              const st = worldProgress?.[w.id] ?? { level: 1, badgeWon: false };
+              const stars = st.badgeWon ? 3 : st.level >= 20 ? 2 : st.level >= 10 ? 1 : 0;
+              const active = w.id === selectedWorldId;
+              return (
+                <div key={w.id} className={`mobileWorldNode ${active ? "isActive" : ""}`}>
+                  <button type="button" className="mobileWorldNodeBtn" onClick={() => onSelectWorld?.(w.id)}>
+                    <span className="mobileWorldNodeIcon">{w.icon}</span>
+                    <span className="mobileWorldNodeLabel">{w.gradeId}</span>
+                  </button>
+                  <div className="mobileWorldNodeMeta">
+                    <span>Niv {Math.max(1, st.level || 1)}/30</span>
+                    <span>{"⭐".repeat(stars) || "☆"}</span>
+                  </div>
+                  {idx < worlds.length - 1 ? <span className="mobileWorldLink" aria-hidden="true" /> : null}
+                </div>
               );
             })}
           </div>

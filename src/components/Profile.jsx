@@ -35,6 +35,9 @@ export default function Profile({
   avatarId,
   answerEffectId,
   unlockEffectWithDust,
+  ageBand = "6-8",
+  onboardingDone = false,
+  study5LastSummary = null,
 }) {
   if (!show) return null;
 
@@ -69,6 +72,9 @@ export default function Profile({
           </button>
           <button className={`btn smooth hover-lift press ${profileTab === "album" ? "btnPrimary" : ""}`} onClick={() => setProfileTab("album")}>
             Album
+          </button>
+          <button className={`btn smooth hover-lift press ${profileTab === "parent" ? "btnPrimary" : ""}`} onClick={() => setProfileTab("parent")}>
+            Parent
           </button>
           <div className={`coins ${isMobilePage ? "mobilePageCoins" : ""}`} style={{ marginLeft: isMobilePage ? 0 : "auto" }}>
             <span className="coinDot" />
@@ -232,6 +238,48 @@ export default function Profile({
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {profileTab === "parent" && (
+          <div className="panelSectionStack">
+            <section className={`toast panelCard ${isMobilePage ? "mobilePageSummaryCard" : ""}`} style={{ marginTop: 0 }}>
+              <div>
+                <strong>Espace parent</strong>
+                <div className="sub" style={{ marginTop: 8 }}>
+                  Parcours actif: <b>{ageBand}</b> | Onboarding terminé: <b>{onboardingDone ? "oui" : "non"}</b>
+                </div>
+                <div className="sub" style={{ marginTop: 6 }}>
+                  Questions totales: <b>{totalQuestions}</b> | Précision: <b>{accuracy}%</b> | Meilleur combo: <b>{bestStreak}</b>
+                </div>
+              </div>
+            </section>
+
+            <section className={`shopCard panelCard ${isMobilePage ? "mobileProfileRecordCard" : ""}`}>
+              <div style={{ fontWeight: 900 }}>Résumé dernière session 5 min</div>
+              {study5LastSummary ? (
+                <div className="small" style={{ marginTop: 8, lineHeight: 1.5 }}>
+                  Durée: <b>{study5LastSummary.durationSec}s</b> | Questions: <b>{study5LastSummary.answered}</b> | Précision: <b>{study5LastSummary.accuracy}%</b>
+                  <br />
+                  Bonnes réponses: <b>{study5LastSummary.right}</b> | Erreurs: <b>{study5LastSummary.wrong}</b> | Score: <b>{study5LastSummary.score}</b>
+                </div>
+              ) : (
+                <div className="small" style={{ marginTop: 8 }}>Aucune session 5 min enregistrée pour le moment.</div>
+              )}
+            </section>
+
+            <section className={`shopCard panelCard ${isMobilePage ? "mobileProfileRecordCard" : ""}`}>
+              <div style={{ fontWeight: 900 }}>Recommandations automatiques</div>
+              <div className="small" style={{ marginTop: 8, lineHeight: 1.5 }}>
+                {accuracy < 65
+                  ? "Priorité: consolider les bases en difficulté facile et activer le mode sans malus."
+                  : accuracy < 85
+                    ? "Priorité: sessions courtes régulières (5 à 10 min) pour stabiliser les automatismes."
+                    : "Priorité: maintenir le niveau avec défis hebdo et progression de monde."}
+                <br />
+                {totalQuestions < 60 ? "Objectif semaine: atteindre 60 questions pour créer une routine." : "Routine solide: continuer 10-15 min par jour."}
+              </div>
+            </section>
           </div>
         )}
       </div>

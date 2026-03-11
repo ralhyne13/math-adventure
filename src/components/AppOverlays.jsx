@@ -19,7 +19,11 @@ export default function AppOverlays({
   onCloseSessionChallengePop,
   worldTransitionFx,
   onCloseWorldTransition,
-  mascotGuide,
+  onboardingStep,
+  onboardingData,
+  onNextOnboarding,
+  onSkipOnboarding,
+  onRunOnboardingAction,
   victoryPop,
   onCloseVictoryPop,
 }) {
@@ -68,12 +72,38 @@ export default function AppOverlays({
         </div>
       )}
 
-      {mascotGuide && (
-        <div className={`mascotGuidePop mood-${mascotGuide.mood || "coach"}`} role="status" aria-live="polite">
-          <div className="mascotGuidePopAvatar" aria-hidden="true">
-            🦉
+      {typeof onboardingStep === "number" && onboardingStep >= 0 && onboardingData?.[onboardingStep] && (
+        <div className="overlay" role="dialog" aria-modal="true">
+          <div className="modal" style={{ width: "min(560px, 100%)" }}>
+            <div className="modalHead">
+              <div className="modalTitle">{onboardingData[onboardingStep].title}</div>
+              <span className="pill">
+                {onboardingStep + 1}/{onboardingData.length}
+              </span>
+            </div>
+            <div className="modalBody">
+              <div className="toast" style={{ marginTop: 0 }}>
+                <div style={{ width: "100%" }}>
+                  <div className="small" style={{ fontSize: "1rem", lineHeight: 1.45 }}>
+                    {onboardingData[onboardingStep].text}
+                  </div>
+                  <div style={{ marginTop: 12, display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                    {onboardingData[onboardingStep].actionLabel && (
+                      <button className="btn smooth hover-lift press" onClick={() => onRunOnboardingAction?.(onboardingStep)}>
+                        {onboardingData[onboardingStep].actionLabel}
+                      </button>
+                    )}
+                    <button className="btn smooth hover-lift press" onClick={onSkipOnboarding}>
+                      Passer
+                    </button>
+                    <button className="btn btnPrimary smooth hover-lift press" onClick={onNextOnboarding}>
+                      {onboardingStep + 1 >= onboardingData.length ? "Terminer" : "Suivant"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mascotGuidePopBubble">{mascotGuide.text}</div>
         </div>
       )}
 

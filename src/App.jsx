@@ -292,6 +292,21 @@ function rollChestRewardByType({ chestType, ownedAvatars, ownedSkins, ownedEffec
 const WORLD_LEVEL_MAX = 30;
 const WORLD_STEP_CORRECT = 3;
 const STUDY5_DURATION = 5 * 60;
+const AGE_PROFILES = [
+  { id: "3-5", label: "3-5 ans", preferredGradeId: "CP", diffId: "facile", noPenalty: true, autoNextOn: false, autoNextMs: 2800, readAloud: true },
+  { id: "6-8", label: "6-8 ans", preferredGradeId: "CE1", diffId: "moyen", noPenalty: true, autoNextOn: false, autoNextMs: 2200, readAloud: true },
+  { id: "9-12", label: "9-12 ans", preferredGradeId: "CM1", diffId: "moyen", noPenalty: false, autoNextOn: true, autoNextMs: 1600, readAloud: false },
+];
+const ONBOARDING_STEPS = [
+  { title: "Bienvenue dans Math Royale", text: "Choisis ton monde et lance une mini-session courte pour démarrer en confiance.", actionLabel: "Aller jouer" },
+  { title: "Objectif clair", text: "Fais 5 bonnes réponses pour valider une mission rapide et gagner des bonus.", actionLabel: "Mission rapide" },
+  { title: "Récompenses", text: "Accumule des bonnes réponses pour ouvrir des coffres et débloquer des surprises.", actionLabel: "Voir les coffres" },
+];
+
+function ageProfileById(raw) {
+  const id = String(raw || "");
+  return AGE_PROFILES.find((p) => p.id === id) ?? AGE_PROFILES[1];
+}
 
 function defaultWorldProgress() {
   const out = {};
@@ -339,32 +354,6 @@ function audioTierFromGrade(gradeId) {
   if (["CP", "CE1", "CE2"].includes(g)) return "mini";
   if (["CM1", "CM2", "6E", "5E"].includes(g)) return "mid";
   return "teen";
-}
-
-function mascotLineForAnswer({ isCorrect, nextStreak, modeId, isBossNow, gradeId }) {
-  const tier = audioTierFromGrade(gradeId);
-  const goodMini = ["Bravo champion !", "Yes, c'est juste !", "Top ! Continue comme ça !"];
-  const goodMid = ["Bien joué, calcul propre.", "Très bon réflexe math.", "Nickel, tu enchaînes."];
-  const goodTeen = ["Bonne réponse, propre.", "Solide. Continue le rythme.", "Parfait, on garde ce tempo."];
-  const badMini = ["Ce n'est pas grave, on réessaie.", "Essaye encore, tu peux le faire.", "On reprend doucement."];
-  const badMid = ["Erreur normale, on corrige.", "Presque. Relis bien l'énoncé.", "On ajuste et on repart."];
-  const badTeen = ["Erreur utile, on apprend.", "Reprends calmement le calcul.", "On corrige et on avance."];
-
-  const pick = (arr) => arr[randInt(0, arr.length - 1)];
-  if (isCorrect) {
-    if (nextStreak >= 12) return "Mode légende activé !";
-    if (nextStreak >= 6) return "Super série, garde la concentration.";
-    if (isBossNow) return "Impact confirmé sur le boss.";
-    if (modeId === "frac") return "Fraction maîtrisée, bien vu.";
-    if (tier === "mini") return pick(goodMini);
-    if (tier === "mid") return pick(goodMid);
-    return pick(goodTeen);
-  }
-  if (modeId === "frac") return "Astuce: pense au dénominateur.";
-  if (modeId === "mul") return "Astuce: découpe la table en étapes.";
-  if (tier === "mini") return pick(badMini);
-  if (tier === "mid") return pick(badMid);
-  return pick(badTeen);
 }
 
 function arenaComboMultiplier(combo) {
@@ -660,6 +649,10 @@ export default function App() {
         adaptiveOn: true,
         noPenaltyOnWrong: false,
         reduceMotion: false,
+        ageBand: "6-8",
+        kidModeOn: true,
+        readAloudOn: true,
+        onboardingDone: false,
         achievements: {},
         lastLoginDayKey: null,
         loginStreak: 0,
@@ -725,6 +718,10 @@ export default function App() {
       adaptiveOn: saved?.adaptiveOn ?? true,
       noPenaltyOnWrong: saved?.noPenaltyOnWrong ?? false,
       reduceMotion: saved?.reduceMotion ?? false,
+      ageBand: saved?.ageBand ?? "6-8",
+      kidModeOn: saved?.kidModeOn ?? true,
+      readAloudOn: saved?.readAloudOn ?? true,
+      onboardingDone: !!saved?.onboardingDone,
       achievements: saved?.achievements ?? {},
       lastLoginDayKey: saved?.lastLoginDayKey ?? null,
       loginStreak: saved?.loginStreak ?? 0,
@@ -791,6 +788,11 @@ export default function App() {
   const [adaptiveOn, setAdaptiveOn] = useState(initial.adaptiveOn);
   const [noPenaltyOnWrong, setNoPenaltyOnWrong] = useState(initial.noPenaltyOnWrong);
   const [reduceMotion, setReduceMotion] = useState(initial.reduceMotion);
+  const [ageBand, setAgeBand] = useState(initial.ageBand ?? "6-8");
+  const [kidModeOn, setKidModeOn] = useState(initial.kidModeOn ?? true);
+  const [readAloudOn, setReadAloudOn] = useState(initial.readAloudOn ?? true);
+  const [onboardingDone, setOnboardingDone] = useState(!!initial.onboardingDone);
+  const [onboardingStep, setOnboardingStep] = useState(null);
 
   const [achievements, setAchievements] = useState(initial.achievements);
   const [badgePop, setBadgePop] = useState(null);
@@ -836,7 +838,6 @@ export default function App() {
   const [mobileEntryDiffId, setMobileEntryDiffId] = useState(initial.diffId);
   const [worldTransitionFx, setWorldTransitionFx] = useState(null);
   const [chestGainPulse, setChestGainPulse] = useState(false);
-  const [mascotGuide, setMascotGuide] = useState(null);
   const [victoryPop, setVictoryPop] = useState(null);
 
   // Session
@@ -976,9 +977,44 @@ export default function App() {
   }, [reduceMotion]);
 
   useEffect(() => {
+    document.body.classList.toggle("kid-mode", !!kidModeOn);
+  }, [kidModeOn]);
+
+  useEffect(() => {
+    if (kidModeOn && !noPenaltyOnWrong) setNoPenaltyOnWrong(true);
+  }, [kidModeOn, noPenaltyOnWrong]);
+
+  useEffect(() => {
     const on = !!skin.animated && !reduceMotion;
     document.body.classList.toggle("anim-skin", on);
   }, [skin.animated, reduceMotion]);
+
+  useEffect(() => {
+    if (!readAloudOn || rushOn) return undefined;
+    const text = String(q?.prompt || "").trim();
+    if (!text || typeof window === "undefined" || !window.speechSynthesis) return undefined;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "fr-FR";
+    utter.rate = ageBand === "3-5" ? 0.88 : ageBand === "6-8" ? 0.96 : 1;
+    utter.pitch = ageBand === "3-5" ? 1.16 : 1.06;
+    try {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+    } catch {}
+    return () => {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    };
+  }, [q?.prompt, readAloudOn, ageBand, rushOn]);
+
+  useEffect(() => {
+    if (onboardingDone && onboardingStep !== null) setOnboardingStep(null);
+  }, [onboardingDone, onboardingStep]);
+
+  useEffect(() => {
+    if (ageBand === "3-5" && modeId !== "countKids") setModeId("countKids");
+  }, [ageBand, modeId]);
 
   useEffect(() => {
     if (ownedEffects.includes(answerEffectId)) return;
@@ -1024,6 +1060,10 @@ export default function App() {
       adaptiveOn,
       noPenaltyOnWrong,
       reduceMotion,
+      ageBand,
+      kidModeOn,
+      readAloudOn,
+      onboardingDone,
       achievements,
       lastLoginDayKey,
       loginStreak,
@@ -1093,6 +1133,10 @@ export default function App() {
     adaptiveOn,
     noPenaltyOnWrong,
     reduceMotion,
+    ageBand,
+    kidModeOn,
+    readAloudOn,
+    onboardingDone,
     achievements,
     lastLoginDayKey,
     loginStreak,
@@ -1338,12 +1382,6 @@ export default function App() {
   }, [rushFeedback]);
 
   useEffect(() => {
-    if (!mascotGuide) return undefined;
-    const t = setTimeout(() => setMascotGuide(null), 4200);
-    return () => clearTimeout(t);
-  }, [mascotGuide]);
-
-  useEffect(() => {
     if (!victoryPop) return undefined;
     const t = setTimeout(() => setVictoryPop(null), 5600);
     return () => clearTimeout(t);
@@ -1544,7 +1582,6 @@ export default function App() {
     setRushFeedback(null);
     setAdBoostNext(false);
     setSessionChallengePop(null);
-    setMascotGuide(null);
     setVictoryPop(null);
     setBossActive(false);
     setBossRemaining(0);
@@ -1602,7 +1639,6 @@ export default function App() {
     setSessionAnswered(0);
     setLastAnswers([]);
     setSessionChallengePop(null);
-    setMascotGuide(null);
     setVictoryPop(null);
     seedSessionChallenge();
     setScore(0);
@@ -1719,7 +1755,6 @@ export default function App() {
     setSessionAnswered(0);
     setLastAnswers([]);
     setSessionChallengePop(null);
-    setMascotGuide(null);
     setVictoryPop(null);
     seedSessionChallenge();
     setRushOn(true);
@@ -2153,10 +2188,15 @@ export default function App() {
         })
       : null;
 
-    setMascotGuide({
-      mood: isCorrect ? "happy" : "coach",
-      text: mascotLineForAnswer({ isCorrect, nextStreak, modeId, isBossNow, gradeId }),
-    });
+    if (isCorrect && kidModeOn && nextTotalRight > 0 && nextTotalRight % 4 === 0) {
+      awardCoins(2);
+      setComboFunPop({
+        icon: "🎉",
+        title: "Mini récompense",
+        streak: Math.max(1, nextStreak),
+        coins: 2,
+      });
+    }
 
     if (study5On) {
       setStudy5Answered((n) => n + 1);
@@ -2365,7 +2405,7 @@ export default function App() {
 
     if (isCorrect) {
       setStatus("ok");
-      playBeep(`owl_happy_${audioTierFromGrade(gradeId)}`, audioOn, fxVolume);
+      playBeep("ok", audioOn, fxVolume);
       vibrate([14, 18]);
       triggerFx("ok");
 
@@ -2408,7 +2448,7 @@ export default function App() {
       updateRecordIfNeeded(score + effectiveScoreAdd);
     } else {
       setStatus("bad");
-      playBeep(`owl_coach_${audioTierFromGrade(gradeId)}`, audioOn, fxVolume);
+      playBeep("bad", audioOn, fxVolume);
       vibrate([70, 36, 90]);
       triggerFx("bad");
       setErrorShakeFx(true);
@@ -2521,6 +2561,64 @@ export default function App() {
     setAvatarId(aid);
   }
 
+  function applyAgeProfile(nextAgeBand, { forceWorld = false } = {}) {
+    const p = ageProfileById(nextAgeBand);
+    setAgeBand(p.id);
+    setKidModeOn(true);
+    setReadAloudOn(!!p.readAloud);
+    setNoPenaltyOnWrong(!!p.noPenalty);
+    setAutoNextOn(!!p.autoNextOn);
+    setAutoNextMs(p.autoNextMs);
+    if (p.diffId && p.diffId !== diffId) setDiffId(p.diffId);
+    if (p.id === "3-5") {
+      setModeId("countKids");
+    } else if (modeId === "countKids") {
+      setModeId("add");
+    }
+    if (forceWorld) {
+      const worldByGrade = WORLDS.find((w) => String(w.gradeId || "").toUpperCase() === String(p.preferredGradeId || "").toUpperCase());
+      if (worldByGrade) {
+        setMobileEntryWorldId(worldByGrade.id);
+        setSelectedWorldId(worldByGrade.id);
+        setGradeId(worldByGrade.gradeId);
+      }
+    }
+  }
+
+  function nextOnboardingStep() {
+    setOnboardingStep((prev) => {
+      const next = (Number(prev) || 0) + 1;
+      if (next >= ONBOARDING_STEPS.length) {
+        setOnboardingDone(true);
+        return null;
+      }
+      return next;
+    });
+  }
+
+  function skipOnboarding() {
+    setOnboardingDone(true);
+    setOnboardingStep(null);
+  }
+
+  function runOnboardingAction(stepIdx) {
+    const step = Number(stepIdx) || 0;
+    if (step === 0) {
+      navigateMobile("classic-play");
+      return;
+    }
+    if (step === 1) {
+      setDiffId("facile");
+      setModeId(ageBand === "3-5" ? "countKids" : "add");
+      navigateMobile("classic-play");
+      return;
+    }
+    if (step === 2) {
+      openChestPanel();
+      return;
+    }
+  }
+
   function switchWorld(worldId, opts = null) {
     const nextWorld = WORLDS.find((w) => w.id === worldId);
     if (!nextWorld || nextWorld.id === selectedWorldId) return;
@@ -2578,7 +2676,15 @@ export default function App() {
   function startMobileWorldAdventure() {
     const target = WORLDS.find((w) => w.id === mobileEntryWorldId)?.id ?? selectedWorldId;
     if (!target) return;
+    const selectedWorld = WORLDS.find((w) => w.id === target);
+    if (selectedWorld) {
+      const profileFromGrade =
+        selectedWorld.gradeId === "CP" ? "3-5" : ["CE1", "CE2"].includes(selectedWorld.gradeId) ? "6-8" : "9-12";
+      applyAgeProfile(profileFromGrade);
+    }
     if (mobileEntryDiffId && mobileEntryDiffId !== diffId) setDiffId(mobileEntryDiffId);
+    setShowMobileEntryMenu(false);
+    if (!onboardingDone) setOnboardingStep(0);
     if (target === selectedWorldId) {
       navigateMobile("classic-play");
       return;
@@ -2602,6 +2708,7 @@ export default function App() {
   function openMobileEntryMenu() {
     if (!isMobileViewport) return;
     setShowMobileEntryMenu(true);
+    setOnboardingStep(null);
   }
 
   function openShopPanel() {
@@ -2917,6 +3024,10 @@ export default function App() {
       adaptiveOn: true,
       noPenaltyOnWrong: false,
       reduceMotion: false,
+      ageBand: "6-8",
+      kidModeOn: true,
+      readAloudOn: true,
+      onboardingDone: false,
       achievements: {},
       lastLoginDayKey: null,
       loginStreak: 0,
@@ -3480,6 +3591,23 @@ export default function App() {
                 );
               })}
             </div>
+            <div className="mobileEntryWorldTitle mobileEntryDiffTitle">Parcours d'age</div>
+            <div className="mobileEntryDiffGrid">
+              {AGE_PROFILES.map((p) => {
+                const active = ageBand === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className={`mobileEntryDiffChip smooth press ${active ? "isActive" : ""}`}
+                    onClick={() => applyAgeProfile(p.id, { forceWorld: true })}
+                    aria-pressed={active}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
             <button className="btn btnPrimary smooth hover-lift press mobileEntryStartBtn" onClick={startMobileWorldAdventure}>
               Démarrer l'aventure
             </button>
@@ -3728,6 +3856,11 @@ export default function App() {
     worlds: WORLDS,
     selectedWorldId,
     onSelectWorld: switchWorld,
+    ageBand,
+    ageProfiles: AGE_PROFILES,
+    onSelectAgeBand: applyAgeProfile,
+    kidModeOn,
+    readAloudOn,
     shopTab,
     setShopTab,
     profileTab,
@@ -3783,6 +3916,8 @@ export default function App() {
     setAdaptiveOn,
     noPenaltyOnWrong,
     setNoPenaltyOnWrong,
+    setKidModeOn,
+    setReadAloudOn,
     pwCurrent,
     setPwCurrent,
     pwChangeNew,
@@ -3797,12 +3932,15 @@ export default function App() {
     streak,
     currentWorld,
     worldLevel,
+    worldProgress,
     worldBossReady,
     worldBossDone,
     chestPending,
     chestProgress,
     dailyChallenge,
     dailyProgress,
+    study5LastSummary,
+    onboardingDone,
   });
 
   /* ------------------------ Main app render ------------------------ */
@@ -3846,7 +3984,11 @@ export default function App() {
         onCloseSessionChallengePop={() => setSessionChallengePop(null)}
         worldTransitionFx={worldTransitionFx}
         onCloseWorldTransition={() => setWorldTransitionFx(null)}
-        mascotGuide={mascotGuide}
+        onboardingStep={onboardingStep}
+        onboardingData={ONBOARDING_STEPS}
+        onNextOnboarding={nextOnboardingStep}
+        onSkipOnboarding={skipOnboarding}
+        onRunOnboardingAction={runOnboardingAction}
         victoryPop={victoryPop}
         onCloseVictoryPop={() => setVictoryPop(null)}
       />
@@ -4007,6 +4149,9 @@ export default function App() {
             avatarId={avatarId}
             answerEffectId={answerEffectId}
             unlockEffectWithDust={unlockEffectWithDust}
+            ageBand={ageBand}
+            onboardingDone={onboardingDone}
+            study5LastSummary={study5LastSummary}
           />
           <Settings
             show={showSettings}
@@ -4029,6 +4174,10 @@ export default function App() {
             setAdaptiveOn={setAdaptiveOn}
             noPenaltyOnWrong={noPenaltyOnWrong}
             setNoPenaltyOnWrong={setNoPenaltyOnWrong}
+            kidModeOn={kidModeOn}
+            setKidModeOn={setKidModeOn}
+            readAloudOn={readAloudOn}
+            setReadAloudOn={setReadAloudOn}
             pwCurrent={pwCurrent}
             setPwCurrent={setPwCurrent}
             pwChangeNew={pwChangeNew}

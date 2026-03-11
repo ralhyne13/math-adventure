@@ -21,6 +21,10 @@ export default function Settings({
   setAdaptiveOn,
   noPenaltyOnWrong,
   setNoPenaltyOnWrong,
+  kidModeOn,
+  setKidModeOn,
+  readAloudOn,
+  setReadAloudOn,
   pwCurrent,
   setPwCurrent,
   pwChangeNew,
@@ -116,6 +120,14 @@ export default function Settings({
 
         <div className={`shopCard panelCard settingsPanelCard ${isMobilePage ? "mobileSettingsCard" : ""}`}>
           <div className="settingsSectionTitle">Jeunes joueurs</div>
+          <label className="settingsRow">
+            <span>Mode enfant (UI simplifiee)</span>
+            <input type="checkbox" checked={kidModeOn} onChange={(e) => setKidModeOn(e.target.checked)} />
+          </label>
+          <label className="settingsRow">
+            <span>Lecture audio des questions</span>
+            <input type="checkbox" checked={readAloudOn} onChange={(e) => setReadAloudOn(e.target.checked)} />
+          </label>
           <label className="settingsRow">
             <span>Sans malus (pas de -1 coin en erreur)</span>
             <input type="checkbox" checked={noPenaltyOnWrong} onChange={(e) => setNoPenaltyOnWrong(e.target.checked)} />

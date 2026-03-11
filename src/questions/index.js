@@ -28,6 +28,7 @@ export const DIFFS = [
 ];
 
 export const MODES = [
+  { id: "countKids", label: "Comptage", icon: "🧩" },
   { id: "add", label: "Addition", icon: "+" },
   { id: "sub", label: "Soustraction", icon: "−" },
   { id: "mul", label: "Multiplication", icon: "×" },
@@ -219,6 +220,7 @@ function diffFactor(diffId) {
 
 export function questionSignature(q, modeId, gradeId, diffId) {
   const base = `${modeId}|${gradeId}|${diffId}|${q.row.kind}|${q.correct}`;
+  if (q.row.kind === "countKids") return `${base}|${(q.row.items ?? []).join("")}`;
   if (q.row.kind === "op") return `${base}|${q.row.a}|${q.row.op}|${q.row.b}`;
   if (q.row.kind === "fracCmp") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.bN}/${q.row.bD}`;
   if (q.row.kind === "fracEq") return `${base}|${q.row.aN}/${q.row.aD}|${q.row.bN}/${q.row.bD}`;
@@ -598,6 +600,23 @@ function makeQWord(cfg) {
   };
 }
 
+function makeQCountKids() {
+  const emojiPool = ["🍎", "🍌", "🍓", "⭐", "🧸", "🧩", "🚗", "🟣"];
+  const symbol = emojiPool[randInt(0, emojiPool.length - 1)];
+  const count = randInt(1, 10);
+  const items = Array.from({ length: count }).map(() => symbol);
+  return {
+    prompt: "Compte les objets :",
+    row: { kind: "countKids", items, symbol },
+    correct: count,
+    choices: makeChoicesNumber(count, 3),
+    explain: (picked) =>
+      Number(picked) === count
+        ? `✅ Bravo ! Il y a ${count} ${symbol}.`
+        : `❌ Il y a ${count} ${symbol}.`,
+  };
+}
+
 function makeQuestionCore(modeId, gradeId, diffId) {
   const base = gradeBase(gradeId);
   const f = diffFactor(diffId);
@@ -610,6 +629,8 @@ function makeQuestionCore(modeId, gradeId, diffId) {
     fracDen: Math.round(base.fracDen * f),
   };
   switch (modeId) {
+    case "countKids":
+      return makeQCountKids();
     case "add":
       return makeQAdd(cfg);
     case "sub":
@@ -658,6 +679,7 @@ export function stepDiff(diffId, dir) {
 export function buildHints(question, gradeId) {
   if (!question?.row) return [];
   const r = question.row;
+  if (r.kind === "countKids") return ["Pointe chaque objet une seule fois.", "Compte à voix haute: 1, 2, 3...", `Réponse attendue: ${question.correct}.`];
   const mid = ["6e", "5e", "4e", "3e"].includes(gradeId);
   if (r.kind === "op") {
     if (r.op === "+") return ["Additionne les unités puis les dizaines.", `Calcule ${r.a} + ${r.b} par morceaux.`, `Résultat attendu : ${question.correct}.`];
@@ -704,6 +726,7 @@ export function buildHints(question, gradeId) {
 export function buildMethodSteps(question, gradeId) {
   if (!question?.row) return [];
   const r = question.row;
+  if (r.kind === "countKids") return ["Étape 1 : observe tous les objets.", "Étape 2 : compte-les un par un sans en oublier.", `Étape 3 : total = ${question.correct}.`];
   const mid = ["6e", "5e", "4e", "3e"].includes(gradeId);
   if (r.kind === "op") {
     if (r.op === "+") return [`Étape 1 : on pose ${r.a} + ${r.b}.`, "Étape 2 : on additionne.", `Étape 3 : résultat = ${question.correct}.`];
